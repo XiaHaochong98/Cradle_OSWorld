@@ -1,7 +1,5 @@
 # UAC
 Repository for the Universal Agent Control project.
-
-
 Please setup your environment as:
 ```bash
 conda create --name uac-dev python=3.10
@@ -17,13 +15,25 @@ runner.py is the entry point to run an agent. Currently not working code, just a
 ### 1. Change settings before running the code.
 
 #### 1.1 Mouse mode
+Change mouse mode in the control setting to DirectInput.
 | Original interface | Changed interface |
 |------------|------------|
-| ![Original interface](images/image1.png) | ![Changed interface](images/image2.png) |  
+| ![Original interface](images/raw_input.png) | ![Changed interface](images/direct_input.png) |  
 
-#### 1.2 Game screen
-Use win+tab to open two desktops. Put the code on the left desktop and open the game in the right desktop. The game should be scriptly at the top-left corner of the screen. The resolution we use is 2560X1600. 
-![Original interface](images/game_position.png)
+#### 1.2 Control
+Change both two 'Tap and Hold Speed Control' to on, so we can press w twice to run, saving the need to press shift. Also change 'Aiming Mode' to 'Hold To Aim', so we do not need to keep pressing mouse right button when aiming.
+| Original interface | Changed interface |
+|------------|------------|
+| ![Original interface](images/move_control_previous.png) | ![Changed interface](images/move_control_now.png) |  
+
+#### 1.3 Game screen
+Use Win+Tab to open two desktops. Put the code on the right desktop and open the game in the left desktop. The game should be scriptly at the top-left corner of the screen. The resolution we use is 2560X1440. 
+![game_position](images/game_position.png)
+
+
+#### 1.3 Mini-map
+Press Alt and press X to make the mini-map expand.
+![mini_map_setting](images/mini_map_setting.png) 
 
 ### 2. Three libraries for keyboard & mouse control  
 - pyautogui: Used to simulate mouse clicks, including long mouse presses.   
@@ -85,9 +95,12 @@ Contains code for switch game and code between two desktops and take_screenshot 
 You need to modify the screen_region and mini_map_region to fit your settings.
 
 ### 4. Toy example
-We provide a toy exmple for the cv_navigation and map operation in skill_example.py. Modify the screen_region and mini_map_region to fit your screen at first.
+We provide a toy exmple for the cv_navigation and map operation in skill_example.py. Modify the screen_region and mini_map_region to fit your screen at first. 
+
+The generated direction_map in the runs/test1 should have a green line cross the white arrow and parallel to the red line (overlayed by the generated blue lines).
+![direction_map](images/direction_map.jpg) 
+
 
 ### 5. Known issues
--   On some PCs, ahk.mouse_move turns twice the angle with the same parameters. 
 -   You need to use time.sleep() between the execution of two skills.
 
