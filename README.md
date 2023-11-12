@@ -1,10 +1,19 @@
 # UAC
 Repository for the Universal Agent Control project.
+
 Please setup your environment as:
 ```bash
 conda create --name uac-dev python=3.10
 conda activate uac-dev
 pip3 install -r requirements.txt
+```
+
+To install Faiss:
+```bash
+# CPU-only version
+conda install -c pytorch faiss-cpu=1.7.4 mkl=2021 blas=1.0=mkl
+# GPU(+CPU) version
+conda install -c pytorch -c nvidia faiss-gpu=1.7.4 mkl=2021 blas=1.0=mkl
 ```
 
 Keep the requirements.txt file updated in your branch, but only add dependencies that are really required by the system.
@@ -18,22 +27,22 @@ runner.py is the entry point to run an agent. Currently not working code, just a
 Change mouse mode in the control setting to DirectInput.
 | Original interface | Changed interface |
 |------------|------------|
-| ![Original interface](images/raw_input.png) | ![Changed interface](images/direct_input.png) |  
+| ![Original interface](docs/images/raw_input.png) | ![Changed interface](docs/images/direct_input.png) |  
 
 #### 1.2 Control
 Change both two 'Tap and Hold Speed Control' to on, so we can press w twice to run, saving the need to press shift. Also change 'Aiming Mode' to 'Hold To Aim', so we do not need to keep pressing mouse right button when aiming.
 | Original interface | Changed interface |
 |------------|------------|
-| ![Original interface](images/move_control_previous.png) | ![Changed interface](images/move_control_now.png) |  
+| ![Original interface](docs/images/move_control_previous.png) | ![Changed interface](docs/images/move_control_now.png) |  
 
 #### 1.3 Game screen
-Use Win+Tab to open two desktops. Put the code on the right desktop and open the game in the left desktop. The game should be scriptly at the top-left corner of the screen. The resolution we use is 2560X1440. 
-![game_position](images/game_position.png)
+Use Win+Tab to open two desktops. Put the code on the right desktop and open the game in the left desktop. The game should be scriptly at the top-left corner of the screen. The recommended default resolution to use is 2560x1440, but it can vary if the 16:9 aspect ratio is preserved. DO NOT change the aspect ratio.
+![game_position](docs/images/game_position.png)
 
-
+im
 #### 1.3 Mini-map
 Press Alt and press X to make the mini-map expand.
-![mini_map_setting](images/mini_map_setting.png) 
+![mini_map_setting](docs/images/mini_map_setting.png) 
 
 ### 2. Three libraries for keyboard & mouse control  
 - pyautogui: Used to simulate mouse clicks, including long mouse presses.   
@@ -98,7 +107,7 @@ You need to modify the screen_region and mini_map_region to fit your settings.
 We provide a toy exmple for the cv_navigation and map operation in skill_example.py. Modify the screen_region and mini_map_region to fit your screen at first. 
 
 The generated direction_map in the runs/test1 should have a green line cross the white arrow and parallel to the red line (overlayed by the generated blue lines).
-![direction_map](images/direction_map.jpg) 
+![direction_map](docs/images/direction_map.jpg) 
 
 
 ### 5. Known issues
