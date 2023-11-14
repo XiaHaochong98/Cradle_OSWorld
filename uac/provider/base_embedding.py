@@ -18,5 +18,10 @@ class EmbeddingProvider(abc.ABC):
 
     @abc.abstractmethod
     def get_embedding_dim(self) -> int:
-        """Get the embedding dimension."""
+        """Get the embedding dimensions."""
+        pass
+
+    @abc.abstractmethod
+    def init_provider(self, provider_cfg) -> None:
+        """Initialize a provider via a json config."""
         pass

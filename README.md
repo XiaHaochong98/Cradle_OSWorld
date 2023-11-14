@@ -20,6 +20,35 @@ Keep the requirements.txt file updated in your branch, but only add dependencies
 
 runner.py is the entry point to run an agent. Currently not working code, just an introductory sample.
 
+## Infra code
+
+### 1. OpenAI provider
+
+OpenAI provider now can expose embeddings and LLM from OpenAI and Azure together. Users only need to create one instance of each and pass the appropriate configuration.
+
+Example configurations are in /conf. To avoid exposing sensitive details, keys and other private info should be defined in environmental variables.
+
+The suggested way to do it is to create a .env file in the root of the repository (never push this file to GitHub) where variables can be defined, and then mention the variable names in the configs.
+
+Please check the examples below.
+
+Sample .env file containing private info that should never be on git/GitHub:
+```
+OA_OPENAI_KEY = "abc123abc123abc123abc123abc123ab"
+AZ_OPENAI_KEY = "123abc123abc123abc123abc123abc12"
+AZ_BASE_URL = "https://abc123.openai.azure.com/"
+```
+
+Sample config for an OpenAI provider:
+```
+{
+	"key_var" : "OA_OPENAI_KEY",
+	"emb_model": "text-embedding-ada-002",
+	"comp_model": "gpt-4-vision-preview",
+	"is_azure": false
+}
+```
+
 ## Game & Skill Library
 ### 1. Change settings before running the code.
 
@@ -103,8 +132,12 @@ Used for calcualte the angle between the red line in the mini-map and the normal
 Contains code for switch game and code between two desktops and take_screenshot of the game.
 You need to modify the screen_region and mini_map_region to fit your settings.
 
-### 4. Toy example
-We provide a toy exmple for the cv_navigation and map operation in skill_example.py. Modify the screen_region and mini_map_region to fit your screen at first. 
+### 4. Toy examples
+We provide two toy examples so far.
+
+4.1 runner.py shows how to use the OpenAI provider.
+
+4.0 For the cv_navigation and map operation in skill_example.py. Modify the screen_region and mini_map_region to fit your screen at first. 
 
 The generated direction_map in the runs/test1 should have a green line cross the white arrow and parallel to the red line (overlayed by the generated blue lines).
 ![direction_map](docs/images/direction_map.jpg) 

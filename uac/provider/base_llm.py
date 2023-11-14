@@ -1,6 +1,5 @@
-"""Base class for model providers."""
+"""Base class for LLM model providers."""
 import abc
-
 from typing import (
     List,
     Dict,
@@ -9,12 +8,13 @@ from typing import (
 )
 
 from uac.config import Config
-from uac.utils import AbstractSingleton
 
 cfg = Config()
 
 
-class LLMProviderSingleton(AbstractSingleton):
+class LLMProvider(abc.ABC):
+    """Interface for LLM models."""
+
     @abc.abstractmethod
     def create_completion(
         self,
@@ -23,8 +23,10 @@ class LLMProviderSingleton(AbstractSingleton):
         temperature: float,
         stop_tokens: Optional[List[str]] = None,
     ) -> Tuple[str, Dict[str, int]]:
+        """Create a compeltion from messages in text (and potentially also encoded images)."""
         pass
 
     @abc.abstractmethod
     def init_provider(self, provider_cfg) -> None:
+        """Initialize a provider via a json config."""
         pass

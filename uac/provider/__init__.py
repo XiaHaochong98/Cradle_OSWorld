@@ -1,9 +1,8 @@
-from uac.provider.base_llm import LLMProviderSingleton
 from uac.provider.base_embedding import EmbeddingProvider
-from uac.provider.openai_embedding import OpenAIEmbeddings
-
+from uac.provider.base_llm import LLMProvider
+from uac.provider.openai import OpenAIProvider
 __all__ = [
-    "LLMProviderSingleton",
+    "LLMProvider",
     "EmbeddingProvider",
-    "OpenAIEmbeddings",
+    "OpenAIProvider",
 ]

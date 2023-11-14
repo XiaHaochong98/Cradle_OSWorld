@@ -2,6 +2,12 @@ import time
 import pyautogui
 import pydirectinput
 
+from uac.gameio import IOEnvironment
+
+io_env = IOEnvironment()
+ahk = io_env.ahk
+
+
 def zoom():
     """
     can zoom after open the catalogue
@@ -83,11 +89,11 @@ def scroll_down():
     pydirectinput.press("down")
 
 
-def scroll_up_for_info(ahk):
+def scroll_up_for_info():
     ahk.click(button="WU")
 
 
-def scroll_down_for_info(ahk):
+def scroll_down_for_info():
     ahk.click(button="WD")
 
 

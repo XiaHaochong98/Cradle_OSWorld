@@ -1,6 +1,6 @@
 from typing import List
 
-from uac.provider import LLMProviderSingleton
+from uac.provider import LLMProvider
 from uac.config import Config
 from uac.log import Logger
 
@@ -17,20 +17,43 @@ class Agent:
         self,
         name,
         memory,
-        llm : LLMProviderSingleton,
+        llm_provider : LLMProvider,
     ):
         self.name = name
         self.memory = memory
-        self.llm = llm
+        self.llm_provider = llm_provider
 
         self.planner_prompt = "You need to act as ..."
 
         
-    def assemble_prompt(self, external_input: str) -> List[str]:
+    def assemble_prompt(self, user_input: str) -> List[str]:
     
-        messages = [
-            {"role": "system", "content": self.planner_prompt},
-            {"role": "user", "content": external_input},
+        messages=[
+            {
+                "role": "system",
+                "content": [
+                    {
+                      "type" : "text",
+                      "text" : self.planner_prompt
+                    }
+                    ]
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": user_input
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": 
+                        {
+                            "url": "https://tellarin.com/images/tellarin.png"
+                        }
+                    }
+                ]
+            }
         ]
 
         return messages
@@ -59,9 +82,9 @@ class Agent:
                 break
 
             # Call provider
-            msg = "Hello world"
+            msg = "Who are you and what is your version? Are you GPT-4V? Can I send you an image?"
             prompt = self.assemble_prompt(msg)
-            response = self.provider.create_completion(prompt)
+            response = self.llm_provider.create_completion(prompt)
 
             print(f'U: {prompt}')
             print(f'A: {response}')

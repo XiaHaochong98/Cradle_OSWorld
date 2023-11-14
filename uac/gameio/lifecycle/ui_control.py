@@ -24,8 +24,8 @@ def take_screenshot(save_dir,
                screen_region=(0,45, 2560, 1600),
                mini_map_region=(70,1110, 480, 480),
                draw_axis=False):
+    
     # save screenshots
-    # You need to modify the region to your own
     screen = pyautogui.screenshot(save_dir + "/screen_" + str(index) + ".jpg", region=screen_region)
     mini_map = pyautogui.screenshot(save_dir + "/mini_map_" + str(index) + ".jpg", region=mini_map_region)
 

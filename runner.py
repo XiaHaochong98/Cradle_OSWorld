@@ -5,15 +5,17 @@ import time
 
 from uac.agent import Agent
 from uac.config import Config
-from uac.provider.openai import OpenAiProvider
+from uac.provider.openai import OpenAIProvider
 
 def main(args):
 
     config = Config()
 
     # create provider and make simple calls
-    provider = OpenAiProvider()
+    provider = OpenAIProvider()
     provider.init_provider(args.providerConfig)
+
+    x = provider.embed_query("Hello world")
 
     agent = Agent("TestAgent", None, provider)
     agent.loop()

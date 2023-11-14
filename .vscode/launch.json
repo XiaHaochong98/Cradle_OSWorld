@@ -11,10 +11,11 @@
             "request": "launch",
             "module": "runner",
             "env": {
-                "ENV_VAR": "env_value",
+                "ENV_VAR": "env_value", // The recommended way to define environment variables is by creating a .env file in the repo root.
             },
             "args": [
-                     "--providerConfig", "./res/azure_cfg.json",
+                     "--providerConfig", "./conf/openai_config.json",
+                     // "--providerConfig", "./conf/azure_config.json",
                     ],
             // "justMyCode": true
         }

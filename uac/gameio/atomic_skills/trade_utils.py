@@ -1,6 +1,11 @@
 import pyautogui
 import pydirectinput
 
+from uac.gameio import IOEnvironment
+
+io_env = IOEnvironment()
+ahk = io_env.ahk
+
 
 def shopkeeper_interaction():
     """
@@ -15,7 +20,7 @@ def cancel_shopkeeper_interaction():
     pyautogui.mouseUp(button="right")
 
 
-def select_products(ahk, width, height, speed=100):
+def select_products(width, height, speed=100):
     """
     Move the mouse to the specified position
     """

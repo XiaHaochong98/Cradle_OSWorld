@@ -18,9 +18,11 @@ class Config(metaclass=Singleton):
         self.continuous_mode = False
         self.continuous_limit = 0
 
-        self.llm_model = os.getenv("LLM_MODEL", "gpt-35-turbo")
-        self.embedding_model = os.getenv("EMB_MODEL", "text-embedding-ada-002")
-        
+        self.default_game_resolution = (2560, 1440)
+        self.game_resolution = self.default_game_resolution
+        self.base_resolution = (3840, 2160)
+        self.mouse_move_factor = self.game_resolution[0] / self.base_resolution[0]
+
         self.temperature = float(os.getenv("TEMPERATURE", "1"))
 
         self.memory_backend = os.getenv("MEMORY_BACKEND", "local")
@@ -30,12 +32,6 @@ class Config(metaclass=Singleton):
     def set_continuous_mode(self, value: bool) -> None:
         """Set the continuous mode value."""
         self.continuous_mode = value
-
-    def set_model_name(self, value: bool) -> None:
-        self.model_name = value
-
-    def set_model_path(self, value: bool) -> None:
-        self.model_path = value
 
     def set_work_dir(self) -> None:
         path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

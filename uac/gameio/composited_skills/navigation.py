@@ -1,8 +1,31 @@
-import cv2
-import numpy as np
+import time
+import os
 import math
 
+import cv2
+import numpy as np
+
+from uac.gameio.atomic_skills.move import turn, move_forward
+from uac.gameio.lifecycle.ui_control import take_screenshot
+
+def cv_navigation(save_dir, total_time_step, screen_region=(0, 45, 2560, 1600), mini_map_region=(70, 1110, 480, 480)):
+
+    os.makedirs(save_dir, exist_ok=True)
+
+    for timestep in range(total_time_step):
+        print("timestep", timestep)
+        if timestep > 0:
+            turn(turn_angle)
+            move_forward(0.5)
+            time.sleep(0.2) # avoid running too fast
+        
+        take_screenshot(save_dir, timestep, screen_region, mini_map_region, draw_axis=True)
+
+        turn_angle = calculate_turn_angle(save_dir, timestep, debug=True)
+
+
 def calculate_turn_angle(file_path, index, debug = False):
+    
     mini_map_path = file_path + "/mini_map_" + str(index) + ".jpg"
     output_path = file_path + "/direction_map_" + str(index) + ".jpg"
     image = cv2.imread(mini_map_path)    
@@ -39,7 +62,7 @@ def calculate_turn_angle(file_path, index, debug = False):
         
         # Find the minimum distance from each contour to the image center
         def min_distance_from_center(contour):
-            return min([  np.linalg.norm(np.array(point[0]) - image_center) for point in contour])
+            return min([np.linalg.norm(np.array(point[0]) - image_center) for point in contour])
 
         # Find the contour with the minimum distance to the image center
         closest_contour = min(contours, key=min_distance_from_center)

@@ -1,25 +1,40 @@
 import time
-import pyautogui
 import pydirectinput
 
-def turn(ahk, theta):
+from uac.config import Config
+from uac.gameio import IOEnvironment
+
+config = Config()
+io_env = IOEnvironment()
+ahk = io_env.ahk
+
+def theta_calculation(theta):
+    return theta * config.mouse_move_factor
+
+def turn(theta):
     '''
     Turn left/right for theta
     Negative theta for left
     Positive theta for right
     '''
+    theta = theta_calculation(theta)
+
     ahk.mouse_move(theta, 0, speed=100, relative=True)
 
-def turn_right(ahk, theta):
+def turn_right(theta):
     '''Continuous, Turn right for theta'''
     '''May be abondoned later'''
+    theta = theta_calculation(theta)
     assert 0 < theta
+
     ahk.mouse_move(theta, 0, speed=100, relative=True)
 
-def turn_left(ahk, theta):
+def turn_left(theta):
     '''Continuous, Turn left for theta'''
     '''May be abondoned later'''
+    theta = theta_calculation(theta)
     assert theta < 0
+
     ahk.mouse_move(theta, 0, speed=100, relative=True)
 
 def move_forward(duration):

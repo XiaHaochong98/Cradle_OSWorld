@@ -1,6 +1,11 @@
 import pyautogui
 import pydirectinput
 
+from uac.gameio import IOEnvironment
+
+io_env = IOEnvironment()
+ahk = io_env.ahk
+
 
 def open_map():
     """
@@ -36,11 +41,11 @@ def close_map():
     pydirectinput.press("esc")
 
 
-def zoom_map(ahk):
+def zoom_map():
     ahk.click(button="WU")
 
 
-def reduce_map(ahk):
+def reduce_map():
     ahk.click(button="WD")
 
 
@@ -80,14 +85,14 @@ def confirm_selection():
     pyautogui.mouseUp()
 
 
-def move_map(ahk, width, height):
+def move_map(width, height):
     """
     Moves the mouse on the screen based on the provided width and height offsets from its current position.
     """
     ahk.mouse_drag(width, height, relative=True)
 
 
-def move_mouse_on_map(ahk, width, height, speed=100, relative=True):
+def move_mouse_on_map(width, height, speed=100, relative=True):
     ahk.mouse_move(width, height, speed=speed, relative=relative)
 
 
