@@ -65,7 +65,6 @@ class FAISS(VectorStore):
             index_to_key: Mapping from index to key.
         """
         faiss = dependable_faiss_import()
-        self.embedding_function = embedding_provider
         if index is None:
             self.index = faiss.IndexFlatL2(embedding_provider.get_embedding_dim())
         if index_to_key is None:
@@ -85,7 +84,7 @@ class FAISS(VectorStore):
             embeddings: List of embeddings to add to the vectorstore.
             **kwargs: Other keyword arguments.
         """
-        assert len(keys) != len(
+        assert len(keys) == len(
             embeddings
         ), f"keys: {len(keys)}, embeddings: {len(embeddings)} expected to be equal length"
 
@@ -131,6 +130,22 @@ class FAISS(VectorStore):
 
         return True
 
+    def update(
+        self,
+        keys: List[str],
+        embeddings: List[List[float]],
+        **kwargs,
+    ) -> None:
+        """Update embeddings to the vectorstore.
+
+        Args:
+            keys: List of metadatas associated with the embedding.
+            embeddings: List of embeddings to add to the vectorstore.
+            **kwargs: Other keyword arguments.
+        """
+        self.delete(keys)
+        self.add_embeddings(keys, embeddings)
+
     def similarity_search(
         self,
         embedding: List[float],
@@ -148,7 +163,7 @@ class FAISS(VectorStore):
             List of (key, score) tuples.
         """
         vector = np.array([embedding], dtype=np.float32)
-        scores, indices = self.index.search(vector, top_k)
+        scores, indices = self.index.search(vector, min(top_k, len(self.index_to_key)))
 
         key_and_score = []
         for idx, score in zip(indices[0], scores[0]):
