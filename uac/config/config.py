@@ -24,6 +24,7 @@ class Config(metaclass=Singleton):
         self.mouse_move_factor = self.game_resolution[0] / self.base_resolution[0]
 
         self.temperature = float(os.getenv("TEMPERATURE", "1"))
+        self.max_tokens = int(os.getenv("MAX_TOKENS", "1024"))
 
         self.memory_backend = os.getenv("MEMORY_BACKEND", "local")
 

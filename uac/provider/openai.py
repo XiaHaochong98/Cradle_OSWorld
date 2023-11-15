@@ -251,7 +251,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         messages: List[Dict[str, str]],
         model: str | None = None,
         temperature: float = cfg.temperature,
-        max_tokens: int = 512,
+        max_tokens: int = cfg.max_tokens,
     ) -> Tuple[str, Dict[str, int]]:
         """Create a chat completion using the OpenAI API
 
@@ -340,12 +340,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         )
 
    
-    def encode_image(image_path):
-        with open(image_path, "rb") as image_file:
-            return base64.b64encode(image_file.read()).decode('utf-8')
-
-
-    def num_tokens_from_messages(messages, model):
+    def num_tokens_from_messages(self, messages, model):
         """Return the number of tokens used by a list of messages.
         Borrowed from https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
         """
@@ -391,3 +386,8 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
 
     def _get_azure_deployment_id_for_model(self, model_label) -> list:
         return self.provider_cfg["models"][model_label]
+
+
+def encode_image(image_path):
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode('utf-8')
