@@ -143,6 +143,108 @@ class GatherInformationOutput(BaseOutput):
 
         return flag
 
+class DecisionMakingInput(BaseInput):
+    def __init__(self, *args, params, **kwargs):
+        super(DecisionMakingInput, self).__init__(args, params, kwargs)
+
+        self.type = get_attr(params, 'type', 'decision_making')
+        self.system_content = get_attr(params, 'system_content', '')
+        self.prompt = get_attr(params, 'prompt', '')
+        self.__comments__ = get_attr(params, '__comments__', '')
+
+        if not self.check():
+            raise ValueError(f"Error in check DecisionMakingInput: {params}")
+
+    def check(self):
+        flag = True
+        try:
+            assert self.type == 'decision_making', f"type is not decision_making"
+        except Exception as e:
+            logger.error(f"Error in check: {e}")
+            flag = False
+
+        return flag
+
+    def to_text(self, template_str: str = None):
+        template_str = deepcopy(template_str)
+
+        template_str = template_str.replace('<system_content>', self.system_content)
+        template_str = template_str.replace('<prompt>', self.prompt)
+
+        return template_str
+
+class DecisionMakingOutput(BaseOutput):
+    def __init__(self, *args, params, **kwargs):
+        super(DecisionMakingOutput, self).__init__(args, params, kwargs)
+
+        self.type = get_attr(params, 'type', 'decision_making')
+        self.next_skill = get_attr(params, 'next_skill', '')
+        self.__comments__ = get_attr(params, '__comments__', '')
+
+        if not self.check():
+            raise ValueError(f"Error in check DecisionMakingOutput: {params}")
+
+    def check(self):
+        flag = True
+        try:
+            assert self.type == 'decision_making', f"type is not decision_making"
+        except Exception as e:
+            logger.error(f"Error in check: {e}")
+            flag = False
+
+        return flag
+
+class SuccessDetectionInput(BaseInput):
+    def __init__(self, *args, params, **kwargs):
+        super(SuccessDetectionInput, self).__init__(args, params, kwargs)
+
+        self.type = get_attr(params, 'type', 'success_detection')
+        self.system_content = get_attr(params, 'system_content', '')
+        self.prompt = get_attr(params, 'prompt', '')
+        self.__comments__ = get_attr(params, '__comments__', '')
+
+        if not self.check():
+            raise ValueError(f"Error in check SuccessDetectionInput: {params}")
+
+    def check(self):
+        flag = True
+        try:
+            assert self.type == 'success_detection', f"type is not success_detection"
+        except Exception as e:
+            logger.error(f"Error in check: {e}")
+            flag = False
+
+        return flag
+
+    def to_text(self, template_str: str = None):
+        template_str = deepcopy(template_str)
+
+        template_str = template_str.replace('<system_content>', self.system_content)
+        template_str = template_str.replace('<prompt>', self.prompt)
+
+        return template_str
+
+
+class SuccessDetectionOutput(BaseOutput):
+    def __init__(self, *args, params, **kwargs):
+        super(SuccessDetectionOutput, self).__init__(args, params, kwargs)
+
+        self.type = get_attr(params, 'type', 'success_detection')
+        self.success = get_attr(params, 'success', '')
+        self.__comments__ = get_attr(params, '__comments__', '')
+
+        if not self.check():
+            raise ValueError(f"Error in check SuccessDetectionOutput: {params}")
+
+    def check(self):
+        flag = True
+        try:
+            assert self.type == 'success_detection', f"type is not success_detection"
+        except Exception as e:
+            logger.error(f"Error in check: {e}")
+            flag = False
+
+        return flag
 
 def json_encoder(object):
     if isinstance(object, ScreenClassificationInput):
@@ -175,6 +277,32 @@ def json_encoder(object):
             'description': object.description,
             '__comments__': object.__comments__
         }
+    elif isinstance(object, DecisionMakingInput):
+        return {
+            'type': object.type,
+            'system_content': object.system_content,
+            'prompt': object.prompt,
+            '__comments__': object.__comments__
+        }
+    elif isinstance(object, DecisionMakingOutput):
+        return {
+            'type': object.type,
+            'next_skill': object.next_skill,
+            '__comments__': object.__comments__
+        }
+    elif isinstance(object, SuccessDetectionInput):
+        return {
+            'type': object.type,
+            'system_content': object.system_content,
+            'prompt': object.prompt,
+            '__comments__': object.__comments__
+        }
+    elif isinstance(object, SuccessDetectionOutput):
+        return {
+            'type': object.type,
+            'success': object.success,
+            '__comments__': object.__comments__
+        }
     elif isinstance(object, Object):
         return {
             'type': object.type,
@@ -196,6 +324,14 @@ def json_decoder(object):
         return ScreenClassificationOutput(params=object)
     elif object['type'] == 'gather_information':
         return GatherInformationOutput(params=object)
+    elif object['type'] == 'decision_making':
+        return DecisionMakingInput(params=object)
+    elif object['type'] == 'decision_making':
+        return DecisionMakingOutput(params=object)
+    elif object['type'] == 'success_detection':
+        return SuccessDetectionInput(params=object)
+    elif object['type'] == 'success_detection':
+        return SuccessDetectionOutput(params=object)
     elif object['type'] == 'object':
         return Object(params=object)
     else:
@@ -206,5 +342,9 @@ __all__ = [
     'GatherInformationInput',
     'ScreenClassificationOutput',
     'GatherInformationOutput',
+    'DecisionMakingInput',
+    'DecisionMakingOutput',
+    'SuccessDetectionInput',
+    'SuccessDetectionOutput',
     'Object'
 ]

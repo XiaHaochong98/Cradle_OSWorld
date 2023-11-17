@@ -10,6 +10,10 @@ from uac.planner.helper import (ScreenClassificationInput,
                                 GatherInformationInput,
                                 GatherInformationOutput,
                                 ScreenClassificationOutput,
+                                DecisionMakingInput,
+                                DecisionMakingOutput,
+                                SuccessDetectionInput,
+                                SuccessDetectionOutput,
                                 json_encoder,
                                 json_decoder)
 from uac.utils.check import check_planner_params
@@ -386,6 +390,11 @@ class Planner(BasePlanner):
                                                 self.output_examples["decision_making"],
                                                 self.llm_provider,
                                                 self.memory)
+        self.success_detection = SuccessDetection(self.input_examples["success_detection"],
+                                                    self.templates["success_detection"],
+                                                    self.output_examples["success_detection"],
+                                                    self.llm_provider,
+                                                    self.memory)
 
     def _init_input_example(self):
         input_examples = dict()
@@ -413,8 +422,8 @@ class Planner(BasePlanner):
             path = os.path.join(cfg.work_dir, value)
             output_examples[key] = load_json(path)
         return output_examples
-
-    def gather_information(self, *args, screen_shoot, **kwargs):
+      
+    def _gather_information(self, *args, screen_shoot, **kwargs):
 
         input = self.input_examples["gather_information"]
         if self.use_screen_classification:
@@ -438,13 +447,14 @@ class Planner(BasePlanner):
 
         self.memory.update(res_json)
 
-    def decision_making(self, *args, screen_shoot, **kwargs):
+    def _decision_making(self, *args, screen_shoot, **kwargs):
+
         data = self.decision_making(screen_shoot=screen_shoot)
         res_json = data["res_json"]
         self.memory.update(res_json)
         self.game.execute(res_json)
 
-    def success_detection(self, *args, **kwargs):
+    def _success_detection(self, *args, **kwargs):
         data = self.success_detection()
         success = data["success"]
         return success
@@ -453,7 +463,7 @@ class Planner(BasePlanner):
         success = False
 
         while not success:
-            self.gather_information(screen_shoot=screen_shot)
-            self.decision_making(screen_shoot=screen_shot)
-            success = self.success_detection()
+            self._gather_information(screen_shoot=screen_shot)
+            self._decision_making(screen_shoot=screen_shot)
+            success = self._success_detection()
             screen_shot = self.game.screen_shot()
