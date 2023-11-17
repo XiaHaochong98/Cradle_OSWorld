@@ -1,0 +1,11 @@
+{
+  "type": "map_create_waypoint",
+  "objects": [
+    {
+      "type": "value",
+      "name": "distance_to_target",
+      "reasoning": "The places in the index are ranked as follows: 0 Dominoes - Tilly, 1 Fishing - Kieran, 2 Leopold Strauss, 3 Clemens Point, 4 Ammunition, 5 Bait Shop, 6 Barber, 7 Butcher, 8 Doctor, 9 Donate to Camp, 10 Fence, 11 General Store (selected), 12 Grub. The current selected place is Grub with a rank of 12 and the target place General Store has a rank of 11.",
+      "value": "-1"
+    }
+  ]
+}
