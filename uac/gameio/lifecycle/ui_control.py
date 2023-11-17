@@ -7,12 +7,10 @@ import pyautogui
 import time
 
 def switch_to_game():
-    pyautogui.hotkey("ctrl", "win", "left")
+    pyautogui.getWindowsWithTitle("Red Dead Redemption 2")[0].activate()
     time.sleep(1)
-    pyautogui.moveTo(200, 200)
-    pyautogui.click()
     pydirectinput.press('esc')
-    time.sleep(1)                                                     # wait for game to back
+    time.sleep(1)       
 
 def switch_to_code():
     pydirectinput.press('esc')                                              # pause game

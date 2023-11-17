@@ -65,10 +65,9 @@ Change both two 'Tap and Hold Speed Control' to on, so we can press w twice to r
 | ![Original interface](docs/images/move_control_previous.png) | ![Changed interface](docs/images/move_control_now.png) |  
 
 #### 1.3 Game screen
-Use Win+Tab to open two desktops. Put the code on the right desktop and open the game in the left desktop. The game should be scriptly at the top-left corner of the screen. The recommended default resolution to use is 2560x1440, but it can vary if the 16:9 aspect ratio is preserved. DO NOT change the aspect ratio.
+Use Win+Tab to open two desktops. Put the code on the right desktop and open the game in the left desktop. The game should be scriptly at the top-left corner of the screen. The recommended default resolution to use is 2560x1440, but it can vary if the **16:9** aspect ratio is preserved (like 1920X1080 and 3840X2160). DO NOT change the aspect ratio. And you need to set the Screen Type to **Windowed Borderlese**.
 ![game_position](docs/images/game_position.png)
 
-im
 #### 1.3 Mini-map
 Press Alt and press X to make the mini-map expand.
 ![mini_map_setting](docs/images/mini_map_setting.png) 
@@ -130,14 +129,11 @@ Used for calcualte the angle between the red line in the mini-map and the normal
 
 #### 3.4 uac/utils/UI_control.py
 Contains code for switch game and code between two desktops and take_screenshot of the game.
-You need to modify the screen_region and mini_map_region to fit your settings.
 
 ### 4. Toy examples
 We provide two toy examples so far.
 
 4.1 runner.py shows how to use the OpenAI provider.
-
-4.0 For the cv_navigation and map operation in skill_example.py. Modify the screen_region and mini_map_region to fit your screen at first. 
 
 The generated direction_map in the runs/test1 should have a green line cross the white arrow and parallel to the red line (overlayed by the generated blue lines).
 ![direction_map](docs/images/direction_map.jpg) 

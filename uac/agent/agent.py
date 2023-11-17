@@ -69,7 +69,8 @@ class Agent:
         arguments = None
         user_input = ""
 
-        while True:
+        #while True:
+        for i in range(1):
 
             # Stop if limit is reached
             loop_count += 1
