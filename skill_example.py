@@ -1,6 +1,6 @@
 from uac.config import Config
 from uac.gameio.lifecycle.ui_control import switch_to_code, switch_to_game
-from uac.gameio.composited_skills.navigation import cv_navigation
+from uac.gameio.composite_skills.navigation import cv_navigation
 from uac.gameio.atomic_skills.map import open_map, open_index, close_index
 from uac.gameio.atomic_skills.move import turn
 import time

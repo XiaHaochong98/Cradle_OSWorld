@@ -91,13 +91,13 @@ buy.py: It is mainly divided into three parts:
 -   1. Interact with shopkeeper to buy products.   
 -   2. The extra work required to buy clothes.   
 -   3. Buy products on shelves.  
-  
+
 trade_utils.py: Stores the functions used to buy and sell products when trading.  
 
 main.py: Calls functions from other python files.
 
 If you're just buying things from camp to town, you might at involve the following functions(for example:Take buying fruit can):   
-  
+
 In the map.py:
 -   open_map
 -   close_map
@@ -115,14 +115,15 @@ In the buy.py
 -   select_product_type
 -   buy_product
     
+
 In the trade_utils.py
 -   shopkeeper_interaction
 -   cancel_shopkeeper_interaction
 -   select_products
 -   confirm_selection
 
-#### 3.2 uac/skill_library/composited_skills:
-Currently, we only have the cv_navigation as the composited skill.
+#### 3.2 uac/skill_library/composite_skills:
+Currently, we only have 'cv_navigation' as composite skill.
 
 #### 3.3 uac/utils/angle_estimator.py:
 Used for calcualte the angle between the red line in the mini-map and the normal line, which is used in the cv_navigation.

@@ -50,7 +50,8 @@ class Config(metaclass=Singleton):
 
         self.game_resolution = (game_window.width, game_window.height)
         self.game_region = (game_window.left, game_window.top, game_window.width, game_window.height)
-        self.mini_map_region = [int(x * (self.game_resolution[0] / self.base_resolution[0]) ) for x in self.base_mini_map_region]
+        self.resolution_ratio = self.game_resolution[0] / self.base_resolution[0]
+        self.mini_map_region = [int(x * self.resolution_ratio ) for x in self.base_mini_map_region]
         self.mini_map_region[0] += game_window.left
         self.mini_map_region[1] += game_window.top
         self.mini_map_region = tuple(self.mini_map_region)
