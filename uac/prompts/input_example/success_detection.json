@@ -1,0 +1,10 @@
+{
+    "type": "success_detection",
+    "system_content": "",
+    "task":"The task is to open the map",
+    "input_paths": ["./screenshot_1.png", "./screenshot_1.png"],
+    "input_description": "I will give you (1) The screenshot from previous timestep; (2) The screenshot from current timestep",
+    "prompt": "You are an expert in RDR2 and You are a success detection. The current task is to {task}. You need to think about the independent criteria to judge whether this task is fully completed.  In addition, if there are any in-game prompts or instructions that are similar to {task}, it could indicate that the task has not been completed. If the previous state is completed and the current state is not completed, it also indicate that the task has not been completed. Output the criteria first in the value of \"criteria\". Based on images (the first image is the observation from the previous timestep, and the second image is the current observation), ask yourself whether one of the criteria is fully fulfilled for {task}. If fulfilled, then output True. If not, output False. Output the think procedure in the value of \"reasoning\" and then output the answer. Note that you must output the answser True/Flase in the value of \"success\"",
+    "output_template":"{\n  \"type\": \"success_detection\",\n  \"task\": \"open the map\",\n  \"decision\": \n    {\n      \"criteria\": \"1.\",\n      \"reasoning\": \"The selected place 'Grub' in the index is not the target place 'General Store'.\",\n      \"success\": false\n    }\n}",
+    "__comments__": "This is a template for success detection, the key are (1) input_description: including two screenshot. (2) output_description: the output format and requirements for decision making."
+}
