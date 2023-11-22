@@ -1,0 +1,6 @@
+{
+    "type": "planning",
+    "environment_name": "Red Dead Redemption 2",
+    "skills": "[\"pause_menu\", \"interact_with_feed_message\", \"open_map\", \"interact_objects\", \"mount_horse\", \"enter_vehicle\"]",
+    "goal": "Null"
+}

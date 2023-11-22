@@ -50,6 +50,8 @@ Sample config for an OpenAI provider:
 ```
 
 ## Game & Skill Library
+
+
 ### 1. Change settings before running the code.
 
 #### 1.1 Mouse mode
@@ -65,12 +67,13 @@ Change both two 'Tap and Hold Speed Control' to on, so we can press w twice to r
 | ![Original interface](docs/images/move_control_previous.png) | ![Changed interface](docs/images/move_control_now.png) |  
 
 #### 1.3 Game screen
-Use Win+Tab to open two desktops. Put the code on the right desktop and open the game in the left desktop. The game should be scriptly at the top-left corner of the screen. The recommended default resolution to use is 2560x1440, but it can vary if the **16:9** aspect ratio is preserved (like 1920X1080 and 3840X2160). DO NOT change the aspect ratio. And you need to set the Screen Type to **Windowed Borderlese**.
+Use Win+Tab to open two desktops. Put the code on the right desktop and open the game in the left desktop. The recommended default resolution to use is 1920x1080, but it can vary if the **16:9** aspect ratio is preserved (like 2560x1440 or 3840x2160). DO NOT change the aspect ratio. Also, remember to set the game Screen Type to **Windowed Borderless**.
 ![game_position](docs/images/game_position.png)
 
-#### 1.3 Mini-map
+#### 1.4 Mini-map
 Press Alt and press X to make the mini-map expand.
-![mini_map_setting](docs/images/mini_map_setting.png) 
+![minimap_setting](docs/images/minimap_setting.png) 
+
 
 ### 2. Three libraries for keyboard & mouse control  
 - pyautogui: Used to simulate mouse clicks, including long mouse presses.   
@@ -78,9 +81,9 @@ Press Alt and press X to make the mini-map expand.
 - ahk: Used to simulate mouse swiping, including moveTo and dragTo.
   
 ### 3. File Structure
-Most of our code are in the uac/skill_library and uac/utils.
+Most of our code are in the uac/gameio and uac/utils.
 
-#### 3.1 uac/skill_library/atomic_skills:
+#### 3.1 uac/gameio/atomic_skills:
 move.py: Includes turn, move_forward, mount horse and dismount horse.
 
 map.py: Includes the operations needed to open the map and manipulate with the map.    
@@ -94,9 +97,7 @@ buy.py: It is mainly divided into three parts:
 
 trade_utils.py: Stores the functions used to buy and sell products when trading.  
 
-main.py: Calls functions from other python files.
-
-If you're just buying things from camp to town, you might at involve the following functions(for example:Take buying fruit can):   
+If you're just buying things from camp to town, you might at involve the following functions (for example: Buying fruit can):   
 
 In the map.py:
 -   open_map
@@ -122,24 +123,26 @@ In the trade_utils.py
 -   select_products
 -   confirm_selection
 
-#### 3.2 uac/skill_library/composite_skills:
-Currently, we only have 'cv_navigation' as composite skill.
+#### 3.2 uac/gameio/composite_skills:
+Currently, we only have 'cv_navigation' as a composite skill. Includes calculate_turn_angle (between the red line in the mini-map and the normal line, which is used in the cv_navigation).
 
-#### 3.3 uac/utils/angle_estimator.py:
-Used for calcualte the angle between the red line in the mini-map and the normal line, which is used in the cv_navigation.
-
-#### 3.4 uac/utils/UI_control.py
+#### 3.4 uac/lifecycle/UI_control.py
 Contains code for switch game and code between two desktops and take_screenshot of the game.
 
-### 4. Toy examples
-We provide two toy examples so far.
 
-4.1 runner.py shows how to use the OpenAI provider.
+## Running examples
 
-The generated direction_map in the runs/test1 should have a green line cross the white arrow and parallel to the red line (overlayed by the generated blue lines).
+We provide two "toy" examples so far.
+
+4.1 openai_runner.py shows how to use the OpenAI provider and call GPT-4V directly to test prompts.
+
+4.2 runner.py the agent run, involving other components.
+
+The generated direction_map in the runs/<timestamp> should have a green line cross the white arrow and parallel to the red line (overlayed by the generated blue lines).
 ![direction_map](docs/images/direction_map.jpg) 
 
 
-### 5. Known issues
--   You need to use time.sleep() between the execution of two skills.
-
+## Known issues
+- You need to use time.sleep() between the execution of two skills for now.
+- Planning and success detection sometimes not ideal.
+- Very high latency and call errors in GPT-4V API.

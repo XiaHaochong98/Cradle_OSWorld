@@ -1,30 +1,57 @@
 import time
 import os
 import math
+import traceback as tb
 
 import cv2
 import numpy as np
 
-from uac.gameio.atomic_skills.move import turn, move_forward
+from uac.config import Config
+from uac.log import Logger
+from uac.gameio.atomic_skills.move import turn, move_forward, stop_horse
 from uac.gameio.lifecycle.ui_control import take_screenshot
 
-def cv_navigation(save_dir, total_time_step, screen_region, mini_map_region, debug = False):
+config = Config()
+logger = Logger()
 
-    for timestep in range(total_time_step):
-        print("timestep", timestep)
-        if timestep > 0:
-            turn(turn_angle)
-            move_forward(0.3)
-            time.sleep(0.1) # avoid running too fast
+
+def navigate_path(iterations = 100, debug = False):
+    time.sleep(1)
+    cv_navigation(iterations, debug)
+
+
+def cv_navigation(total_iterations, debug = False):
+
+    game_screen_region = config.game_region
+    minimap_region = config.minimap_region
+
+    try:
+
+        for step in range(total_iterations):
+            timestep = time.time()
+            logger.debug(f"step {step}, {timestep}")
+            if step > 0:
+                turn(turn_angle)
+                move_forward(0.3)
+                time.sleep(0.1) # avoid running too fast
         
-        take_screenshot(save_dir, timestep, screen_region, mini_map_region, draw_axis=False)
+            game_image, minimap_image = take_screenshot(timestep, game_screen_region, minimap_region, draw_axis=False)
 
-        turn_angle = calculate_turn_angle(save_dir, timestep, debug)
+            turn_angle = calculate_turn_angle(timestep, debug)
 
-def calculate_turn_angle(file_path, index, debug = False, show_image = False):
-    mini_map_path = file_path + "/mini_map_" + str(index) + ".jpg"
-    output_path = file_path + "/direction_map_" + str(index) + ".jpg"
-    image = cv2.imread(mini_map_path)    
+    except Exception as e:
+        logger.warn(f"Error in cv_navigation: {e}. Usually not a problem.")
+        # logger.warn(f"{''.join(tb.format_exception(None, e, e.__traceback__))}")
+        stop_horse()
+
+
+def calculate_turn_angle(tid, debug = False, show_image = False):
+
+    output_dir = config.work_dir
+
+    minimap_path = output_dir + "/minimap_" + str(tid) + ".jpg"
+    output_path = output_dir + "/direction_map_" + str(tid) + ".jpg"
+    image = cv2.imread(minimap_path)    
 
     # Convert the image to HSV space
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -122,8 +149,8 @@ def calculate_turn_angle(file_path, index, debug = False, show_image = False):
 
         distance_threshold *= 1.2
     # if debug:
-    #     print("distance_threshold", distance_threshold)
-    #     print("central_dots", central_dots)
+    #     logger.debug(f"distance_threshold {distance_threshold}")
+    #     logger.debug(f"central_dots {central_dots}")
 
     # Use the average of the y of the chosen lines to determine the red line is in the upper/bottom half of the mini-map
     central_line_y = []
@@ -143,7 +170,7 @@ def calculate_turn_angle(file_path, index, debug = False, show_image = False):
     angle_degrees = np.average(central_line_angles)
 
     # if debug:
-    #     print(central_line_y)
+    #     logger.debug(f"cly {central_line_y}")
 
     is_upper = np.average(central_line_y)  <= center_y * 1.05
 
@@ -197,13 +224,13 @@ def calculate_turn_angle(file_path, index, debug = False, show_image = False):
     slope = 1 / slope
 
     if debug:
-        print("slope", slope)
-        print("red_line_turn_angle", red_line_turn_angle)
-        print("is_upper", is_upper)
+        logger.debug(f"slope {slope}")
+        logger.debug(f"red_line_turn_angle {red_line_turn_angle}")
+        logger.debug(f"is_upper {is_upper}")
         if deviation_angle_degrees:
-            print("deviation_turn_angle", deviation_turn_angle)
-            print("central_dot_upper", central_dot_upper)
-        print("real turn angle", real_turn_angle)
+            logger.debug(f"deviation_turn_angle {deviation_turn_angle}")
+            logger.debug(f"central_dot_upper {central_dot_upper}")
+        logger.debug(f"real turn angle {real_turn_angle}")
 
     # Draw green line to show the calculated turn direction
     offset = 50
@@ -233,3 +260,4 @@ def calculate_turn_angle(file_path, index, debug = False, show_image = False):
         cv2.destroyAllWindows()
 
     return real_turn_angle
+

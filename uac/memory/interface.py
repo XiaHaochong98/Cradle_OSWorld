@@ -10,10 +10,10 @@ from dataclasses import dataclass, fields
 from uac.config import Config
 from uac.log import Logger
 from uac.provider.base_embedding import EmbeddingProvider
-from uac.memory.base import VectorStore, Image
-from uac.planner.helper import GatherInformationOutput
+from uac.memory.base import VectorStore
+from uac.agent.data import GatherInformationOutput
 
-cfg = Config()
+config = Config()
 logger = Logger()
 
 

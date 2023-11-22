@@ -1,4 +1,3 @@
-import abc
 from copy import deepcopy
 
 from uac.config import Config
@@ -7,12 +6,12 @@ from uac.planner import BaseInput
 from uac.planner import BaseOutput
 from uac.planner.util import get_attr
 
-cfg = Config()
+config = Config()
 logger = Logger()
 
 class ScreenClassificationInput(BaseInput):
     def __init__(self, *args, params, **kwargs):
-        super(ScreenClassificationInput, self).__init__(args, params, kwargs)
+        super(ScreenClassificationInput, self).__init__(args = args, params=params, kwargs = kwargs)
 
         self.type = get_attr(params, 'type', 'screen_classification')
         self.system_content = get_attr(params, 'system_content', '')
@@ -34,19 +33,20 @@ class ScreenClassificationInput(BaseInput):
 
         return flag
 
-    def to_text(self, template_str: str=None):
-        template_str = deepcopy(template_str)
+    # def to_text(self, template_str: str=None):
+    #     template_str = deepcopy(template_str)
 
-        template_str = template_str.replace('<system_content>', self.system_content)
-        template_str = template_str.replace('<classes>', self.classes)
-        template_str = template_str.replace('<few_shot_examples>', self.few_shot_examples)
-        template_str = template_str.replace('<prompt>', self.prompt)
+    #     template_str = template_str.replace('<system_content>', self.system_content)
+    #     template_str = template_str.replace('<classes>', self.classes)
+    #     template_str = template_str.replace('<few_shot_examples>', self.few_shot_examples)
+    #     template_str = template_str.replace('<prompt>', self.prompt)
 
-        return template_str
+    #     return template_str
+
 
 class GatherInformationInput(BaseInput):
     def __init__(self, *args, params, **kwargs):
-        super(GatherInformationInput, self).__init__(args, params, kwargs)
+        super(GatherInformationInput, self).__init__(args = args, params=params, kwargs = kwargs)
 
         self.type = get_attr(params, 'type', 'gather_information')
         self.system_content = get_attr(params, 'system_content', '')
@@ -60,21 +60,13 @@ class GatherInformationInput(BaseInput):
     def check(self):
         flag = True
         try:
-            assert self.type == 'general', f"type is not gather_information"
+            assert self.type == 'gather_information', f"type is not gather_information"
         except Exception as e:
             logger.error(f"Error in check: {e}")
             flag = False
 
         return flag
 
-    def to_text(self, template_str: str = None):
-        template_str = deepcopy(template_str)
-
-        template_str = template_str.replace('<system_content>', self.system_content)
-        template_str = template_str.replace('<input>', self.input)
-        template_str = template_str.replace('<prompt>', self.prompt)
-
-        return template_str
 
 class Object():
     def __init__(self, *args, params, **kwargs):
@@ -101,7 +93,7 @@ class Object():
 
 class ScreenClassificationOutput(BaseOutput):
     def __init__(self, *args, params, **kwargs):
-        super(ScreenClassificationOutput, self).__init__(args, params, kwargs)
+        super(ScreenClassificationOutput, self).__init__(args = args, params=params, kwargs = kwargs)
 
         self.type = get_attr(params, 'type', 'screen_classification')
         self.class_ = get_attr(params, 'class', '')
@@ -122,7 +114,7 @@ class ScreenClassificationOutput(BaseOutput):
 
 class GatherInformationOutput(BaseOutput):
     def __init__(self, *args, params, **kwargs):
-        super(GatherInformationOutput, self).__init__(args, params, kwargs)
+        super(GatherInformationOutput, self).__init__(args = args, params=params, kwargs = kwargs)
 
         self.type = get_attr(params, 'type', 'gather_information')
         self.objects = get_attr(params, 'objects', '')
@@ -145,7 +137,7 @@ class GatherInformationOutput(BaseOutput):
 
 class DecisionMakingInput(BaseInput):
     def __init__(self, *args, params, **kwargs):
-        super(DecisionMakingInput, self).__init__(args, params, kwargs)
+        super(DecisionMakingInput, self).__init__(args = args, params=params, kwargs = kwargs)
 
         self.type = get_attr(params, 'type', 'decision_making')
         self.system_content = get_attr(params, 'system_content', '')
@@ -165,20 +157,14 @@ class DecisionMakingInput(BaseInput):
 
         return flag
 
-    def to_text(self, template_str: str = None):
-        template_str = deepcopy(template_str)
-
-        template_str = template_str.replace('<system_content>', self.system_content)
-        template_str = template_str.replace('<prompt>', self.prompt)
-
-        return template_str
 
 class DecisionMakingOutput(BaseOutput):
     def __init__(self, *args, params, **kwargs):
-        super(DecisionMakingOutput, self).__init__(args, params, kwargs)
+        super(DecisionMakingOutput, self).__init__(args = args, params=params, kwargs = kwargs)
 
         self.type = get_attr(params, 'type', 'decision_making')
         self.next_skill = get_attr(params, 'next_skill', '')
+        self.skill_steps = get_attr(params, 'skill_steps', '')
         self.__comments__ = get_attr(params, '__comments__', '')
 
         if not self.check():
@@ -196,7 +182,7 @@ class DecisionMakingOutput(BaseOutput):
 
 class SuccessDetectionInput(BaseInput):
     def __init__(self, *args, params, **kwargs):
-        super(SuccessDetectionInput, self).__init__(args, params, kwargs)
+        super(SuccessDetectionInput, self).__init__(args = args, params=params, kwargs = kwargs)
 
         self.type = get_attr(params, 'type', 'success_detection')
         self.system_content = get_attr(params, 'system_content', '')
@@ -216,18 +202,10 @@ class SuccessDetectionInput(BaseInput):
 
         return flag
 
-    def to_text(self, template_str: str = None):
-        template_str = deepcopy(template_str)
-
-        template_str = template_str.replace('<system_content>', self.system_content)
-        template_str = template_str.replace('<prompt>', self.prompt)
-
-        return template_str
-
 
 class SuccessDetectionOutput(BaseOutput):
     def __init__(self, *args, params, **kwargs):
-        super(SuccessDetectionOutput, self).__init__(args, params, kwargs)
+        super(SuccessDetectionOutput, self).__init__(args = args, params=params, kwargs = kwargs)
 
         self.type = get_attr(params, 'type', 'success_detection')
         self.success = get_attr(params, 'success', '')
@@ -288,6 +266,7 @@ def json_encoder(object):
         return {
             'type': object.type,
             'next_skill': object.next_skill,
+            'skill_steps': object.skill_steps,
             '__comments__': object.__comments__
         }
     elif isinstance(object, SuccessDetectionInput):

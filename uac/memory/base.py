@@ -12,7 +12,7 @@ from typing import (
 from uac.config.config import Config
 from uac.provider.base_embedding import EmbeddingProvider
 
-cfg = Config()
+config = Config()
 
 Image = Any
 

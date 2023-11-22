@@ -1,54 +1,60 @@
 import json
-import os
 from typing import Dict, Any
 from copy import deepcopy
 
 from uac.config import Config
 from uac.log import Logger
 from uac.planner.base import BasePlanner
-from uac.planner.helper import (ScreenClassificationInput,
-                                GatherInformationInput,
-                                GatherInformationOutput,
-                                ScreenClassificationOutput,
-                                DecisionMakingInput,
-                                DecisionMakingOutput,
-                                SuccessDetectionInput,
-                                SuccessDetectionOutput,
-                                json_encoder,
-                                json_decoder)
+from uac.agent.data import (ScreenClassificationInput,
+                            GatherInformationInput,
+                            GatherInformationOutput,
+                            ScreenClassificationOutput,
+                            DecisionMakingInput,
+                            DecisionMakingOutput,
+                            SuccessDetectionInput,
+                            SuccessDetectionOutput,
+                            json_encoder,
+                            json_decoder)
+from uac.provider.base_llm import LLMProvider
 from uac.utils.check import check_planner_params
 from uac.utils.json_utils import load_json
+from uac.utils.file_utils import assemble_project_path, read_resource_file
+from uac.provider.openai import encode_image
 
-cfg = Config()
+config = Config()
 logger = Logger()
+
+PROMPT_EXT = ".prompt"
+JSON_EXT = ".json"
 
 class ScreenClassification():
     def __init__(self,
-                 *args,
+                 system_prompt : str = None,
                  input_example: Dict = None,
                  template: Dict = None,
                  output_example: Dict = None,
-                 llm_provider: Any = None,
-                 **kwargs,):
+                 llm_provider: LLMProvider = None,
+                ):
 
+        self.system_prompt = system_prompt
         self.input_example = input_example
         self.template = template
         self.output_example = output_example
         self.llm_provider = llm_provider
 
-    def _pre(self, *args, input = None, screen_shoot = None, **kwargs):
-        return input, screen_shoot
+    def _pre(self, *args, input = None, screenshot_file = None, **kwargs):
+        return input, screenshot_file
 
-    def __call__(self, *args, input = None, screen_shoot = None, **kwargs):
+    def __call__(self, *args, input = None, screenshot_file = None, **kwargs):
 
         input = self.input_example if input is None else input
-        input = self._pre(input=input, screen_shoot=screen_shoot)
+        input = self._pre(input=input, screenshot_file=screenshot_file)
 
         # get the current screen classification
         flag = True
         class_ = None
         try:
-            image = deepcopy(screen_shoot)
+            image = deepcopy(screenshot_file)
             screen_classification_input = ScreenClassificationInput(params=input)
             content = screen_classification_input.to_text(template_str=self.template["template"])
 
@@ -73,7 +79,7 @@ class ScreenClassification():
         data = dict(
             flag = flag,
             input = input,
-            screen_shoot = screen_shoot,
+            screenshot_file = screenshot_file,
             class_= class_,
         )
         data = self._post(data = data)
@@ -85,27 +91,30 @@ class ScreenClassification():
 class GatherInformation():
 
     def __init__(self,
-                    *args,
-                    input_example: Dict = None,
-                    template: Dict = None,
-                    output_example: Dict = None,
-                    marker_matcher: Any = None,
-                    object_detector: Any = None,
-                    llm_provider: Any = None,):
+                 system_prompt: str = None,
+                 input_map: Dict = None,
+                 template: str = None,
+                 output_example: Dict = None,
+                 marker_matcher: Any = None,
+                 object_detector: Any = None,
+                 llm_provider: LLMProvider = None,
+                ):
 
-        self.input_example = input_example
+        self.system_prompt = system_prompt
+        self.input_map = input_map
         self.template = template
         self.output_example = output_example
         self.marker_matcher = marker_matcher
         self.object_detector = object_detector
         self.llm_provider = llm_provider
 
-    def _pre(self, *args, input = None, screen_shoot = None, **kwargs):
-        return input, screen_shoot
+    def _pre(self, *args, input = None, screenshot_file = None, **kwargs):
+        return input, screenshot_file
 
-    def __call__(self, *args, input = None, screen_shoot = None, class_ = None, **kwargs):
-        input = self.input_example if input is None else input
-        input = self._pre(input=input, screen_shoot=screen_shoot)
+    def __call__(self, *args, input: Dict = None, screenshot_file : str = None, class_ = None, **kwargs):
+
+        input = self.input_map if input is None else input
+        input = self._pre(input=input, screenshot_file=screenshot_file)
 
         flag = True
         res_json = None
@@ -114,33 +123,48 @@ class GatherInformation():
         object_detector_gathered_information_output = None
         llm_provider_gather_information_output = None
 
-        # gather information by marker matcher
-        try:
-            marker_matcher_gathered_information = self.marker_matcher(screen_shoot=screen_shoot, class_=class_)
-            marker_matcher_gathered_information_output = GatherInformationOutput(params=marker_matcher_gathered_information)
-        except Exception as e:
-            logger.error(f"Error in gather information by marker matcher: {e}")
-            flag = False
+        # Gather information by marker matcher
+        if self.marker_matcher is not None:
+            try:
+                marker_matcher_gathered_information = self.marker_matcher(screenshot_file=screenshot_file, class_=class_)
+                marker_matcher_gathered_information_output = GatherInformationOutput(params=marker_matcher_gathered_information)
+            except Exception as e:
+                logger.error(f"Error in gather information by marker matcher: {e}")
+                flag = False
 
-        # gather information by object detector
-        try:
-            object_detector_gathered_information = self.object_detector(screen_shoot=screen_shoot, class_=class_)
-            object_detector_gathered_information_output = GatherInformationOutput(params=object_detector_gathered_information)
-        except Exception as e:
-            logger.error(f"Error in gather information by object detector: {e}")
-            flag = False
+        # Gather information by object detector
+        if self.object_detector is not None:        
+            try:
+                object_detector_gathered_information = self.object_detector(screenshot_file=screenshot_file, class_=class_)
+                object_detector_gathered_information_output = GatherInformationOutput(params=object_detector_gathered_information)
+            except Exception as e:
+                logger.error(f"Error in gather information by object detector: {e}")
+                flag = False
 
-        # gather information by LLM provider
+        # Gather information by LLM provider - mandatory
         try:
-            image = deepcopy(screen_shoot)
+            screenshot_file = assemble_project_path(screenshot_file)
+            encoded_image = encode_image(screenshot_file)
+
             gather_information_input = GatherInformationInput(params=input)
-            content = gather_information_input.to_text(template_str=self.template["template"])
+            user_content = gather_information_input.to_text(self.template, input)
 
             # call the LLM provider for gather information json
-            response_json = self.llm_provider(content=content, image=image).json()
+            message_prompts = self.llm_provider.assemble_prompt(self.system_prompt, user_content, encoded_image)
+
+            logger.write(f'U: {message_prompts}')
+
+            response = self.llm_provider.create_completion(message_prompts)[0]
+
+            logger.write(f'A: {response}')
+
+            # @TODO change to return as json
+            response_dict = dict()
+            response_dict["type"] = "gather_information"
+            response_dict["description"] = response
 
             # convert the json to dict
-            response_dict = json.loads(response_json)
+            #response_dict = json.loads(response_json)
 
             # convert the dict to GatherInformationOutput
             llm_provider_gather_information_output = GatherInformationOutput(params=response_dict)
@@ -171,7 +195,7 @@ class GatherInformation():
             flag = flag,
             success = success,
             input = input,
-            screen_shoot = screen_shoot,
+            screenshot = screenshot_file,
             res_json = res_json
         )
 
@@ -184,55 +208,61 @@ class GatherInformation():
         return data
 
     def _check_success(self, *args, res_json, **kwargs):
-        success = False
+        success = "\"description\"" in res_json
         return success
 
 
 class DecisionMaking():
     def __init__(self,
-                 *args,
-                 input_example: Dict = None,
+                 system_prompt: str = None,
+                 input_map: Dict = None,
                  template: Dict = None,
                  output_example: Dict = None,
-                 llm_provider: Any = None,
-                 memory: Any = None,
-                 **kwargs,):
+                 llm_provider: LLMProvider = None,
+                ):
 
-        self.input_example = input_example
+        self.system_prompt = system_prompt
+        self.input_map = input_map
         self.template = template
         self.output_example = output_example
         self.llm_provider = llm_provider
-        self.memory = memory
 
-    def _pre(self, *args, input = None, screen_shoot = None, **kwargs):
-        return input, screen_shoot
+    def _pre(self, *args, input = None, screenshot_file = None, **kwargs):
+        return input, screenshot_file
 
-    def __call__(self, *args, input = None, screen_shoot = None, **kwargs):
+    def __call__(self, *args, input = None, screenshot_file = None, **kwargs):
 
-        input = self.input_example if input is None else input
-        input = self._pre(input=input, screen_shoot=screen_shoot)
+        input = self.input_map if input is None else input
+        input = self._pre(input=input, screenshot_file=screenshot_file)
 
         flag = True
         try:
-            image = deepcopy(screen_shoot)
-
-            decision_making_description = self.memory.get("decision_making_description")
-            input["decision_making_description"] = decision_making_description
+            screenshot_file = assemble_project_path(screenshot_file)
+            encoded_image = encode_image(screenshot_file)
 
             decision_making_input = DecisionMakingInput(params=input)
-            content = decision_making_input.to_text(template_str=self.template["template"])
+            user_content = decision_making_input.to_text(self.template, input)
 
-            # call the LLM provider for screen classification json
-            response_json = self.llm_provider(content=content, image=image).json()
+            # call the LLM provider for decision making json
+            message_prompts = self.llm_provider.assemble_prompt(self.system_prompt, user_content, encoded_image)
+
+            logger.write(f'U: {message_prompts}')
+
+            response = self.llm_provider.create_completion(message_prompts)[0]
+
+            logger.write(f'A: {response}')
+
+            # @TODO better cleanup formatting
+            response_json = response.replace("```json\n", "").replace("json```\n", "").replace("```", "").replace("\n", "").replace("\'", "")
 
             # convert the json to dict
             response_dict = json.loads(response_json)
 
-            # convert the dict to ScreenClassificationOutput
+            # convert the dict to DecisionmakingOutput
             decision_making_output = DecisionMakingOutput(params=response_dict)
 
         except Exception as e:
-            logger.error(f"Error in gather_information: {e}")
+            logger.error(f"Error in decision_making: {e}")
             flag = False
 
         res_json = json.dumps(decision_making_output, default=json_encoder, indent=4)
@@ -240,7 +270,7 @@ class DecisionMaking():
         data = dict(
             flag = flag,
             input = input,
-            screen_shoot = screen_shoot,
+            screenshot_file = screenshot_file,
             res_json = res_json
         )
         data = self._post(data = data)
@@ -252,46 +282,54 @@ class DecisionMaking():
 
 class SuccessDetection():
     def __init__(self,
-                 *args,
+                 system_prompt: str = None,
                  input_example: Dict = None,
                  template: Dict = None,
                  output_example: Dict = None,
-                 llm_provider: Any = None,
-                 memory: Any = None,
-                 **kwargs,):
+                 llm_provider: LLMProvider = None,
+                ):
 
+        self.system_prompt = system_prompt
         self.input_example = input_example
         self.template = template
         self.output_example = output_example
         self.llm_provider = llm_provider
-        self.memory = memory
 
-    def _pre(self, *args, input = None, screen_shoot = None, **kwargs):
-        return input, screen_shoot
+    def _pre(self, *args, input = None, screenshot_files = None, **kwargs):
+        return input, screenshot_files
 
-    def __call__(self, *args, input = None, screen_shoot = None, **kwargs):
+    def __call__(self, *args, input = None, screenshot_files = None, **kwargs):
 
         input = self.input_example if input is None else input
-        input = self._pre(input=input, screen_shoot=screen_shoot)
+        input = self._pre(input=input, screenshot_files=screenshot_files)
 
         flag = True
         success = None
         try:
-            image = deepcopy(screen_shoot)
 
-            success_detection_description = self.memory.get("success_detection_description")
-            input["success_detection_description"] = success_detection_description
+            # @TODO: Improve encoding of multiple images and positioning in conversation
+            screenshot_file = assemble_project_path(screenshot_files[0])
+            encoded_image = encode_image(screenshot_file)
 
+            # Call the LLM provider for success detection
             success_detection_input = SuccessDetectionInput(params=input)
-            content = success_detection_input.to_text(template_str=self.template["template"])
+            user_content = success_detection_input.to_text(self.template, input)
 
-            # call the LLM provider for screen classification json
-            response_json = self.llm_provider(content=content, image=image).json()
+            message_prompts = self.llm_provider.assemble_prompt(self.system_prompt, user_content, encoded_image)
 
-            # convert the json to dict
+            logger.write(f'U: {message_prompts}')
+
+            response = self.llm_provider.create_completion(message_prompts)[0]
+
+            logger.write(f'A: {response}')
+
+            # @TODO better cleanup formatting
+            response_json = response.replace("```json\n", "").replace("json```\n", "").replace("```", "").replace("\n", "").replace("\'", "")
+
+            # Convert the json to dict
             response_dict = json.loads(response_json)
 
-            # convert the dict to ScreenClassificationOutput
+            # Convert the dict to SuccessDetectionOutput
             success_detection_output = SuccessDetectionOutput(params=response_dict)
 
             success = success_detection_output.success
@@ -303,26 +341,26 @@ class SuccessDetection():
         data = dict(
             flag = flag,
             input = input,
-            screen_shoot = screen_shoot,
+            screenshot_files = screenshot_files,
             success = success
         )
+
         data = self._post(data = data)
         return data
 
     def _post(self, *args, data = None, **kwargs):
         return data
 
+
 class Planner(BasePlanner):
     def __init__(self,
-                 *args,
-                 planner_params: Dict = None,
-                 use_screen_classification: bool = True,
-                 gather_information_max_steps: int = 5,
                  llm_provider: Any = None,
+                 system_prompt: str = None,
+                 planner_params: Dict = None,
+                 use_screen_classification: bool = False,
+                 gather_information_max_steps: int = 1, # 5,
                  marker_matcher: Any = None,
                  object_detector: Any = None,
-                 memory: Any = None,
-                 game: Any = None,
                  **kwargs,
                  ):
 
@@ -339,35 +377,35 @@ class Planner(BasePlanner):
             ],
             "prompt_paths": {
               "input_example": {
-                "screen_classification": "res/prompts/gather_information/input_example/screen_classification.json",
-                "gather_information": "res/prompts/gather_information/input_example/gather_information.json",
-                "decision_making": "res/prompts/decision_making/input_example/decision_making.json"
+                "screen_classification": "./res/prompts/gather_information/input_example/screen_classification.json",
+                "gather_information": "./res/prompts/gather_information/input_example/gather_information.json",
+                "decision_making": "./res/prompts/decision_making/input_example/decision_making.json"
               },
               "template": {
-                "screen_classification": "res/prompts/gather_information/template/screen_classification.json",
-                "gather_information": "res/prompts/gather_information/template/gather_information.json",
-                "decision_making": "res/prompts/decision_making/template/decision_making.json"
+                "screen_classification": "./res/prompts/gather_information/template/screen_classification.json",
+                "gather_information": "./res/prompts/gather_information/template/gather_information.json",
+                "decision_making": "./res/prompts/decision_making/template/decision_making.json"
               },
               "output_example": {
-                "screen_classification": "res/prompts/gather_information/output_example/screen_classification.json",
-                "gather_information": "res/prompts/gather_information/output_example/gather_information.json",
-                "decision_making": "res/prompts/decision_making/output_example/decision_making.json"
+                "screen_classification": "./res/prompts/gather_information/output_example/screen_classification.json",
+                "gather_information": "./res/prompts/gather_information/output_example/gather_information.json",
+                "decision_making": "./res/prompts/decision_making/output_example/decision_making.json"
               }
             }
           }
         """
 
         super(BasePlanner, self).__init__()
+
         self.planner_params = planner_params
+        self.system_prompt = system_prompt
+
         self.use_screen_classification = use_screen_classification
         self.gather_information_max_steps = gather_information_max_steps
 
         self.llm_provider = llm_provider
         self.marker_matcher = marker_matcher
         self.object_detector = object_detector
-
-        self.memory = memory
-        self.game = game
 
         if not check_planner_params(self.planner_params):
             raise ValueError(f"Error in planner_params: {self.planner_params}")
@@ -376,33 +414,44 @@ class Planner(BasePlanner):
         self.templates = self._init_template()
         self.output_examples = self._init_output_example()
 
-        self.screen_classification = ScreenClassification(self.input_examples["screen_classification"],
-                                                          self.templates["screen_classification"],
-                                                          self.output_examples["screen_classification"])
-        self.gather_information = GatherInformation(self.input_examples["gather_information"],
+        if use_screen_classification:
+            self.screen_classification = ScreenClassification(self.system_prompt,
+                                                              self.input_examples["screen_classification"],
+                                                              self.templates["screen_classification"],
+                                                              self.output_examples["screen_classification"],
+                                                              self.llm_provider)
+            
+        self.gather_information = GatherInformation(self.system_prompt,
+                                                    self.input_examples["gather_information"],
                                                     self.templates["gather_information"],
                                                     self.output_examples["gather_information"],
                                                     self.marker_matcher,
                                                     self.object_detector,
                                                     self.llm_provider)
-        self.decision_making = DecisionMaking(self.input_examples["decision_making"],
-                                                self.templates["decision_making"],
-                                                self.output_examples["decision_making"],
-                                                self.llm_provider,
-                                                self.memory)
-        self.success_detection = SuccessDetection(self.input_examples["success_detection"],
-                                                    self.templates["success_detection"],
-                                                    self.output_examples["success_detection"],
-                                                    self.llm_provider,
-                                                    self.memory)
+        
+        self.decision_making = DecisionMaking(self.system_prompt,
+                                              self.input_examples["decision_making"],
+                                              self.templates["decision_making"],
+                                              self.output_examples["decision_making"],
+                                              self.llm_provider)
+        
+        self.success_detection = SuccessDetection(self.system_prompt,
+                                                  self.input_examples["success_detection"],
+                                                  self.templates["success_detection"],
+                                                  self.output_examples["success_detection"],
+                                                  self.llm_provider)
+
 
     def _init_input_example(self):
         input_examples = dict()
         prompt_paths = self.planner_params["prompt_paths"]
         input_example_paths = prompt_paths["input_example"]
         for key, value in input_example_paths.items():
-            path = os.path.join(cfg.work_dir, value)
-            input_examples[key] = load_json(path)
+            path = assemble_project_path(value)
+            if path.endswith(PROMPT_EXT):
+                input_examples[key] = read_resource_file(path)
+            else:
+                input_examples[key] = load_json(path)
         return input_examples
 
     def _init_template(self):
@@ -410,8 +459,11 @@ class Planner(BasePlanner):
         prompt_paths = self.planner_params["prompt_paths"]
         template_paths = prompt_paths["template"]
         for key, value in template_paths.items():
-            path = os.path.join(cfg.work_dir, value)
-            templates[key] = load_json(path)
+            path = assemble_project_path(value)
+            if path.endswith(PROMPT_EXT):
+                templates[key] = read_resource_file(path)
+            else:
+                templates[key] = load_json(path)
         return templates
 
     def _init_output_example(self):
@@ -419,51 +471,49 @@ class Planner(BasePlanner):
         prompt_paths = self.planner_params["prompt_paths"]
         output_example_paths = prompt_paths["output_example"]
         for key, value in output_example_paths.items():
-            path = os.path.join(cfg.work_dir, value)
-            output_examples[key] = load_json(path)
+            path = assemble_project_path(value)
+            if path.endswith(PROMPT_EXT):
+                output_examples[key] = read_resource_file(path)
+            else:
+                output_examples[key] = load_json(path)
         return output_examples
       
-    def _gather_information(self, *args, screen_shoot, **kwargs):
+    def _gather_information(self, *args, screenshot_file, **kwargs):
 
         input = self.input_examples["gather_information"]
         if self.use_screen_classification:
-            class_ = self.screen_classification(screen_shoot=screen_shoot)["class_"]
+            class_ = self.screen_classification(screenshot_file=screenshot_file)["class_"]
         else:
             class_ = None
 
         for i in range(self.gather_information_max_steps):
-            data = self.gather_information(input=input, screen_shoot=screen_shoot, class_=class_)
+            data = self.gather_information(input=input, screenshot_file=screenshot_file, class_=class_)
 
             success = data["success"]
 
             if success:
                 break
 
-            # next input and screen_shoot
-            input = data["input"]
-            screen_shoot = data["screen_shoot"]
+            # next input and screenshot_file
+            #input = data["input"]
+            #screenshot_file = data["screenshot_file"]
 
         res_json = data["res_json"]
+        return res_json
 
-        self.memory.update(res_json)
+    def _decision_making(self, *args, input=None, screenshot_file, **kwargs):
 
-    def _decision_making(self, *args, screen_shoot, **kwargs):
+        if input is None:
+            input = self.input_examples["decision_making"]
 
-        data = self.decision_making(screen_shoot=screen_shoot)
+        data = self.decision_making(input=input, screenshot_file=screenshot_file)
+
         res_json = data["res_json"]
-        self.memory.update(res_json)
-        self.game.execute(res_json)
+        return res_json
 
-    def _success_detection(self, *args, **kwargs):
+    def _success_detection(self, *args, input=None, screenshot_files, **kwargs):
+
         data = self.success_detection()
+
         success = data["success"]
         return success
-
-    def loop(self, *args, screen_shot, **kwargs):
-        success = False
-
-        while not success:
-            self._gather_information(screen_shoot=screen_shot)
-            self._decision_making(screen_shoot=screen_shot)
-            success = self._success_detection()
-            screen_shot = self.game.screen_shot()

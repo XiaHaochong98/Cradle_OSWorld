@@ -1,22 +1,35 @@
-from uac.config import Config
-from uac.gameio.lifecycle.ui_control import switch_to_code, switch_to_game
+import time
+
+from uac.gameio.game_manager import GameManager
+from uac.gameio.lifecycle.ui_control import switch_to_code, switch_to_game, take_screenshot, segment_minimap, pause_game, unpause_game
 from uac.gameio.composite_skills.navigation import cv_navigation
+from uac.gameio.composite_skills.go_to_icon import cv_go_to_icon
+from uac.utils.template_matching import match_template_image
 from uac.gameio.atomic_skills.map import open_map, open_index, close_index
 from uac.gameio.atomic_skills.move import turn
-import time
-import os
+from uac.config import Config
+
+config = Config()
 
 
 if __name__ == "__main__":
 
-    config = Config()
+    total_time_steps = 1000
 
-    save_dir = "runs/test1/"
-    os.makedirs(save_dir, exist_ok=True)
-    total_time_step = 1000
+    # gm = GameManager(config.env_name)
+    # time.sleep(3)
+    # gm.execute_action("navigate_path()")
 
-    switch_to_game()
-    cv_navigation(save_dir, total_time_step, config.game_region, config.mini_map_region)
+    # switch_to_game()
+    # cv_navigation(total_time_steps)
+    # switch_to_code()
+
+    pause_game()
+
+    # find-and-get-on-horse example
+    horse_template_file = './res/icons/horse.jpg'
+    switch_to_game()    
+    cv_go_to_icon(total_time_steps, horse_template_file, debug=True)
     switch_to_code()
 
     # map operation 

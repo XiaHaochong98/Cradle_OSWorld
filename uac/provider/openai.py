@@ -1,4 +1,3 @@
-import time
 import os
 import base64
 from typing import (
@@ -22,8 +21,9 @@ from uac.provider import LLMProvider, EmbeddingProvider
 from uac.config import Config
 from uac.log import Logger
 from uac.utils.json_utils import load_json
+from uac.utils.file_utils import assemble_project_path
 
-cfg = Config()
+config = Config()
 logger = Logger()
 
 MAX_TOKENS = {
@@ -31,6 +31,15 @@ MAX_TOKENS = {
     "gpt-3.5-turbo-0613": 4097,
     "gpt-3.5-turbo-16k-0613": 16385,
 }
+
+PROVIDER_SETTING_KEY_VAR = "key_var"
+PROVIDER_SETTING_EMB_MODEL = "emb_model"
+PROVIDER_SETTING_COMP_MODEL = "comp_model"
+PROVIDER_SETTING_IS_AZURE = "is_azure"
+PROVIDER_SETTING_BASE_VAR = "base_var"       # Azure-speficic setting
+PROVIDER_SETTING_API_VERSION = "api_version" # Azure-speficic setting
+PROVIDER_SETTING_DEPLOYMENT_MAP = "models"   # Azure-speficic setting
+
 
 class OpenAIProvider(LLMProvider, EmbeddingProvider):
     """A class that wraps a given model"""
@@ -74,33 +83,28 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         if isinstance(provider_cfg, dict):
             conf_dict = provider_cfg
         else:
-
-            path = provider_cfg
-            if not os.path.isabs(path):
-                path = os.path.join(cfg.work_dir, path)
-
+            path = assemble_project_path(provider_cfg)
             conf_dict = load_json(path)
 
+        key_var_name = conf_dict[PROVIDER_SETTING_KEY_VAR]
 
-        key_var_name = conf_dict["key_var"]
-
-        if conf_dict["is_azure"]:
+        if conf_dict[PROVIDER_SETTING_IS_AZURE]:
             
             key = os.getenv(key_var_name)  
-            endpoint_var_name = conf_dict["base_var"]
+            endpoint_var_name = conf_dict[PROVIDER_SETTING_BASE_VAR]
             endpoint = os.getenv(endpoint_var_name)
 
             self.client = AzureOpenAI(
                 api_key = key,
-                api_version = conf_dict["api_version"],
+                api_version = conf_dict[PROVIDER_SETTING_API_VERSION],
                 azure_endpoint = endpoint
             )
         else:
             key = os.getenv(key_var_name)
             self.client = OpenAI(api_key=key)
 
-        self.embedding_model = conf_dict["emb_model"]
-        self.llm_model = conf_dict["comp_model"]
+        self.embedding_model = conf_dict[PROVIDER_SETTING_EMB_MODEL]
+        self.llm_model = conf_dict[PROVIDER_SETTING_COMP_MODEL]
 
         return conf_dict
 
@@ -111,7 +115,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             "model": self.embedding_model,
         }
 
-        if self.provider_cfg["is_azure"]:
+        if self.provider_cfg[PROVIDER_SETTING_IS_AZURE]:
             engine = self._get_azure_deployment_id_for_model(self.embedding_model)
             openai_args = {
                 "model": self.embedding_model,
@@ -250,8 +254,8 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         self,
         messages: List[Dict[str, str]],
         model: str | None = None,
-        temperature: float = cfg.temperature,
-        max_tokens: int = cfg.max_tokens,
+        temperature: float = config.temperature,
+        max_tokens: int = config.max_tokens,
     ) -> Tuple[str, Dict[str, int]]:
         """Create a chat completion using the OpenAI API
 
@@ -285,7 +289,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         if model is None:
             model = self.llm_model
 
-        if cfg.debug_mode:
+        if config.debug_mode:
             logger.debug(f"Creating chat completion with model {model}, temperature {temperature}, max_tokens {max_tokens}")
 
         @backoff.on_exception(
@@ -306,7 +310,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             
             """Send a request to the OpenAI API."""
 
-            if self.provider_cfg["is_azure"]:
+            if self.provider_cfg[PROVIDER_SETTING_IS_AZURE]:
                 response = self.client.chat.completions.create(deployment_id=self.get_azure_deployment_id_for_model(model),
                 model=model,
                 messages=messages,
@@ -347,7 +351,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         try:
             encoding = tiktoken.encoding_for_model(model)
         except KeyError:
-            print("Warning: model not found. Using cl100k_base encoding.")
+            logger.debug("Warning: model not found. Using cl100k_base encoding.")
             encoding = tiktoken.get_encoding("cl100k_base")
         if model in {
             "gpt-4-1106-vision-preview",
@@ -385,7 +389,40 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
 
 
     def _get_azure_deployment_id_for_model(self, model_label) -> list:
-        return self.provider_cfg["models"][model_label]
+        return self.provider_cfg[PROVIDER_SETTING_DEPLOYMENT_MAP][model_label]
+
+
+    def assemble_prompt(self, system_prompt:str, user_input: str, encoded_image: str) -> List[str]:
+    
+        messages=[
+            {
+                "role": "system",
+                "content": [
+                    {
+                      "type" : "text",
+                      "text" : f"{system_prompt}"
+                    }
+                    ]
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": f"{user_input}"
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": 
+                        {
+                            "url": f"data:image/jpeg;base64,{encoded_image}"
+                        }
+                    }
+                ]
+            }
+        ]
+
+        return messages
 
 
 def encode_image(image_path):

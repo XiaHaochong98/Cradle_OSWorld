@@ -15,7 +15,7 @@ from uac.provider.base_embedding import EmbeddingProvider
 from uac.config import Config
 from uac.log import Logger
 
-cfg = Config()
+config = Config()
 logger = Logger()
 
 

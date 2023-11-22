@@ -1,10 +1,10 @@
-import os
 from typing import Dict
 
 from uac.config import Config
 from uac.log import Logger
+from uac.utils.file_utils import assemble_project_path, exists_in_project_path
 
-cfg = Config()
+config = Config()
 logger = Logger()
 
 def check_planner_params(planner: Dict = None):
@@ -29,14 +29,14 @@ def check_planner_params(planner: Dict = None):
         check_list = planner["__check_list__"]
         for check_item in check_list:
             assert (check_item in input_example and
-                    os.path.exists(os.path.join(cfg.work_dir, input_example[check_item]))), \
-                f"{check_item} is not in input_example or {os.path.join(cfg.work_dir, input_example[check_item])} does not exist"
+                    exists_in_project_path(input_example[check_item])), \
+                f"{check_item} is not in input_example or {assemble_project_path(input_example[check_item])} does not exist"
             assert (check_item in template and
-                    os.path.exists(os.path.join(cfg.work_dir, template[check_item]))), \
-                f"{check_item} is not in template or {os.path.join(cfg.work_dir, template[check_item])} does not exist"
+                    exists_in_project_path(template[check_item])), \
+                f"{check_item} is not in template or {assemble_project_path(template[check_item])} does not exist"
             assert (check_item in output_example and
-                    os.path.exists(os.path.join(cfg.work_dir, output_example[check_item]))), \
-                f"{check_item} is not in output_example or {os.path.join(cfg.work_dir, output_example[check_item])} does not exist"
+                    exists_in_project_path(output_example[check_item])), \
+                f"{check_item} is not in output_example or {assemble_project_path(output_example[check_item])} does not exist"
 
     except Exception as e:
         logger.error(f"Error in check_prompt_paths: {e}")

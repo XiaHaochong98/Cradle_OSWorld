@@ -1,0 +1,7 @@
+{
+    "type": "success_detection",
+    "goal": "Go to store",
+    "image_paths": ["./res/samples/screen_redline.jpg", "./res/samples/minimap_redline.jpg"],
+    "image_descriptions": "the images sent to you are: 1. the screenshot for the current observation, and 2. the emphasized minimap image",
+    "output_format":"{\n  \"type\": \"success_detection\",\n  \"goal\": \"Go to store\",\n  \"decision\": \n    {\n      \"criteria\": \"1.\",\n      \"reason\": \"The selected place 'Grub' in the index is not the target place 'General Store'.\",\n      \"success\": false\n    }\n}"
+}

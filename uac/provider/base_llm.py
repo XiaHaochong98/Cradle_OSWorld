@@ -7,10 +7,6 @@ from typing import (
     Optional,
 )
 
-from uac.config import Config
-
-cfg = Config()
-
 
 class LLMProvider(abc.ABC):
     """Interface for LLM models."""
@@ -23,10 +19,15 @@ class LLMProvider(abc.ABC):
         temperature: float,
         stop_tokens: Optional[List[str]] = None,
     ) -> Tuple[str, Dict[str, int]]:
-        """Create a compeltion from messages in text (and potentially also encoded images)."""
+        """Create a completion from messages in text (and potentially also encoded images)."""
         pass
 
     @abc.abstractmethod
     def init_provider(self, provider_cfg) -> None:
         """Initialize a provider via a json config."""
+        pass
+
+    @abc.abstractmethod
+    def assemble_prompt(self, system_prompt:str, user_input: str, encoded_image: str) -> List[str]:
+        """Combine parametes in the appropriate way for the provider to use."""
         pass

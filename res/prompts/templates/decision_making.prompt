@@ -1,0 +1,27 @@
+Given the screenshot of the environment and the current context, your task it to propose an action or chain of actions to perform next towards achieving a goal. Pay close attention to the image contents and the current situation in relation to the goal. 
+You may be mi-plan to achieve it. Let's think carefully and step by step. Be precise and consider any parameters required for the action to take. There should be no gap between actions. 
+For example, this is a completely wrong output: "sub-task_name": ["open_map()", "navigate_path()"]. As there was no path or waypoint created after open_map() to follow in navigate_path(). 
+
+Your inputs contains: 1. The screenshot of the environment and the current state; 2. The previous action taken (skill just used); 3. The goal you need to achieve, if it is 'null', you should identify a task or goal from the screenshot and context; 4. A set of skills that you can directly use as your actions.
+
+Your inputs are:
+
+Context:
+<$context$>
+
+Previous actions:
+<$previous_actions$>
+
+Goal:
+<$goal$>
+
+Skills:
+<$skills$>
+
+Your output should include: 
+An action, or short sequence of actions, to execute next to progress in achieving the goal. Pay attention to the previous step already executed, if any. You should only respond with a valid JSON object as the example below.
+
+Example output:
+```
+<$output_format$>
+```

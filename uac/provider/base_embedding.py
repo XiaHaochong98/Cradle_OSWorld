@@ -4,10 +4,6 @@ from typing import (
     List,
 )
 
-from uac.config import Config
-
-cfg = Config()
-
 
 class EmbeddingProvider(abc.ABC):
     """Interface for embedding models."""

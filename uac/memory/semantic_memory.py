@@ -14,7 +14,7 @@ from uac.log import Logger
 from uac.provider.base_embedding import EmbeddingProvider
 from uac.memory.base import VectorStore, BaseMemory, Image
 
-cfg = Config()
+config = Config()
 logger = Logger()
 
 

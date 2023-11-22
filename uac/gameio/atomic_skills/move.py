@@ -54,3 +54,9 @@ def dismount_horse():
     dismount horse
     """
     pydirectinput.press("e")
+
+def stop_horse():
+    """
+    stop the horse
+    """
+    pydirectinput.press("ctrl")    
