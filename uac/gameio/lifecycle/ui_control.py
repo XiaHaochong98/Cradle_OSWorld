@@ -4,6 +4,8 @@ import time
 import pydirectinput
 import pyautogui
 from PIL import Image, ImageDraw, ImageFont
+import cv2
+import numpy as np
 
 from uac.config import Config
 from uac.log import Logger
@@ -58,6 +60,7 @@ def take_screenshot(tid : float = 0.0,
     if include_minimap:
         minimap_image_filename = output_dir + "/minimap_" + str(tid) + ".jpg"
         minimap_image = pyautogui.screenshot(minimap_image_filename, region = minimap_region)
+        clip_minimap(minimap_image_filename)
 
     if draw_axis:
         # draw axis on the screenshot
@@ -121,3 +124,37 @@ def is_env_paused():
     is_paused = match_info[0]['confidence'] >= confidence_threshold
 
     return is_paused
+
+def clip_minimap(minimap_image_filename):
+
+    image = cv2.imread(minimap_image_filename)
+
+    # Get the dimensions of the image
+    height, width = image.shape[:2]
+
+    # Create a mask of the same size as the image, initialized to white
+    mask = np.ones((height, width, 3), dtype=np.uint8) * 255
+
+    # Define the size of the triangular mask at each corner
+    triangle_size = int(180 * config.resolution_ratio)
+
+    # Draw black triangles on the four corners of the mask
+    # Top-left corner
+    cv2.fillConvexPoly(mask, np.array([[0, 0], [triangle_size, 0], [0, triangle_size]]), 0)
+    # Top-right corner
+    cv2.fillConvexPoly(mask, np.array([[width, 0], [width - triangle_size, 0], [width, triangle_size]]), 0)
+    # Bottom-left corner
+    cv2.fillConvexPoly(mask, np.array([[0, height], [0, height - triangle_size], [triangle_size, height]]), 0)
+    # Bottom-right corner
+    cv2.fillConvexPoly(mask, np.array([[width, height], [width, height - triangle_size], [width - triangle_size, height]]), 0)
+
+    # Apply the mask to the image
+    masked_image = cv2.bitwise_and(image, mask)
+
+    # # Show the result
+    # cv2.imshow('Masked Image', masked_image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    
+    # Save the result
+    cv2.imwrite(minimap_image_filename, masked_image)

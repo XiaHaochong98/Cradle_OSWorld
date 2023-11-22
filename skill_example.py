@@ -34,7 +34,7 @@ if __name__ == "__main__":
     mount_horse()
     time.sleep(3)
 
-    cv_navigation(total_time_steps, terminal_threshold=140)
+    cv_navigation(total_time_steps, terminal_threshold=120)
     switch_to_code()
 
     # pause_game()
