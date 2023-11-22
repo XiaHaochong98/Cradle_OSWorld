@@ -4,8 +4,7 @@ import time, math
 import cv2
 import numpy as np
 from MTM import matchTemplates
-
-from uac.gameio.atomic_skills.move import turn, move_forward
+from uac.gameio.atomic_skills.move import turn, move_forward, mount_horse
 from uac.gameio.lifecycle.ui_control import take_screenshot
 from uac.config import Config
 from uac.log import Logger
@@ -22,7 +21,6 @@ def get_theta(origin_x, origin_y, center_x, center_y):
     theta = math.atan2(center_x - origin_x, origin_y - center_y)
     theta = math.degrees(theta)
     return theta
-
 
 # @TODO: This should be merged with the one in utils/template_matching.py
 def match_template(src_file, template_file, template_resize_scale = 1, debug=False):
@@ -56,7 +54,6 @@ def match_template(src_file, template_file, template_resize_scale = 1, debug=Fal
     # go towards it
     theta = get_theta(*origin, center_x, center_y)
     dis = np.sqrt((center_x - origin[0]) ** 2 + (center_y - origin[1]) ** 2)
-
     # KalmanFilter threshold = 0.59
     measure = {'confidence': confidence, 'distance': dis, 'bounding_box': (x, y, h, w)}
 
@@ -66,10 +63,8 @@ def match_template(src_file, template_file, template_resize_scale = 1, debug=Fal
         cv2.rectangle(vis, (x,y), (x + w, y + h), (0, 0, 255), 2)
         cv2.putText(vis, f'{confidence:.3f}', (x,y), cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 0, 255), 1, cv2.LINE_AA)
         cv2.arrowedLine(vis, origin, (center_x, center_y), (0, 255, 0), 2, tipLength=0.1)
-        
         measure['vis'] = vis
         #cv2.imshow("vis", measure['vis'])
-    
     return theta, measure
 
 
@@ -90,13 +85,11 @@ def cv_go_to_icon(
         
         timestep = time.time()
 
-        # 1. Get observation screenshot
+        #1. Get observation: screenshot
         take_screenshot(timestep, config.game_region, config.minimap_region, draw_axis=False)
         theta, info = match_template(os.path.join(save_dir, f"minimap_{timestep}.jpg"), template_file, config.resolution_ratio, debug)
         dis, confidence = info['distance'], info['confidence']
-
-        if debug: 
-            cv2.imwrite(os.path.join(save_dir, f"minimap_{timestep}_detect.jpg"), info['vis'])
+        if debug: cv2.imwrite(os.path.join(save_dir, f"minimap_{timestep}_detect.jpg"), info['vis'])
 
         # Control
         # if check_success:  # 0. check success
@@ -111,12 +104,12 @@ def cv_go_to_icon(
         #     ride_attempt += 1
         #     dis_stat.append(dis)
         
-        if dis < terminal_threshold:  # begin to settle
+        if dis < terminal_threshold and abs(theta) < 90:  # begin to settle
             # check_success = True
             # if not dis_stat:  # first time
             #     dis_stat.append(dis)
             # if debug: logger.debug('checking mode is on')
-            logger.debug('success!')
+            logger.debug('Success! Reach the icon.')
             return True
         
         # 2. Check stuck
@@ -130,12 +123,11 @@ def cv_go_to_icon(
         else:
             counter = 0
 
-        print("time", time.time()- timestep)
-        
         # 3. Move
         #turn(np.clip(theta, -90, 90))
         turn(theta)
         move_forward(1.5)
+        time.sleep(0.5)
 
         if debug: logger.debug(
             f"step {step:03d} | timestep {timestep} done | theta: {theta:.2f} | distance: {dis:.2f} | confidence: {confidence:.3f} {'below threshold' if confidence < 0.5 else ''}")

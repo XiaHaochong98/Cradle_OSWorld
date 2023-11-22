@@ -22,7 +22,7 @@ def pause_game():
 
 
 def unpause_game():
-    if not is_env_paused():
+    if is_env_paused():
         pydirectinput.press('esc')
     else:
         logger.debug("The environment is not paused!")

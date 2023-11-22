@@ -6,7 +6,7 @@ from uac.gameio.composite_skills.navigation import cv_navigation
 from uac.gameio.composite_skills.go_to_icon import cv_go_to_icon
 from uac.utils.template_matching import match_template_image
 from uac.gameio.atomic_skills.map import open_map, open_index, close_index
-from uac.gameio.atomic_skills.move import turn
+from uac.gameio.atomic_skills.move import turn, mount_horse
 from uac.config import Config
 
 config = Config()
@@ -24,13 +24,26 @@ if __name__ == "__main__":
     # cv_navigation(total_time_steps)
     # switch_to_code()
 
-    pause_game()
+    switch_to_game()
 
+    # you need to have a red line in the mini-map first
     # find-and-get-on-horse example
     horse_template_file = './res/icons/horse.jpg'
-    switch_to_game()    
     cv_go_to_icon(total_time_steps, horse_template_file, debug=True)
+
+    mount_horse()
+    time.sleep(3)
+
+    cv_navigation(total_time_steps, terminal_threshold=140)
     switch_to_code()
+
+    # pause_game()
+
+    # # find-and-get-on-horse example
+    # horse_template_file = './res/icons/horse.jpg'
+    # switch_to_game()    
+    # cv_go_to_icon(total_time_steps, horse_template_file, debug=True)
+    # switch_to_code()
 
     # map operation 
     # switch_to_game()
@@ -41,3 +54,5 @@ if __name__ == "__main__":
     # close_index()
     # time.sleep(1)
     # switch_to_code()
+
+

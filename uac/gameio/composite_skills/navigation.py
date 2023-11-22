@@ -11,6 +11,8 @@ from uac.log import Logger
 from uac.gameio.atomic_skills.move import turn, move_forward, stop_horse
 from uac.gameio.lifecycle.ui_control import take_screenshot
 
+from uac.gameio.composite_skills.go_to_icon import match_template
+
 config = Config()
 logger = Logger()
 
@@ -20,10 +22,16 @@ def navigate_path(iterations = 100, debug = False):
     cv_navigation(iterations, debug)
 
 
-def cv_navigation(total_iterations, debug = False):
+def cv_navigation(total_iterations, terminal_threshold=100, debug = False):
 
     game_screen_region = config.game_region
     minimap_region = config.minimap_region
+    save_dir = config.work_dir
+
+    terminal_threshold *= config.resolution_ratio
+
+    warm_up = True
+    
 
     try:
 
@@ -32,12 +40,31 @@ def cv_navigation(total_iterations, debug = False):
             logger.debug(f"step {step}, {timestep}")
             if step > 0:
                 turn(turn_angle)
-                move_forward(0.3)
+                if abs(turn_angle) > 60:
+                    stop_horse()
+                    time.sleep(0.3)
+                if warm_up:
+                    move_forward(1)
+                    warm_up = False
+                else:
+                    move_forward(0.3)
                 time.sleep(0.1) # avoid running too fast
         
             game_image, minimap_image = take_screenshot(timestep, game_screen_region, minimap_region, draw_axis=False)
 
+            theta, measure = match_template(os.path.join(save_dir, f"minimap_{timestep}.jpg"), './res/icons/red_marker.jpg', config.resolution_ratio, debug=False)
+
+            logger.debug(f"distance  {measure['distance']}")
+
+            if measure['distance'] < terminal_threshold and abs(theta) < 90:
+                logger.debug('success! Reach the red marker.')
+                stop_horse()
+                time.sleep(2)
+                break
+
             turn_angle = calculate_turn_angle(timestep, debug)
+
+
 
     except Exception as e:
         logger.warn(f"Error in cv_navigation: {e}. Usually not a problem.")
@@ -63,19 +90,26 @@ def calculate_turn_angle(tid, debug = False, show_image = False):
     center_y = height
 
     # Define range for red color
-    lower_red_1 = np.array([0,30,30])
+    # lower_red_1 = np.array([0,50,50])
+    # upper_red_1 = np.array([10,255,255])
+    # lower_red_2 = np.array([160,50,50])
+    # upper_red_2 = np.array([180,255,255])
+
+    lower_red_1 = np.array([0, 80,80])
     upper_red_1 = np.array([10,255,255])
-    lower_red_2 = np.array([160,30,30])
-    upper_red_2 = np.array([180,255,255])
+    # lower_red_2 = np.array([160,50,50])
+    # upper_red_2 = np.array([180,255,255])
 
     # Threshold the HSV image to get the red regions
     mask1 = cv2.inRange(hsv, lower_red_1, upper_red_1)
-    mask2 = cv2.inRange(hsv, lower_red_2, upper_red_2)
-    mask = mask1 + mask2
+    #mask2 = cv2.inRange(hsv, lower_red_2, upper_red_2)
+    mask = mask1 
 
     kernel = np.ones((3,3), np.uint8)
     mask_upper_bottom = cv2.dilate(mask, kernel, iterations = 2)
     # mask = cv2.erode(mask, kernel, iterations = 2)
+
+    #mask = mask_upper_bottom
 
     def get_contour(mask):
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -148,9 +182,9 @@ def calculate_turn_angle(tid, debug = False, show_image = False):
                     central_dots.append((x2, y2))
 
         distance_threshold *= 1.2
-    # if debug:
-    #     logger.debug(f"distance_threshold {distance_threshold}")
-    #     logger.debug(f"central_dots {central_dots}")
+    if debug:
+        logger.debug(f"distance_threshold {distance_threshold}")
+        logger.debug(f"central_dots {central_dots}")
 
     # Use the average of the y of the chosen lines to determine the red line is in the upper/bottom half of the mini-map
     central_line_y = []
@@ -210,7 +244,7 @@ def calculate_turn_angle(tid, debug = False, show_image = False):
     real_turn_angle = red_line_turn_angle
     if deviation_angle_degrees:
         deviation_turn_angle = cal_real_turn_angle(deviation_angle_degrees, central_dot_upper)
-        if is_upper == central_dot_upper:
+        if real_turn_angle * deviation_turn_angle > 0 and is_upper == central_dot_upper:
             real_turn_angle = (real_turn_angle + deviation_turn_angle) / 2
         else:
             real_turn_angle = deviation_turn_angle
