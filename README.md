@@ -20,6 +20,14 @@ Keep the requirements.txt file updated in your branch, but only add dependencies
 
 runner.py is the entry point to run an agent. Currently not working code, just an introductory sample.
 
+
+## General guidelines
+
+Always, **always**, **ALLWAYS** get the latest /main branch.
+
+Any file with text content in the project in the resources directory (./res) should be in UTF-8 encoding. Use the uac.utils to open/save files.
+
+
 ## Infra code
 
 ### 1. OpenAI provider
@@ -48,6 +56,71 @@ Sample config for an OpenAI provider:
 	"is_azure": false
 }
 ```
+
+### 2. Prompt definition files
+
+Prompt files are located in the repo at ./res/prompts. Out of the code tree.
+
+There three types of prompt-related files: input_example, output_example, and templates. Examples are json files. Templates are text files with special markers inside. See details below.
+
+Inside each of these directories, most files will fit into three categories: decision_making, gather_information, and success_detection
+
+Files are named according to the format: ./res/prompts/\<type\>/\<category\>_\<sub_task\>.\<ext\>
+
+For example: 
+./res/**input_example**/**decision_making**_**follow_red_line**.json, is an example of **input** for the **decision making** prompt for the **follow the red line** sub-task. In the future, most filenamess will end in "_general", when they are not sub-task-specific anymore.
+
+**>>> Allways check the /main branch for the latest examples!!!**
+
+#### Input Examples
+
+Sample json:
+```
+{
+    "type": "success_detection",
+    "goal": "Go to store",
+    "image_paths": ["./res/samples/screen_redline.jpg", "./res/samples/minimap_redline.jpg"],
+    "image_descriptions": "the images sent to you are: 1. the screenshot for the current observation, and 2. the emphasized minimap image",
+    "output_format":"{\n  \"type\": \"success_detection\",\n  \"goal\": \"Go to store\",\n  \"decision\": \n    {\n      \"criteria\": \"1.\",\n      \"reason\": \"The selected place 'Grub' in the index is not the target place 'General Store'.\",\n      \"success\": false\n    }\n}"
+}
+```
+
+As shown, such file illustrates the **parameters** needed to fill a prompt template (in this case, the "success detection" one). Also in this example, the format of the parameter "output-format" is exactly the same as the corresponding "output_example" json file.
+
+Not all input examples need the same parameters. Only the parameters required in a specific template (".prompt" file).
+
+#### Output Examples
+
+Sample json:
+```
+{
+  "type": "success_detection",
+  "goal": "Open the map",
+  "decision":
+    {
+      "criteria": "1.xx, 2.xx",
+      "reasoning": "Since the map is currently not open and it is the first step required to mark a waypoint, we need to open the map using the 'open_map' function.",
+      "success": false
+    }
+}
+```
+
+### Prompt Template Examples 
+
+Sample prompt:
+```
+The screenshot is a map describing the game world. On the left side of the screenshot, there is an index listing all the possible places to be chosen as the waypoint.
+
+The index lists all the possible places in a sequential manner. The selected place is marked with a red rectangle. Your task is to decide whether the selected place is the same as the target place. Your input contains a screenshot of the map containing the index list and text of the target place. Your output should be a JSON file that contains the distance of the target place to the current selected place. 
+
+The JSON file should be in the following format:
+<$output_format$>
+```
+
+This format allows easy manual modifications and trying different changes, instead of having to edit objects and escape characters. Treat is as a text file (always in UTF-8).
+
+Tags marked with **\<$ $\>** correspond to the values of the parameters passed as input when calling the backend large model. input_example.json files are just examples or the structure. The actual values will follow the same names and format in the real execution calls.
+
 
 ## Game & Skill Library
 
@@ -126,7 +199,7 @@ In the trade_utils.py
 #### 3.2 uac/gameio/composite_skills:
 Currently, we only have 'cv_navigation' as a composite skill. Includes calculate_turn_angle (between the red line in the mini-map and the normal line, which is used in the cv_navigation).
 
-#### 3.4 uac/lifecycle/UI_control.py
+#### 3.4 uac/gameio/lifecycle/ui_control.py
 Contains code for switch game and code between two desktops and take_screenshot of the game.
 
 
