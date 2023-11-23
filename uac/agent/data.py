@@ -208,7 +208,7 @@ class SuccessDetectionOutput(BaseOutput):
         super(SuccessDetectionOutput, self).__init__(args = args, params=params, kwargs = kwargs)
 
         self.type = get_attr(params, 'type', 'success_detection')
-        self.success = get_attr(params, 'success', '')
+        self.decision = get_attr(params, 'decision', '')
         self.__comments__ = get_attr(params, '__comments__', '')
 
         if not self.check():

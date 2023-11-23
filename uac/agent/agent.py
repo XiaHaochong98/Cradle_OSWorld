@@ -78,7 +78,7 @@ The surrounding context of the minimap is vital for in-game navigation and decis
             # Prepare info gathering
             info_response = ""
 
-            result_str = self.planner._gather_information(screenshot_file=image)
+            result_str = self.planner._gather_information(image_files=[image])
             info_response = json.loads(result_str)["description"]
 
             # Prepare decision making
@@ -97,9 +97,11 @@ The surrounding context of the minimap is vital for in-game navigation and decis
             else:
                 context = info_response
 
+            decision_response = ""
+
             args = {"context" : context, "goal" : goal, "skills" : skills, "previous_actions" : previous_actions, "output_format" : output_format}
 
-            result_str = self.planner._decision_making(input=args, screenshot_file=image)
+            result_str = self.planner._decision_making(input=args, image_files=[image])
             decision_response = result_str
 
             # Example output of decision making for first image
@@ -125,13 +127,13 @@ The surrounding context of the minimap is vital for in-game navigation and decis
             time.sleep(1)
             self.env_manager.execute_action(next_action)
             time.sleep(5)
-            post_action_image = self.env_manager.capture_screen()
+            post_action_image = self.env_manager.capture_screen(include_minimap=False)[0]
             self.env_manager.pause_game()
 
-            debug = False
+            debug = True
             if debug:
-                image = "image_before_action.jpg"
-                post_action_image = "image_after_action.jpg"
+                image = "./res/samples/screen_redline.jpg"
+                post_action_image = "./res/samples/screen_no_redline.jpg"
 
             # Prepare success detection
 
@@ -139,13 +141,12 @@ The surrounding context of the minimap is vital for in-game navigation and decis
             images = [image, post_action_image]
             output_format = read_resource_file("./res/prompts/output_example/success_detection.json")
 
-
             args = {"goal" : goal, "image_paths" : images, "image_descriptions" : image_descriptions, "output_format" : output_format}
 
-            result_str = self.planner._success_detection(input=args, screenshot_files=images)
+            result = self.planner._success_detection(input=args, image_files=images)
 
             # Check success
-            success = json.loads(result_str)["success"]
+            success = result["success"]
 
             # @TODO represent new state for next loop
             # @TODO re-use post-action image for info gathering?

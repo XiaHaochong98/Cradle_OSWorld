@@ -357,6 +357,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             "gpt-4-1106-vision-preview",
         }:
             raise ValueError("We don't support counting tokens of GPT-4V yet.")
+        
         if model in {
             "gpt-3.5-turbo-0613",
             "gpt-3.5-turbo-16k-0613",
@@ -377,6 +378,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             raise NotImplementedError(
                 f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens."""
             )
+        
         num_tokens = 0
         for message in messages:
             num_tokens += tokens_per_message
@@ -384,7 +386,9 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                 num_tokens += len(encoding.encode(value))
                 if key == "name":
                     num_tokens += tokens_per_name
+
         num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
+
         return num_tokens
 
 
@@ -392,15 +396,17 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         return self.provider_cfg[PROVIDER_SETTING_DEPLOYMENT_MAP][model_label]
 
 
-    def assemble_prompt(self, system_prompt:str, user_input: str, encoded_image: str) -> List[str]:
+    def assemble_prompt(self, system_prompts: List[str], user_inputs: List[str], image_filenames: List[str]) -> List[str]:
     
+        encoded_images = [encode_image(assemble_project_path(image_path)) for image_path in image_filenames]
+
         messages=[
             {
                 "role": "system",
                 "content": [
                     {
                       "type" : "text",
-                      "text" : f"{system_prompt}"
+                      "text" : f"{system_prompts[0]}"
                     }
                     ]
             },
@@ -409,18 +415,29 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                 "content": [
                     {
                         "type": "text",
-                        "text": f"{user_input}"
+                        "text": f"{user_inputs[0]}"
                     },
-                    {
-                        "type": "image_url",
-                        "image_url": 
-                        {
-                            "url": f"data:image/jpeg;base64,{encoded_image}"
-                        }
-                    }
+                   # {
+                   #     "type": "image_url",
+                   #     "image_url": 
+                   #         {
+                   #             "url": f"data:image/jpeg;base64,{encoded_images[0]}"
+                   #         }
+                   # }
                 ]
             }
         ]
+
+        for image in encoded_images:
+            messages[1]["content"].append(
+                {
+                    "type": "image_url",
+                    "image_url": 
+                        {
+                            "url": f"data:image/jpeg;base64,{image}"
+                        }
+                },
+            )
 
         return messages
 

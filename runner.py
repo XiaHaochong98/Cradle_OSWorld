@@ -78,13 +78,13 @@ def main(args):
     args = {"environment_name" : config.env_name}
     system_prompt = to_text(system_prompt_template, args)
 
-    planner = Planner(provider, system_prompt, planner_params)
+    planner = Planner(provider, [system_prompt], planner_params)
 
     # result_str = planner._gather_information(screenshot_file=rel_image)
     # result = json.loads(result_str)["description"]
 
     # Creating agent with its dependencies
-    agent = Agent("TestAgent", None, provider, gm, planner)
+    agent = Agent("TestAgent", None, gm, planner)
     agent.loop()
 
     logger.write()

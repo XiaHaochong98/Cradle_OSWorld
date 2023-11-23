@@ -7,6 +7,16 @@ def assemble_project_path(path):
         path = os.path.join(get_project_root(), path)
     return path
 
+def gen_relative_project_path(path):
+
+    root = get_project_root()
+
+    if root not in path:
+        raise ValueError('Path to convert should be within the project root.')
+    
+    path = path.replace(root, '.').replace('.\\', '')
+    return path
+
 def exists_in_project_path(path):
     return os.path.exists(assemble_project_path(path))
 

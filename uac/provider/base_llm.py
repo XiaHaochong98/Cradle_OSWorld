@@ -28,6 +28,6 @@ class LLMProvider(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def assemble_prompt(self, system_prompt:str, user_input: str, encoded_image: str) -> List[str]:
+    def assemble_prompt(self, system_prompts: List[str], user_inputs: List[str], image_filenames: List[str]) -> List[str]:
         """Combine parametes in the appropriate way for the provider to use."""
         pass
