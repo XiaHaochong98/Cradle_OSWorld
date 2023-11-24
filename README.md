@@ -70,51 +70,500 @@ Files are named according to the format: ./res/prompts/\<type\>/\<category\>_\<s
 For example: 
 ./res/**input_example**/**decision_making**_**follow_red_line**.json, is an example of **input** for the **decision making** prompt for the **follow the red line** sub-task. In the future, most filenamess will end in "_general", when they are not sub-task-specific anymore.
 
+As shown below, such "input_example" files illustrate the **parameters** needed to fill a prompt "template".
+Not all input examples need the same parameters. Only the parameters required the corresponding specific template (".prompt" file).
+
+Also, in most situations the format of the parameter "output-format" (if it exists) must be exactly the same as the corresponding "output_example" json file.
+
 **>>> Allways check the /main branch for the latest examples!!!**
 
-#### Input Examples
+### 2.1 Prompt for Gather Information
 
-Sample json:
-```
-{
-    "type": "success_detection",
-    "goal": "Go to store",
-    "image_paths": ["./res/samples/screen_redline.jpg", "./res/samples/minimap_redline.jpg"],
-    "image_descriptions": "the images sent to you are: 1. the screenshot for the current observation, and 2. the emphasized minimap image",
-    "output_format":"{\n  \"type\": \"success_detection\",\n  \"goal\": \"Go to store\",\n  \"decision\": \n    {\n      \"criteria\": \"1.\",\n      \"reason\": \"The selected place 'Grub' in the index is not the target place 'General Store'.\",\n      \"success\": false\n    }\n}"
+#### 2.1.1 Input Example for Gather Information
+
+```python
+input_example = {
+    "type": "gather_information",
+    "image_path": "./res/samples/game_screenshot.png"
 }
+# type: the type of the prompt, should be "gather_information"
+# image_path: the path of the image
 ```
 
-As shown, such file illustrates the **parameters** needed to fill a prompt template (in this case, the "success detection" one). Also in this example, the format of the parameter "output-format" is exactly the same as the corresponding "output_example" json file.
+Other parameters will be added.
 
-Not all input examples need the same parameters. Only the parameters required in a specific template (".prompt" file).
+#### 2.1.2 Output Example for Gather Information
 
-#### Output Examples
+```python
+output_example = {
+    "type": "gather_information",
+    "description": "The image shows a scene from the video game Red Dead Redemption 2. It presents a third-person perspective of a character, presumably the protagonist Arthur Morgan, riding a horse. The character is dressed in typical cowboy attire, including a hat, and is equipped with what appears to be a revolver holstered on his right hip, and a satchel slung across his left shoulder. The environment is sunny and seems to be an idyllic forest clearing with a variety of trees, including pines and others with more broad leaves. The atmosphere is serene and there are several horses scattered around the area, suggesting a temporary camp or resting spot for a group.\n\nOn the bottom of the image, there's a prompt indicating \"Hitch Horse [E]\", suggesting that the player on a PC can press the \"E\" key to hitch their horse to a post or another item intended for that purpose.\n\nAs for the minimap on the bottom-left corner, the semi-opaque circular map provides some immediate context for the player's surrounding area:\n\n1. A red path is drawn on the minimap leading from the character's current position towards the northwest direction. This generally indicates a suggested route the player should take to reach a specific destination or objective.\n2. There are various icons on the map, including a camp (teepee icon), a mail or delivery point (letter icon), a question mark which might indicate a point of interest or a stranger mission, some facility amenity icons (fork and knife for provisions, a tent for rest or camp upgrades), and a money bag icon which typically represents the camp's contribution box where the player can donate money.\n3. The player's character icon is in the center of the minimap, depicted as a white arrow, showing the current direction the character is facing.\n\nThe surrounding context of the minimap is vital for in-game navigation and decision-making. Based on the minimap, the player seems to be in a campsite or has just exited one. They have a clear destination set to the northwest, and based on the surrounding icons, there are several amenities and potential interactions available to them within the camp."
+}
 
-Sample json:
+# 1. type: the type of the prompt, should be "gather_information"
+# 2. description: the description of the image
 ```
-{
-  "type": "success_detection",
-  "goal": "Open the map",
-  "decision":
-    {
-      "criteria": "1.xx, 2.xx",
-      "reasoning": "Since the map is currently not open and it is the first step required to mark a waypoint, we need to open the map using the 'open_map' function.",
-      "success": false
+
+Other parameters will be added.
+
+#### 2.1.3 Template for Gather Information
+
+```python
+"""
+Please describe the screenshot image in detail. Pay attention to any maps in the image, if any, especially key icons, red paths to follow, or created waypoints.
+"""
+```
+
+Not the final template, to be improved.
+
+
+### 2.2 Prompt for Decision Making
+#### 2.2.1 Input Example for Decision Making
+
+```python
+input_example = {
+    "type": "decision_making",
+    "task_description": "mark the \"General Store\" on a Map as the Waypoint via the Index and close the Map to return to the game",
+    "skill_library": [
+        {
+            "name": "move",
+            "description": "move the character",
+            "params": {
+                "args1": 0,
+                "args2": 1
+            }
+        },
+        {
+            "name": "open_map",
+            "description": "open the map",
+            "params": {}
+        }
+    ],
+    "decision_making_memory_description": "",
+    "gathered_information_description": "",
+    "image_introduction":[
+        {
+            "introduction": "the first image is the observation from the previous timestep",
+            "path": "./res/samples/screen_redline.jpg",
+            "assistant": "response of the GPT-4V"
+        },
+        {
+            "introduction": "the second image is the current observation",
+            "path": "./res/samples/minimap_redline.jpg",
+            "assistant": ""
+        }
+    ],
+    "output_format":{
+        "type": "decision_making",
+        "skill_steps": [
+            {
+                "name": "action1",
+                "description": "action1 description",
+                "params": {}
+            },
+            {
+                "name": "action2",
+                "description": "action2 description",
+                "params": {}
+            }
+        ],
+        "reason": "summary of the reason to chose the action or sequence of actions"
+    },
+    "__comments__": "This is a template for decision making task, the key are (1) task_description: the goal of the current decision making task and the step-by-step logic to achieve it, (2) input_description: The prompt for GPT-4V to understand the inputs, (3) skills_library: all the actions that GPT-4V can choose from and their description, (4) decision_making_memory_description: input from memory to help decision making, (5) gathered_information_description: input from gather_information to help decision making, (6) output_description: the output format and requirements for decision making."
+}
+
+# 1. type: str, the type of the prompt, should be "decision_making"
+
+# 2. task_description: str, the goal of the current decision making task
+
+# 3. skill_library: list of dict, the skills that GPT-4V can choose from. The specific format will be the one used in the skill library code.
+
+"""
+    "skill_library": [
+            {
+                "name": "move",
+                "description": "move the character",
+                "params": {
+                    "args1": 0,
+                    "args2": 1
+                }
+            },
+            {
+                "name": "open_map",
+                "description": "open the map",
+                "params": {}
+            }
+        ]
+"""
+    # 3.1 name: str, the name of the skill
+    # 3.2 description: str, the description of the skill
+    # 3.3 params: dict, the arguments of the skill
+    #    [args1]: any, the first argument of the skill, the key is the name of the argument, not only the "args1"
+    #    [args2]: any, the second argument of the skill, the key is the name of the argument, not only the "args2"
+        
+# 4. decision_making_memory_description: str, input from memory to help decision making
+
+# 5. gathered_information_description: str, input from gather_information to help decision making
+
+# 6. image_introduction: list of dict, the introduction of the images
+
+"""
+    "image_introduction":[
+        {
+            "introduction": "the first image is the observation from the previous timestep",
+            "path": "./res/samples/screen_redline.jpg",
+            "assistant": "response of the GPT-4V"
+        },
+        {
+            "introduction": "the second image is the current observation",
+            "path": "./res/samples/minimap_redline.jpg",
+            "assistant": ""
+        }
+    ]
+"""
+
+    # 6.1 introduction: str, the introduction of the image
+    # 6.2 path: str, the path of the image
+    # 6.3 assistant: str, the response of the GPT-4V, if it is empty, indicates that this image has not had a reply from GPT-4V and will not have an assitant message
+
+# 7. output_format: dict, the output format and requirements for decision making
+
+"""
+    "output_format":{
+        "type": "decision_making",
+        "skill_steps": [
+            {
+                "name": "action1",
+                "description": "action1 description",
+                "params": {}
+            },
+            {
+                "name": "action2",
+                "description": "action2 description",
+                "params": {}
+            }
+        ],
+        "reason": "summary of the reason to chose the action or sequence of actions"
     }
-}
+"""
+
+    # 7.1 type: str, the type of the prompt, should be "decision_making"
+    # 7.2 skill_steps: list of dict, the sequence of actions that GPT-4V chose
+    #    name: str, the name of the action
+    #    description: str, the description of the action
+    #    params: dict, the arguments of the action
+    #        [args1]: any, the first argument of the action, the key is the name of the argument, not only the "args1"
+    #        [args2]: any, the second argument of the action, the key is the name of the argument, not only the "args2"
+    # 7.3 reason: str, summary of the reason to chose the action or sequence of actions
+
+# 8. __comments__: str, comments for the input_example
 ```
 
-### Prompt Template Examples 
-
-Sample prompt:
+Calling GPT-4V message example:
+```python
+messages=[
+            {
+                "role": "system",
+                "content": [
+                    {
+                      "type" : "text",
+                      "text" : f"{system_prompts[0]}"
+                    }
+                ]
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": f"{user_inputs["image_introduction"][0]["introduction"]}"
+                    },
+                   {
+                       "type": "image_url",
+                       "image_url": 
+                           {
+                               "url": f"data:image/jpeg;base64,{encode_image(["image_introduction"][0]["introduction"])}"
+                           }
+                   }
+                ]
+            },
+            {
+                "role": "assistant",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": f"{user_inputs["image_introduction"][0]["introduction"]}"
+                    }
+                ]
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": f"{user_inputs["image_introduction"][1]["introduction"]}"
+                    },
+                   {
+                       "type": "image_url",
+                       "image_url": 
+                           {
+                               "url": f"data:image/jpeg;base64,{encode_image(["image_introduction"][1]["introduction"])}"
+                           }
+                   }
+                ]
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": f"{user_inputs[0]}"
+                    }
+                ]
+            }
+        ]
 ```
-The screenshot is a map describing the game world. On the left side of the screenshot, there is an index listing all the possible places to be chosen as the waypoint.
 
-The index lists all the possible places in a sequential manner. The selected place is marked with a red rectangle. Your task is to decide whether the selected place is the same as the target place. Your input contains a screenshot of the map containing the index list and text of the target place. Your output should be a JSON file that contains the distance of the target place to the current selected place. 
+#### 2.2.2 Output Example for Decision Making
 
-The JSON file should be in the following format:
+```python
+output_example = {
+        "type": "decision_making",
+        "skill_steps": [
+            {
+                "name": "action1",
+                "description": "action1 description",
+                "params": {}
+            },
+            {
+                "name": "action2",
+                "description": "action2 description",
+                "params": {}
+            }
+        ],
+        "reason": "summary of the reason to chose the action or sequence of actions",
+        "__comments__": "This is a output example for decision making."
+    }
+
+# 1. type: str, the type of the prompt, should be "decision_making"
+
+# 2. skill_steps: list of dict, the sequence of actions that GPT-4V chose
+    # name: str, the name of the action
+    # description: str, the description of the action
+    # params: dict, the arguments of the action
+    #    [args1]: any, the first argument of the action, the key is the name of the argument, not only the "args1"
+    #    [args2]: any, the second argument of the action, the key is the name of the argument, not only the "args2"
+
+# 3. reason: str, summary of the reason to chose the action or sequence of actions
+
+# 4. __comments__: str, comments for the output_example
+```
+
+#### 2.2.3 Template for Decision Making
+
+```python
+"""
+You are an assistant who assesses my progress in playing Red Dead Redemption 2 and provides expert guidance. Imagine you are playing Red Dead Redemption 2 with the keyboard and mouse, the image is the screenshot of your computer. Assist me in making a decision to complete a game task.
+
+The task is to <$task_description$>.
+
+I will give you extra information retrieved from memory and gathered from the game, you may use them to help your decision, neglect them if they are empty.
+
+Memory:
+<$decision_making_memory_description$>
+
+Gathered_information:
+<$gathered_information_description$>
+
+Decomposed {<$task_description$>} to multiple automatic skills based on skills description, and choose some of them to finish the {<$task_description$>} and output the decomposed names of the sequence fo skills in the value of "skills".
+
+<$skill_library$>
+
+Based on the above input, including input images, what should be the next step? You should think step-by-step, and give your reasoning process in the value of "reasoning". Then select one function from the provided list that best accomplishes the next part of the task. Fill the "action" with "None" the task is done and no action needs to be made. You should only output a JSON file without other explanation, do not give a markdown of a JSON file, and respond with the string format. Your output should be in the following format:
+
 <$output_format$>
+"""
+```
+
+### 2.3 Prompt for Success Detection
+#### 2.3.1 Input Example for Success Detection
+
+```python
+input_example = {
+    "type": "success_detection",
+    "task_description": "mark a Waypoint via the Index and close the Map to return to the game",
+    "image_instruction": [
+        {
+            "introduction": "the first image is the observation from the previous timestep",
+            "path": "./res/samples/screen_redline.jpg",
+            "assistant": ""
+        },
+        {
+            "introduction": "the second image is the current observation",
+            "path": "./res/samples/minimap_redline.jpg",
+            "assistant": ""
+        }
+    ],
+    "output_format": {
+        "type": "success_detection",
+        "task_description": "map_create_waypoint",
+        "decision":
+            {
+                "criteria": "The map must be open with the 'Saloon' marked as a Waypoint, and then the map must be closed to indicate the task completion.",
+                "reason": "Both provided images show the in-game character standing near a campfire, with the mini-map visible on the bottom left corner. The mini-map does not provide sufficient information to determine if the 'Saloon' has been marked as a Waypoint via the Index, nor do these images show the main map being closed after marking a Waypoint. We can not see any waypoint marker on the mini-map nor any actions related to opening or navigating the full map.",
+                "success": false
+            }
+    },
+    "__comments__": "This is a template for success detection"
+}
+
+# 1. type: str, the type of the prompt, should be "success_detection"
+
+# 2. task_description: str, the goal of the current success detection task
+
+# 3. image_introduction: list of dict, the introduction of the images
+    "image_introduction":[
+        {
+            "introduction": "the first image is the observation from the previous timestep",
+            "path": "./res/samples/screen_redline.jpg",
+            "assistant": "response of the GPT-4V"
+        },
+        {
+            "introduction": "the second image is the current observation",
+            "path": "./res/samples/minimap_redline.jpg",
+            "assistant": ""
+        }
+    ]
+    # 3.1 introduction: str, the introduction of the image
+    # 3.2 path: str, the path of the image
+    # 3.3 assistant: str, the response of the GPT-4V, if it is empty, indicates that this image has not had a reply from GPT-4V and will not have an assitant message
+
+# 4. output_format: dict, the output format and requirements for decision making
+    "output_format":{
+        "type": "success_detection",
+        "task_description": "map_create_waypoint",
+        "decision":
+            {
+                "criteria": "The map must be open with the 'Saloon' marked as a Waypoint, and then the map must be closed to indicate the task completion.",
+                "reason": "Both provided images show the in-game character standing near a campfire, with the mini-map visible on the bottom left corner. The mini-map does not provide sufficient information to determine if the 'Saloon' has been marked as a Waypoint via the Index, nor do these images show the main map being closed after marking a Waypoint. We can not see any waypoint marker on the mini-map nor any actions related to opening or navigating the full map.",
+                "success": false
+            }
+    }
+
+    # 4.1 type: str, the type of the prompt, should be "success_detection"
+    # 4.2 task_description: str, the goal of the current success detection task
+    # 4.3 decision:
+    #    criteria: str, the criteria for success detection
+    #    reason: str, the reasoning for success detection
+    #    success: bool, whether the success detection is successful
+
+# 5. __comments__: str, comments for the input_example
+```
+
+Calling GPT-4V message example:
+
+```python
+messages=[
+            {
+                "role": "system",
+                "content": [
+                    {
+                      "type" : "text",
+                      "text" : f"{system_prompts[0]}"
+                    }
+                ]
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": f"{user_inputs["image_introduction"][0]["introduction"]}"
+                    },
+                   {
+                       "type": "image_url",
+                       "image_url": 
+                           {
+                               "url": f"data:image/jpeg;base64,{encode_image(["image_introduction"][0]["introduction"])}"
+                           }
+                   }
+                ]
+            },
+            {
+                "role": "assistant",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": f"{user_inputs["image_introduction"][0]["introduction"]}"
+                    }
+                ]
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": f"{user_inputs["image_introduction"][1]["introduction"]}"
+                    },
+                   {
+                       "type": "image_url",
+                       "image_url": 
+                           {
+                               "url": f"data:image/jpeg;base64,{encode_image(["image_introduction"][1]["introduction"])}"
+                           }
+                   }
+                ]
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": f"{user_inputs[0]}"
+                    }
+                ]
+            }
+        ]
+```
+
+#### 2.3.2 Output Example for Success Detection
+
+```python
+output_example = {
+    "type": "success_detection",
+    "task_description": "map_create_waypoint",
+    "decision":
+        {
+            "criteria": "The map must be open with the 'Saloon' marked as a Waypoint, and then the map must be closed to indicate the task completion.",
+            "reason": "Both provided images show the in-game character standing near a campfire, with the mini-map visible on the bottom left corner. The mini-map does not provide sufficient information to determine if the 'Saloon' has been marked as a Waypoint via the Index, nor do these images show the main map being closed after marking a Waypoint. We can not see any waypoint marker on the mini-map nor any actions related to opening or navigating the full map.",
+            "success": false
+        },
+    "__comments__": "This is a output example for success detection."
+}
+
+# 1. type: str, the type of the prompt, should be "success_detection"
+
+# 2. task_description: str, the goal of the current success detection task
+
+# 3. decision:
+#    criteria: str, the criteria for success detection
+#    reason: str, the reasoning for success detection
+#    success: bool, whether the success detection is successful
+        
+# 4. __comments__: str, comments for the output_example
+```
+
+#### 2.3.3 Template for Success Detection
+
+```python
+"""
+You are an assistant who assesses my progress in playing Red Dead Redemption 2 and provides expert guidance. Imagine you are playing Red Dead Redemption 2 with the keyboard and mouse, the image is the screenshot of your computer. Assist me in deciding whether the task has been successfully done.
+
+Based on the above input, including input images. The task is to <$task_description$>. You need to think about the independent criteria to judge whether this task is fully completed. In addition, if there are any in-game prompts or instructions that are similar to {<$task_description$>}, it could indicate that the task has not been completed. If the previous state is completed and the current state is not completed, it also indicates that the task has not been completed. Output the criteria first in the value of "criteria". Based on images (<$image_descriptions$>), ask yourself whether one of the criteria is fully fulfilled for {task}. If fulfilled, then output true. If not, output false. Noted that the task must be completely accomplished to output a true. If some information from the previous action is not shown in these two images. you may assume the previous actions have been executed correctly. Output the think procedure in the value of "reasoning" and then output the answer. Note that you must output the answer true/false in the value of "success".
+
+The output json object should follow this format:
+<$output_format$>
+"""
 ```
 
 This format allows easy manual modifications and trying different changes, instead of having to edit objects and escape characters. Treat is as a text file (always in UTF-8).
@@ -122,7 +571,7 @@ This format allows easy manual modifications and trying different changes, inste
 Tags marked with **\<$ $\>** correspond to the values of the parameters passed as input when calling the backend large model. input_example.json files are just examples or the structure. The actual values will follow the same names and format in the real execution calls.
 
 
-## Game & Skill Library
+## Game & Skill Libraryg
 
 
 ### 1. Change settings before running the code.
