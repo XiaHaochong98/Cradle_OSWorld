@@ -100,6 +100,11 @@ if __name__ == "__main__":
         default=None,
     )
 
+    # parser.add_argument(
+    #     '--no_continuous', 
+    #     action=argparse.BooleanOptionalAction
+    # )
+
     args = parser.parse_args()
 
     main(args)
