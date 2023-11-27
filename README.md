@@ -123,81 +123,39 @@ Not the final template, to be improved.
 ```python
 input_example = {
     "type": "decision_making",
-    "task_description": "mark the \"General Store\" on a Map as the Waypoint via the Index and close the Map to return to the game",
-    "skill_library": [
-        {
-            "name": "move",
-            "description": "move the character",
-            "params": {
-                "args1": 0,
-                "args2": 1
-            }
-        },
-        {
-            "name": "open_map",
-            "description": "open the map",
-            "params": {}
-        }
-    ],
+    "task_description": "mark the \"Saloon\" on a Map as the Waypoint via the Index and close the Map to return to the gameplay. You should only output one action",
+    "skill_library": "[\n    {\n      \"function_expression\": \"open_map()\",\n      \"description\": \"Toggles the map view in the game, opening or closing it.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"add_marker()\",\n      \"description\": \"Places a marker on the map at the current mouse location by pressing 'z'.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"add_waypoint()\",\n      \"description\": \"Sets a waypoint at the current selection or mouse location on the map by pressing 'enter'.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"close_map()\",\n      \"description\": \"Closes the map view in the game by pressing 'esc'.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"zoom_map()\",\n      \"description\": \"Zooms in on the map.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"reduce_map()\",\n      \"description\": \"Zooms out on the map.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"open_index()\",\n      \"description\": \"Opens the game index by pressing 'space'.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"close_index()\",\n      \"description\": \"Closes the game index by pressing 'space'.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"next_index_object()\",\n      \"description\": \"Cycles to the next index object after the index is open, using 'q'.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"previous_index_object()\",\n      \"description\": \"Cycles to the previous index object after the index is open, using 'e'.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"confirm_mouse_selection()\",\n      \"description\": \"Confirms a selection by simulating a mouse click.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"move_map(width,height)\",\n      \"description\": \"Moves the map based on specified width and height offsets.\",\n      \"parameters\": {\n        \"width\": \"Horizontal offset for the map movement.\",\n        \"height\": \"Vertical offset for the map movement.\"\n      }\n    },\n    {\n       \"fucntion_expresstion\": \"move_mouse_on_map(width,height,speed,relative)\",\n      \"description\": \"Moves the mouse on the map to specified width and height, with optional speed and relative position adjustment.\",\n      \"parameters\": {\n        \"width\": \"Horizontal position for mouse movement.\",\n        \"height\": \"Vertical position for mouse movement.\",\n        \"speed\": \"Speed of the mouse movement.\",\n        \"relative\": \"Boolean indicating if movement is relative to the current position.\"\n      }\n    },\n    {\n       \"fucntion_expresstion\": \"select_up_index_object()\",\n      \"description\": \"Selects the next object in the index upwards.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"select_down_index_object()\",\n      \"description\": \"Selects the next object in the index downwards.\",\n      \"parameters\": {}\n    }\n  ]",
     "decision_making_memory_description": "",
     "gathered_information_description": "",
-    "image_introduction":[
+    "number_of_execute_skills": 1,
+    "image_introduction": [
         {
-            "introduction": "the first image is the observation from the previous timestep",
-            "path": "./res/samples/screen_redline.jpg",
-            "assistant": "response of the GPT-4V"
+            "introduction": "the first image is the observation from the previous two timestep",
+            "path": "res/prompts/testing/decision_making/map_create_waypoint/screenshots/-1.jpg",
+            "assistant": ""
         },
         {
-            "introduction": "the second image is the current observation",
-            "path": "./res/samples/minimap_redline.jpg",
+            "introduction": "the second image is the previous timestep",
+            "path": "res/prompts/testing/decision_making/map_create_waypoint/screenshots/0.jpg",
             "assistant": ""
         }
     ],
-    "output_format":{
-        "type": "decision_making",
-        "skill_steps": [
-            {
-                "name": "action1",
-                "description": "action1 description",
-                "params": {}
-            },
-            {
-                "name": "action2",
-                "description": "action2 description",
-                "params": {}
-            }
-        ],
-        "reason": "summary of the reason to chose the action or sequence of actions"
-    },
-    "__comments__": "This is a template for decision making task, the key are (1) task_description: the goal of the current decision making task and the step-by-step logic to achieve it, (2) input_description: The prompt for GPT-4V to understand the inputs, (3) skills_library: all the actions that GPT-4V can choose from and their description, (4) decision_making_memory_description: input from memory to help decision making, (5) gathered_information_description: input from gather_information to help decision making, (6) output_description: the output format and requirements for decision making."
+    "output_format": "{\n    \"type\": \"decision_making\",\n    \"skill_steps\": [\"skill1(args1,args2)\"],\n    \"reason\": \"summary of the reason to chose the skill or sequence of skills\"\n}",
+    "__comments__": "This is a template for decision making task, the key are (1) task_description: the goal of the current decision making task and the step-by-step logic to achieve it, (2) input_description: The prompt for gpt to understand the inputs, (3) skills_description: all the skills that gpt can choose from and their description, (4) decision_making_memory_description: input from memory to help decision making, (5) gathered_information_description: input from gather_information to help decision making, (6) output_description: the output format and requirements for decision making."
 }
 
 # 1. type: str, the type of the prompt, should be "decision_making"
 
 # 2. task_description: str, the goal of the current decision making task
 
-# 3. skill_library: list of dict, the skills that GPT-4V can choose from. The specific format will be the one used in the skill library code.
+# 3. skill_library: str, the skills that GPT-4V can choose from. The specific format will be the one used in the skill library code.
 
 """
-    "skill_library": [
-            {
-                "name": "move",
-                "description": "move the character",
-                "params": {
-                    "args1": 0,
-                    "args2": 1
-                }
-            },
-            {
-                "name": "open_map",
-                "description": "open the map",
-                "params": {}
-            }
-        ]
+    "skill_library": "[\n    {\n      \"function_expression\": \"open_map()\",\n      \"description\": \"Toggles the map view in the game, opening or closing it.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"add_marker()\",\n      \"description\": \"Places a marker on the map at the current mouse location by pressing 'z'.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"add_waypoint()\",\n      \"description\": \"Sets a waypoint at the current selection or mouse location on the map by pressing 'enter'.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"close_map()\",\n      \"description\": \"Closes the map view in the game by pressing 'esc'.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"zoom_map()\",\n      \"description\": \"Zooms in on the map.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"reduce_map()\",\n      \"description\": \"Zooms out on the map.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"open_index()\",\n      \"description\": \"Opens the game index by pressing 'space'.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"close_index()\",\n      \"description\": \"Closes the game index by pressing 'space'.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"next_index_object()\",\n      \"description\": \"Cycles to the next index object after the index is open, using 'q'.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"previous_index_object()\",\n      \"description\": \"Cycles to the previous index object after the index is open, using 'e'.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"confirm_mouse_selection()\",\n      \"description\": \"Confirms a selection by simulating a mouse click.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"move_map(width,height)\",\n      \"description\": \"Moves the map based on specified width and height offsets.\",\n      \"parameters\": {\n        \"width\": \"Horizontal offset for the map movement.\",\n        \"height\": \"Vertical offset for the map movement.\"\n      }\n    },\n    {\n       \"fucntion_expresstion\": \"move_mouse_on_map(width,height,speed,relative)\",\n      \"description\": \"Moves the mouse on the map to specified width and height, with optional speed and relative position adjustment.\",\n      \"parameters\": {\n        \"width\": \"Horizontal position for mouse movement.\",\n        \"height\": \"Vertical position for mouse movement.\",\n        \"speed\": \"Speed of the mouse movement.\",\n        \"relative\": \"Boolean indicating if movement is relative to the current position.\"\n      }\n    },\n    {\n       \"fucntion_expresstion\": \"select_up_index_object()\",\n      \"description\": \"Selects the next object in the index upwards.\",\n      \"parameters\": {}\n    },\n    {\n       \"fucntion_expresstion\": \"select_down_index_object()\",\n      \"description\": \"Selects the next object in the index downwards.\",\n      \"parameters\": {}\n    }\n  ]"
 """
-    # 3.1 name: str, the name of the skill
+    # 3.1 function_expression: str, the call function expression of the skill
     # 3.2 description: str, the description of the skill
-    # 3.3 params: dict, the arguments of the skill
+    # 3.3 parameters: dict, the arguments of the skill
     #    [args1]: any, the first argument of the skill, the key is the name of the argument, not only the "args1"
     #    [args2]: any, the second argument of the skill, the key is the name of the argument, not only the "args2"
         
@@ -205,7 +163,9 @@ input_example = {
 
 # 5. gathered_information_description: str, input from gather_information to help decision making
 
-# 6. image_introduction: list of dict, the introduction of the images
+# 6. number_of_execute_skills: int, the number of skills that will be executed in the decision making process
+
+# 7. image_introduction: list of dict, the introduction of the images
 
 """
     "image_introduction":[
@@ -222,41 +182,21 @@ input_example = {
     ]
 """
 
-    # 6.1 introduction: str, the introduction of the image
-    # 6.2 path: str, the path of the image
-    # 6.3 assistant: str, the response of the GPT-4V, if it is empty, indicates that this image has not had a reply from GPT-4V and will not have an assitant message
+    # 7.1 introduction: str, the introduction of the image
+    # 7.2 path: str, the path of the image
+    # 7.3 assistant: str, the response of the GPT-4V, if it is empty, indicates that this image has not had a reply from GPT-4V and will not have an assitant message
 
-# 7. output_format: dict, the output format and requirements for decision making
+# 8. output_format: str, the output format and requirements for decision making
 
 """
-    "output_format":{
-        "type": "decision_making",
-        "skill_steps": [
-            {
-                "name": "action1",
-                "description": "action1 description",
-                "params": {}
-            },
-            {
-                "name": "action2",
-                "description": "action2 description",
-                "params": {}
-            }
-        ],
-        "reason": "summary of the reason to chose the action or sequence of actions"
-    }
+    "output_format":"{\n    \"type\": \"decision_making\",\n    \"skill_steps\": [\"skill1(args1,args2)\"],\n    \"reason\": \"summary of the reason to chose the skill or sequence of skills\"\n}"
 """
 
-    # 7.1 type: str, the type of the prompt, should be "decision_making"
-    # 7.2 skill_steps: list of dict, the sequence of actions that GPT-4V chose
-    #    name: str, the name of the action
-    #    description: str, the description of the action
-    #    params: dict, the arguments of the action
-    #        [args1]: any, the first argument of the action, the key is the name of the argument, not only the "args1"
-    #        [args2]: any, the second argument of the action, the key is the name of the argument, not only the "args2"
-    # 7.3 reason: str, summary of the reason to chose the action or sequence of actions
+    # 8.1 type: str, the type of the prompt, should be "decision_making"
+    # 8.2 skill_steps: list of str, the sequence of function expression that GPT-4V chose
+    # 8.3 reason: str, summary of the reason to chose the action or sequence of actions
 
-# 8. __comments__: str, comments for the input_example
+# 9. __comments__: str, comments for the input_example
 ```
 
 Calling GPT-4V message example:
@@ -328,31 +268,17 @@ messages=[
 
 ```python
 output_example = {
-        "type": "decision_making",
-        "skill_steps": [
-            {
-                "name": "action1",
-                "description": "action1 description",
-                "params": {}
-            },
-            {
-                "name": "action2",
-                "description": "action2 description",
-                "params": {}
-            }
-        ],
-        "reason": "summary of the reason to chose the action or sequence of actions",
-        "__comments__": "This is a output example for decision making."
-    }
+    "type": "decision_making",
+    "skill_steps": [
+        "skill1(args1,args2)"
+    ],
+    "reason": "summary of the reason to chose the skill or sequence of skills",
+    "__comments__": "skill_steps is a list of skills that gpt should choose from, reason is the summary of the reason to chose the skill or sequence of skills."
+}
 
 # 1. type: str, the type of the prompt, should be "decision_making"
 
-# 2. skill_steps: list of dict, the sequence of actions that GPT-4V chose
-    # name: str, the name of the action
-    # description: str, the description of the action
-    # params: dict, the arguments of the action
-    #    [args1]: any, the first argument of the action, the key is the name of the argument, not only the "args1"
-    #    [args2]: any, the second argument of the action, the key is the name of the argument, not only the "args2"
+# 2. skill_steps: list of str, the sequence of function expression that GPT-4V chose
 
 # 3. reason: str, summary of the reason to chose the action or sequence of actions
 
@@ -379,8 +305,7 @@ Decomposed {<$task_description$>} to multiple automatic skills based on skills d
 
 <$skill_library$>
 
-Based on the above input, including input images, what should be the next step? You should think step-by-step, and give your reasoning process in the value of "reasoning". Then select one function from the provided list that best accomplishes the next part of the task. Fill the "action" with "None" the task is done and no action needs to be made. You should only output a JSON file without other explanation, do not give a markdown of a JSON file, and respond with the string format. Your output should be in the following format:
-
+Based on the above input, including input images, what should be the next steps or one step? You should think step-by-step, and give your reasoning process in the value of "reasoning". The maximum number of skills you can include in the "skill_steps" must obey the requirement in {<$task_description$>}. Fill the "skill_steps" with the sequence of functions you chose to perform, if the function has a parameter, you should also decide the parameter for it, if it does not have a parameter just output "function_name()". Output an empty "skill_steps" list if no action needs to be take further. You should only output a JSON file without other explanation, do not give a markdown of a JSON file, and respond with the string format. Your output should be in the following format:
 <$output_format$>
 """
 ```
@@ -404,16 +329,7 @@ input_example = {
             "assistant": ""
         }
     ],
-    "output_format": {
-        "type": "success_detection",
-        "task_description": "map_create_waypoint",
-        "decision":
-            {
-                "criteria": "The map must be open with the 'Saloon' marked as a Waypoint, and then the map must be closed to indicate the task completion.",
-                "reason": "Both provided images show the in-game character standing near a campfire, with the mini-map visible on the bottom left corner. The mini-map does not provide sufficient information to determine if the 'Saloon' has been marked as a Waypoint via the Index, nor do these images show the main map being closed after marking a Waypoint. We can not see any waypoint marker on the mini-map nor any actions related to opening or navigating the full map.",
-                "success": false
-            }
-    },
+    "output_format": "{\n        \"type\": \"success_detection\",\n        \"task_description\": \"the task description\",\n        \"decision\":\n            {\n                \"criteria\": \"1.,2.,...\",\n                \"reason\": \"the reason for the decision\",\n                \"success\": false\n            }\n    }",
     "__comments__": "This is a template for success detection"
 }
 
@@ -438,17 +354,8 @@ input_example = {
     # 3.2 path: str, the path of the image
     # 3.3 assistant: str, the response of the GPT-4V, if it is empty, indicates that this image has not had a reply from GPT-4V and will not have an assitant message
 
-# 4. output_format: dict, the output format and requirements for decision making
-    "output_format":{
-        "type": "success_detection",
-        "task_description": "map_create_waypoint",
-        "decision":
-            {
-                "criteria": "The map must be open with the 'Saloon' marked as a Waypoint, and then the map must be closed to indicate the task completion.",
-                "reason": "Both provided images show the in-game character standing near a campfire, with the mini-map visible on the bottom left corner. The mini-map does not provide sufficient information to determine if the 'Saloon' has been marked as a Waypoint via the Index, nor do these images show the main map being closed after marking a Waypoint. We can not see any waypoint marker on the mini-map nor any actions related to opening or navigating the full map.",
-                "success": false
-            }
-    }
+# 4. output_format: str, the output format and requirements for decision making
+    "output_format":"{\n        \"type\": \"success_detection\",\n        \"task_description\": \"the task description\",\n        \"decision\":\n            {\n                \"criteria\": \"1.,2.,...\",\n                \"reason\": \"the reason for the decision\",\n                \"success\": false\n            }\n    }"
 
     # 4.1 type: str, the type of the prompt, should be "success_detection"
     # 4.2 task_description: str, the goal of the current success detection task
@@ -569,7 +476,6 @@ The output json object should follow this format:
 This format allows easy manual modifications and trying different changes, instead of having to edit objects and escape characters. Treat is as a text file (always in UTF-8).
 
 Tags marked with **\<$ $\>** correspond to the values of the parameters passed as input when calling the backend large model. input_example.json files are just examples or the structure. The actual values will follow the same names and format in the real execution calls.
-
 
 ## Game & Skill Libraryg
 
