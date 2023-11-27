@@ -1,7 +1,7 @@
 import time
 
 from uac.gameio.game_manager import GameManager
-from uac.gameio.lifecycle.ui_control import switch_to_code, switch_to_game, take_screenshot, segment_minimap, pause_game, unpause_game
+from uac.gameio.lifecycle.ui_control import switch_to_code, switch_to_game, take_screenshot, segment_minimap, pause_game, unpause_game, exit_back_to_game
 from uac.gameio.composite_skills.navigation import cv_navigation
 from uac.gameio.composite_skills.go_to_icon import cv_go_to_icon
 from uac.utils.template_matching import match_template_image
@@ -23,6 +23,9 @@ if __name__ == "__main__":
     # switch_to_game()
     # cv_navigation(total_time_steps)
     # switch_to_code()
+
+    # exit_back_to_game()
+    # pause_game()
 
     switch_to_game()
 

@@ -31,6 +31,23 @@ def unpause_game():
     time.sleep(1)
 
 
+def exit_back_to_game():
+    
+    max_steps = 10
+
+    back_steps = 0
+    while not is_env_paused() and back_steps < max_steps:
+        back_steps += 1
+        pydirectinput.press('esc')
+        time.sleep(1)
+
+    if back_steps >= max_steps:
+        logger.debug("The environment fails to pause!")
+
+    # Unpause the game, to keep the rest of the agent flow consistent
+    unpause_game()
+
+
 def switch_to_game():
     pyautogui.getWindowsWithTitle(config.env_name)[0].activate()
     time.sleep(1)
