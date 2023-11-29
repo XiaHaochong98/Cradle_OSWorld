@@ -1,0 +1,18 @@
+{
+    "type": "success_detection",
+    "task_description": "mark a Waypoint via the Index and close the Map to return to the game",
+    "image_introduction": [
+        {
+            "introduction": "the first image is the observation from the previous timestep",
+            "path": "./res/prompts/testing/decision_making/map_create_waypoint/screenshots/1.jpg",
+            "assistant": ""
+        },
+        {
+            "introduction": "the second image is the current observation",
+            "path": "./res/prompts/testing/decision_making/map_create_waypoint/screenshots/2.jpg",
+            "assistant": ""
+        }
+    ],
+    "output_format": "{\n        \"type\": \"success_detection\",\n        \"task_description\": \"the task description\",\n        \"decision\":\n            {\n                \"criteria\": \"1.,2.,...\",\n                \"reason\": \"the reason for the decision\",\n                \"success\": false\n            }\n    }",
+    "__comments__": "This is a template for success detection"
+}

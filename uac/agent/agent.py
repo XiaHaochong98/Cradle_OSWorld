@@ -4,7 +4,6 @@ import time
 
 from uac.config import Config
 from uac.log import Logger
-from uac.provider.openai import encode_image
 from uac.utils.file_utils import assemble_project_path, read_resource_file
 from uac.gameio import GameManager
 from uac.planner.planner import Planner
@@ -33,6 +32,8 @@ class Agent:
 
     def loop(self):
         
+        logger.write(f"Starting {self.name} loop w/ env {config.env_name}")
+
         config.continuous_limit = 1
 
         # Interaction Loop
@@ -67,6 +68,7 @@ The surrounding context of the minimap is vital for in-game navigation and decis
                 break
 
             # Get environment input
+            self.env_manager.switch_to_game()
             image = self.env_manager.capture_screen()
             self.env_manager.pause_game()
 
@@ -78,17 +80,38 @@ The surrounding context of the minimap is vital for in-game navigation and decis
             # Prepare info gathering
             info_response = ""
 
-            result_str = self.planner._gather_information(image_files=[image])
-            info_response = json.loads(result_str)["description"]
+            images_info = [
+                {
+                    "introduction": "This is a screenshot of the current moment in the game",
+                    "path": image,
+                    "assistant": ""
+                }
+            ]
+            image_introduction = images_info
+
+            output_format = read_resource_file("./res/prompts/api_output/gather_information.json")
+            args = {"output_format": output_format, "image_introduction": image_introduction}
+
+            data = self.planner.gather_information(input=args)
+            info_response = data["res_dict"]["description"]
 
             # Prepare decision making
 
             # @TODO: Goal and previous_actions need to be hooked on integration between iteration
             # In this first case, once we have map manipulation
-            goal = "Go to store."
-            skills = self.env_manager.list_bootstrap_skills()
+            task_description = "Go to store."
+            skill_library = self.env_manager.list_bootstrap_skills() # @TODO may have to change format
             previous_actions = "[add_map_waypoint()]"
-            output_format = read_resource_file("./res/prompts/output_example/decision_making.json")
+            output_format = read_resource_file("./res/prompts/api_output/decision_making.json")
+
+            images_info = [
+                {
+                    "introduction": "This is a screenshot of the current moment in the game",
+                    "path": image,
+                    "assistant": ""
+                }
+            ]
+            image_introduction = images_info
 
             # Context should use the description from the gather_information response
             debug = True
@@ -97,36 +120,34 @@ The surrounding context of the minimap is vital for in-game navigation and decis
             else:
                 context = info_response
 
-            decision_response = ""
+            args = {"context" : context, "task_description" : task_description, "skill_library" : skill_library, "previous_actions" : previous_actions, "output_format" : output_format, "image_introduction": image_introduction}
 
-            args = {"context" : context, "goal" : goal, "skills" : skills, "previous_actions" : previous_actions, "output_format" : output_format}
+            data = self.planner.decision_making(input=args)
 
-            result_str = self.planner._decision_making(input=args, image_files=[image])
-            decision_response = result_str
+            # Action extraction and execution
+            skills = data['outcome']
+            if skills is None:
+                skills = []
+
+            logger.write(f'R: {skills}')
 
             # Example output of decision making for first image
-            decision_output_debug = """
-{
-   "skill_steps": ["navigate_path()"],
-   "reason": "After adding a waypoint, the player should now navigate along the red path shown on the minimap towards the location set. Since the goal is to go to a store, and the red path is likely leading out of the camp and towards the nearest town where stores are usually located, following the path will progress towards reaching a store."
-}
-"""
+            decision_output_debug = ["navigate_path()"]
 
             # Action should use the output from the decision making response
             debug = True
             if debug:
-                output = decision_output_debug
+                skill_steps = decision_output_debug
             else:
-                output = decision_response
+                skill_steps = skills
 
-            # Action extraction and execution
-            next_action = extract_next_action(output)
+            skill_steps = skill_steps[:1]
+            logger.write(f'Skill Steps: {skill_steps}')
 
-            time.sleep(3)
-            self.env_manager.unpause_game()
-            time.sleep(1)
-            self.env_manager.execute_action(next_action)
-            time.sleep(5)
+            exec_info = self.env_manager.execute_actions(skill_steps)
+
+            pre_skill = exec_info[1]
+
             post_action_image = self.env_manager.capture_screen(include_minimap=False)[0]
             self.env_manager.pause_game()
 
@@ -136,47 +157,35 @@ The surrounding context of the minimap is vital for in-game navigation and decis
                 post_action_image = "./res/samples/screen_no_redline.jpg"
 
             # Prepare success detection
+            output_format = read_resource_file("./res/prompts/api_output/success_detection.json")
 
-            image_descriptions = "the images sent to you are: 1. the screenshot from the previous timestep, and 2. the screenshot for the current observation"
-            images = [image, post_action_image]
-            output_format = read_resource_file("./res/prompts/output_example/success_detection.json")
+            images_info = [
+                {
+                    "introduction": "This is a screenshot of the current moment in the game",
+                    "path": image,
+                    "assistant": ""
+                },
+                {
+                    "introduction": "This screenshot is the current observation",
+                    "path": post_action_image,
+                    "assistant": ""
+                }
+            ]
+            image_introduction = images_info
 
-            args = {"goal" : goal, "image_paths" : images, "image_descriptions" : image_descriptions, "output_format" : output_format}
+            args = {"task_description" : task_description, "output_format" : output_format, "image_introduction": image_introduction}
 
-            result = self.planner._success_detection(input=args, image_files=images)
+            data = self.planner.success_detection(input=args)
 
             # Check success
-            success = result["success"]
+            res_dict = data['res_dict']
+            reason = res_dict['decision']['reason']
+            success = data['outcome']
+
+            logger.write(f'Success: {success}')
+            logger.write(f'Reason: {reason}')
 
             # @TODO represent new state for next loop
             # @TODO re-use post-action image for info gathering?
 
             logger.write() #end of loop
-
-
-def to_text(template_str: str = None, params: dict = None) -> str:
-
-    str = template_str
-
-    if template_str is None or params is None:
-        return str
-
-    keys = params.keys()
-    for key in keys:
-        if key in template_str:            
-            str = str.replace(f'<${key}$>', params[key])
-
-    return str
-
-
-def extract_next_action(json_input):
-
-    task_dict = json.loads(json_input)
-
-    # Extract the first action of the sub-task_name
-    key = "skill_steps" # list(task_dict.keys())[0]
-    first_action = task_dict[key][0] if task_dict[key] else None
-
-    logger.debug(f"The first action in the '{key}' list is: {first_action}")
-
-    return first_action

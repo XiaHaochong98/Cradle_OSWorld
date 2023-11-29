@@ -1,5 +1,0 @@
-{
-    "type": "decision_making",
-    "skill_steps": ["action_1_1()", "action_1_2()"],
-    "reason": "summary of the reason to chose the action or sequence of actions"
- }

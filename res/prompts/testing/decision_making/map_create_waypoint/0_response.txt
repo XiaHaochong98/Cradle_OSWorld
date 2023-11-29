@@ -1,0 +1,10 @@
+{
+  "type": "decision_making",
+  "skill_steps": [
+    {
+      "name": "open_map",
+      "params": {}
+    }
+  ],
+  "reason": "The first step to mark the Saloon as a waypoint is to open the map. The open_map function will toggle the map view in the game, which is necessary before we can mark any location on it."
+}

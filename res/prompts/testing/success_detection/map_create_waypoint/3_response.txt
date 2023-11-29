@@ -1,0 +1,9 @@
+{
+  "type": "success_detection",
+  "task": "map_create_waypoint",
+  "decision": {
+      "criteria": "1. The 'Saloon' should be selected from the Index and marked as a waypoint on the map. 2. The map should be closed to complete the task.",
+      "reasoning": "In the first image, 'Grub' is selected in the index. In the second image, 'Ammunition' is selected in the index. Neither of these is the 'Saloon', and there is no indication that the 'Saloon' has been marked as a waypoint. Additionally, the map is still open in both images.",
+      "success": false
+  }
+}

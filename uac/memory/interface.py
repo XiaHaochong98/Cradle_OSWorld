@@ -11,7 +11,7 @@ from uac.config import Config
 from uac.log import Logger
 from uac.provider.base_embedding import EmbeddingProvider
 from uac.memory.base import VectorStore
-from uac.agent.data import GatherInformationOutput, DecisionMakingOutput
+from uac.agent import GatherInformationOutput, DecisionMakingOutput
 
 config = Config()
 logger = Logger()

@@ -4,12 +4,36 @@ import os
 import time
 import sys
 
-from colorama import Fore
+from colorama import Fore, Back, Style, init as colours_on
 
 from uac.utils import Singleton
+from uac.config import Config
+
+config = Config()
+colours_on(autoreset=True)
+
+
+class ColorFormatter(logging.Formatter):
+    # Change your colours here. Should use extra from log calls.
+    COLORS = {
+        "WARNING": Fore.YELLOW,
+        "ERROR": Fore.RED,
+        "DEBUG": Fore.GREEN,
+        "INFO": Fore.WHITE,
+        "CRITICAL": Fore.RED + Back.WHITE
+    }
+
+    def format(self, record):
+        color = self.COLORS.get(record.levelname, "")
+        if color:
+            record.name = color + record.name
+            record.msg = record.msg + Style.RESET_ALL
+        return logging.Formatter.format(self, record)
 
 
 class Logger(metaclass=Singleton):
+
+    log_file = 'uac.log'
 
     def __init__(self):
         self.to_file = False
@@ -18,24 +42,32 @@ class Logger(metaclass=Singleton):
 
     def _configure_root_logger(self):
 
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        format = f'%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+        formatter = logging.Formatter(format)
+        c_formatter = ColorFormatter(format)
 
         stdout_handler = logging.StreamHandler(sys.stdout)
-        stdout_handler.setLevel(logging.DEBUG)
-        stdout_handler.setFormatter(formatter)
+        # stdout_handler.setLevel(logging.DEBUG)
+        stdout_handler.setLevel(logging.INFO)
+        stdout_handler.setFormatter(c_formatter)
 
         stderr_handler = logging.StreamHandler()
-        stderr_handler.setLevel(logging.WARNING)
-        stderr_handler.setFormatter(formatter)
+        stderr_handler.setLevel(logging.ERROR)
+        stderr_handler.setFormatter(c_formatter)
 
-        logging.basicConfig(level=logging.DEBUG, handlers=[stdout_handler, stderr_handler])
+        file_handler = logging.FileHandler(filename=os.path.join(config.log_dir, self.log_file), mode='w', encoding='utf-8')
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(formatter)
+
+        logging.basicConfig(level=logging.DEBUG, handlers=[stdout_handler, stderr_handler, file_handler])
         self.logger = logging.getLogger("UAC Logger")
 
 
     def _log(
             self,
             title="", 
-            title_color="", 
+            title_color=Fore.WHITE, 
             message="", 
             level=logging.INFO
         ):
@@ -43,7 +75,16 @@ class Logger(metaclass=Singleton):
         if message:
             if isinstance(message, list):
                 message = " ".join(message)
+
         self.logger.log(level, message, extra={"title": title, "color": title_color})
+
+    def critical(
+            self, 
+            message, 
+            title=""
+        ):
+
+        self._log(title, Fore.RED + Back.WHITE, message, logging.ERROR)
 
     def error(
             self, 
@@ -57,7 +98,7 @@ class Logger(metaclass=Singleton):
             self,
             message,
             title="",
-            title_color=Fore.WHITE,
+            title_color=Fore.GREEN,
         ):
 
         self._log(title, title_color, message, logging.DEBUG)

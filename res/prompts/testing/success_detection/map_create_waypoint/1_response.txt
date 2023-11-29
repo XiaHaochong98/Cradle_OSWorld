@@ -1,0 +1,10 @@
+{
+  "type": "success_detection",
+  "task": "map_create_waypoint",
+  "decision": 
+    {
+      "criteria": "1. The 'Saloon' is marked as a waypoint on the in-game map.\n2. The in-game map is closed after setting the waypoint.",
+      "reasoning": "In the first screenshot, the in-game character can be seen standing near a campfire, which does not provide information about the task. In the second screenshot, which shows the map, there is no indication that a waypoint has been set at the 'Saloon' as there is no marker or line indicating a waypoint. Additionally, the map is still open, meaning the task of closing the map after setting the waypoint has not been completed either.",
+      "success": false
+    }
+}

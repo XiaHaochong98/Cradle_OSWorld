@@ -1,27 +1,18 @@
-Given the screenshot of the environment and the current context, your task it to propose an action or chain of actions to perform next towards achieving a goal. Pay close attention to the image contents and the current situation in relation to the goal. 
-You may be mi-plan to achieve it. Let's think carefully and step by step. Be precise and consider any parameters required for the action to take. There should be no gap between actions. 
-For example, this is a completely wrong output: "sub-task_name": ["open_map()", "navigate_path()"]. As there was no path or waypoint created after open_map() to follow in navigate_path(). 
+You are an assistant who assesses my progress in playing Red Dead Redemption 2 and provides expert guidance. Imagine you are playing Red Dead Redemption 2 with the keyboard and mouse, the image is the screenshot of your computer. Assist me in making a decision to complete a game task.
 
-Your inputs contains: 1. The screenshot of the environment and the current state; 2. The previous action taken (skill just used); 3. The goal you need to achieve, if it is 'null', you should identify a task or goal from the screenshot and context; 4. A set of skills that you can directly use as your actions.
+The task is to <$task_description$>.
 
-Your inputs are:
+I will give you extra information retrieved from memory and gathered from the game, you may use them to help your decision, neglect them if they are empty.
 
-Context:
-<$context$>
+Memory:
+<$decision_making_memory_description$>
 
-Previous actions:
-<$previous_actions$>
+Gathered_information:
+<$gathered_information_description$>
 
-Goal:
-<$goal$>
+Decomposed {<$task_description$>} to multiple automatic skills based on skills description, and choose some of them to finish the {<$task_description$>} and output the decomposed names of the sequence fo skills in the value of "skills".
 
-Skills:
-<$skills$>
+<$skill_library$>
 
-Your output should include: 
-An action, or short sequence of actions, to execute next to progress in achieving the goal. Pay attention to the previous step already executed, if any. You should only respond with a valid JSON object as the example below.
-
-Example output:
-```
+Based on the above input, including input images, what should be the next steps or one step? You should think step-by-step, and give your reasoning process in the value of "reasoning". The maximum number of skills you can include in the "skill_steps" must obey the requirement in {<$task_description$>}. Fill the "skill_steps" with the sequence of functions you chose to perform, if the function has a parameter, you should also decide the parameter for it, if it does not have a parameter just output "function_name()". Output an empty "skill_steps" list if no skill needs to be take further. You should only output a JSON file without other explanation, do not give a markdown of a JSON file, and respond with the string format. Your output should be in the following format:
 <$output_format$>
-```

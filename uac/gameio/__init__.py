@@ -3,5 +3,5 @@ from uac.gameio.game_manager import GameManager
 
 __all__ = [
     "IOEnvironment",
-    "GameManager"
+    "GameManager",
 ]

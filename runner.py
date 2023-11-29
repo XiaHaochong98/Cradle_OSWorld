@@ -5,10 +5,10 @@ import time
 import json
 
 from uac.agent import Agent
-from uac.agent.agent import to_text
 from uac.config import Config
 from uac.gameio import GameManager
 from uac.planner.planner import Planner
+from uac.planner.base import to_text
 from uac.log import Logger
 from uac.provider.openai import OpenAIProvider, encode_image
 from uac.utils.file_utils import assemble_project_path, read_resource_file
@@ -57,19 +57,19 @@ def main(args):
         ],
         "prompt_paths": {
             "input_example": {
-            "gather_information": "./res/prompts/input_example/gather_information.json",
-            "decision_making": "./res/prompts/input_example/decision_making.json",
-            "success_detection": "./res/prompts/input_example/success_detection_frl.json",
+            "gather_information": "./res/prompts/template_input/gather_information_follow_path.json",
+            "decision_making": "./res/prompts/template_input/decision_making_follow_path.json",
+            "success_detection": "./res/prompts/template_input/success_detection_follow_path.json",
             },
-            "template": {
-            "gather_information": "./res/prompts/templates/describe_image.prompt",
-            "decision_making": "./res/prompts/templates/decision_making.prompt",
+            "templates": {
+            "gather_information": "./res/prompts/templates/gather_information_follow_path.prompt",
+            "decision_making": "./res/prompts/templates/decision_making_follow_path.prompt",
             "success_detection": "./res/prompts/templates/success_detection.prompt",
             },
             "output_example": {
-            "gather_information": "./res/prompts/output_example/gather_information.json",
-            "decision_making": "./res/prompts/output_example/decision_making.json",
-            "success_detection": "./res/prompts/output_example/success_detection.json",
+            "gather_information": "./res/prompts/api_output/gather_information.json",
+            "decision_making": "./res/prompts/api_output/decision_making.json",
+            "success_detection": "./res/prompts/api_output/success_detection.json",
             }
         }
     }
@@ -84,7 +84,7 @@ def main(args):
     # result = json.loads(result_str)["description"]
 
     # Creating agent with its dependencies
-    agent = Agent("TestAgent", None, gm, planner)
+    agent = Agent("UAC Agent", None, gm, planner)
     agent.loop()
 
     logger.write()

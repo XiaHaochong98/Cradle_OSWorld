@@ -18,11 +18,11 @@ def check_planner_params(planner: Dict = None):
 
         prompt_paths = planner["prompt_paths"]
         assert "input_example" in prompt_paths, f"input_example is not in prompt_paths"
-        assert "template" in prompt_paths, f"template is not in prompt_paths"
+        assert "templates" in prompt_paths, f"templates is not in prompt_paths"
         assert "output_example" in prompt_paths, f"output_example is not in prompt_paths"
 
         input_example = prompt_paths["input_example"]
-        template = prompt_paths["template"]
+        templates = prompt_paths["templates"]
         output_example = prompt_paths["output_example"]
 
         """check modules"""
@@ -31,9 +31,9 @@ def check_planner_params(planner: Dict = None):
             assert (check_item in input_example and
                     exists_in_project_path(input_example[check_item])), \
                 f"{check_item} is not in input_example or {assemble_project_path(input_example[check_item])} does not exist"
-            assert (check_item in template and
-                    exists_in_project_path(template[check_item])), \
-                f"{check_item} is not in template or {assemble_project_path(template[check_item])} does not exist"
+            assert (check_item in templates and
+                    exists_in_project_path(templates[check_item])), \
+                f"{check_item} is not in template or {assemble_project_path(templates[check_item])} does not exist"
             assert (check_item in output_example and
                     exists_in_project_path(output_example[check_item])), \
                 f"{check_item} is not in output_example or {assemble_project_path(output_example[check_item])} does not exist"

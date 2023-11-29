@@ -42,14 +42,27 @@ def exit_back_to_game():
         time.sleep(1)
 
     if back_steps >= max_steps:
-        logger.debug("The environment fails to pause!")
+        logger.warn("The environment fails to pause!")
 
     # Unpause the game, to keep the rest of the agent flow consistent
     unpause_game()
 
 
 def switch_to_game():
-    pyautogui.getWindowsWithTitle(config.env_name)[0].activate()
+    named_windows = pyautogui.getWindowsWithTitle(config.env_name)
+    if len(named_windows) == 0:
+        logger.error(f"Cannot find the game window {config.env_name}!")
+        return
+    else:
+        try:
+            named_windows[0].activate()
+        except Exception as e:
+            if "Error code from Windows: 0" in str(e):
+                # Handle pygetwindow exception
+                pass
+            else:
+                raise e
+
     time.sleep(1)
     unpause_game()
     time.sleep(1)
@@ -100,7 +113,6 @@ def take_screenshot(tid : float = 0.0,
 
         axes_image_filename = output_dir + "/axes_screen_" + str(tid) + ".jpg"
         screen_image.save(axes_image_filename)
-
     return screen_image_filename, minimap_image_filename
 
 
@@ -141,6 +153,7 @@ def is_env_paused():
     is_paused = match_info[0]['confidence'] >= confidence_threshold
 
     return is_paused
+
 
 def clip_minimap(minimap_image_filename):
 

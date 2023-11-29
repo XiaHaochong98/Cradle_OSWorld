@@ -1,0 +1,113 @@
+You are an assistant who assesses my progress in playing Red Dead Redemption 2 and provides expert guidance. Imagine you are playing Red Dead Redemption 2 with the keyboard and mouse, the image is the screenshot of your computer. Assist me in making a decision to complete a game task.
+
+The task is to mark the "Saloon" on a Map as the Waypoint via the Index and close the Map to return to the gameplay. You should only output one skill.
+
+I will give you extra information retrieved from memory and gathered from the game, you may use them to help your decision, but neglect them if they are empty.
+
+Memory:
+
+Gathered_information:
+
+Decomposed "mark the "Saloon" on a Map as the Waypoint via the Index and close the Map to return to the gameplay. You should only output one skill" to multiple automatic skills based on skills description, and choose some of them to finish the task. The skills you can choose are:
+
+{
+  "functions": [
+    {
+      "name": "open_map",
+      "description": "Toggles the map view in the game, opening or closing it.",
+      "parameters": {}
+    },
+    {
+      "name": "add_marker",
+      "description": "Places a marker on the map at the current mouse location by pressing 'z'.",
+      "parameters": {}
+    },
+    {
+      "name": "add_waypoint",
+      "description": "Sets a waypoint at the current mouse location on the map by pressing 'enter'. Choose this if you want to add waypoint.",
+      "parameters": {}
+    },
+    {
+      "name": "close_map",
+      "description": "Closes the map view in the game by pressing 'esc'.",
+      "parameters": {}
+    },
+    {
+      "name": "zoom_map",
+      "description": "Zooms in on the map.",
+      "parameters": {}
+    },
+    {
+      "name": "reduce_map",
+      "description": "Zooms out on the map.",
+      "parameters": {}
+    },
+    {
+      "name": "open_index",
+      "description": "Opens the game index by pressing 'space'.",
+      "parameters": {}
+    },
+    {
+      "name": "close_index",
+      "description": "Closes the game index by pressing 'space'.",
+      "parameters": {}
+    },
+    {
+      "name": "next_index_object",
+      "description": "Cycles to the next index object after the index is open, using 'q'.",
+      "parameters": {}
+    },
+    {
+      "name": "previous_index_object",
+      "description": "Cycles to the previous index object after the index is open, using 'e'.",
+      "parameters": {}
+    },
+    {
+      "name": "confirm_selection",
+      "description": "Confirms a selection by simulating a mouse click. Do not need to do this if you have already selected an index.",
+      "parameters": {}
+    },
+    {
+      "name": "move_map",
+      "description": "Moves the map based on specified width and height offsets.",
+      "parameters": {
+        "width": "Horizontal offset for the map movement.",
+        "height": "Vertical offset for the map movement."
+      }
+    },
+    {
+      "name": "move_mouse_on_map",
+      "description": "Moves the mouse on the map to specified width and height, with optional speed and relative position adjustment.",
+      "parameters": {
+        "width": "Horizontal position for mouse movement.",
+        "height": "Vertical position for mouse movement.",
+        "speed": "Speed of the mouse movement.",
+        "relative": "Boolean indicating if movement is relative to the current position."
+      }
+    },
+    {
+      "name": "select_up_index_object",
+      "description": "Selects the next object in the index upwards.",
+      "parameters": {}
+    },
+    {
+      "name": "select_down_index_object",
+      "description": "Selects the next object in the index downwards.",
+      "parameters": {}
+    }
+  ]
+}
+
+Based on the above input, including input images (the first is from the last two timesteps, and the second is from the last timestep), what should be the next steps? You should think step-by-step, and give your reasoning process in the value of "reasoning". The number of skills you can include in the "skill_steps" mus obey the requirement in {mark the "Saloon" on a Map as the Waypoint via the Index and close the Map to return to the gameplay. You should only choose one skill}. Fill the "skill_steps" with the sequence of functions you chose to perform, if the function has a parameter, you should also decide the parameter for it. You should only output a JSON file without other explanation and respond with the string format. Your output should be in the following format:
+
+{
+    "type": "decision_making",
+    "skill_steps": "```python
+    # The reasoning process of your decision
+    skill_1(arg1,arg2) # the skill you choose from the skill list and its parameters
+    skill_2() # the skill you choose from the skill list that does not have parameter
+    ```"
+    ,
+    "reason": "summary of the reason to chose the action or sequence of actions"
+ }
+

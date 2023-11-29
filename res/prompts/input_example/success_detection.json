@@ -1,7 +1,0 @@
-{
-    "type": "success_detection",
-    "goal": "Open the map",
-    "image_paths": ["./res/samples/screenshot_1.png", "./res/samples/screenshot_2.png"],
-    "image_descriptions": "the images sent to you are: 1. the screenshot from the previous timestep, and 2. the screenshot for the current observation",
-    "output_format":"{\n  \"type\": \"success_detection\",\n  \"goal\": \"Open the map\",\n  \"decision\": \n    {\n      \"criteria\": \"1.\",\n      \"reason\": \"The selected place 'Grub' in the index is not the target place 'General Store'.\",\n      \"success\": false\n    }\n}"
-}

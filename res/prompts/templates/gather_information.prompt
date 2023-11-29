@@ -1,0 +1,4 @@
+Please describe the screenshot image in detail. Pay attention to any maps in the image, if any, especially key icons, red paths to follow, or created waypoints. If there are more than one images, please focus on the first one.
+
+You should only output a JSON file without other explanation, do not give a markdown of a JSON file. The output json object should follow this format:
+<$output_format$>

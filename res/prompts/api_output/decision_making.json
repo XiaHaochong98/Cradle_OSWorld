@@ -1,0 +1,8 @@
+{
+    "type": "decision_making",
+    "skill_steps": [
+        "action1(args1,args2)"
+    ],
+    "reason": "summary of the reason to chose the action or sequence of actions",
+    "__comment__": "This is an output of the decision making."
+}

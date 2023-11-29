@@ -131,12 +131,12 @@ input_example = {
     "image_introduction": [
         {
             "introduction": "the first image is the observation from the previous two timestep",
-            "path": "res/prompts/testing/decision_making/map_create_waypoint/screenshots/-1.jpg",
+            "path": "./res/prompts/testing/decision_making/map_create_waypoint/screenshots/-1.jpg",
             "assistant": ""
         },
         {
             "introduction": "the second image is the previous timestep",
-            "path": "res/prompts/testing/decision_making/map_create_waypoint/screenshots/0.jpg",
+            "path": "./res/prompts/testing/decision_making/map_create_waypoint/screenshots/0.jpg",
             "assistant": ""
         }
     ],

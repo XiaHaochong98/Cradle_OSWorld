@@ -1,0 +1,10 @@
+{
+  "type": "success_detection",
+  "task": "map_create_waypoint",
+  "decision": 
+    {
+      "criteria": "1. The Saloon must be selected as a waypoint on the in-game map via the index. 2. The map must be closed successfully after setting the waypoint.",
+      "reasoning": "In the first image, 'Provisions' is selected, which is not the target 'Saloon.' However, in the second image, the 'Saloon' is correctly selected in the index, which indicates that the first part of the task has been completed. There is no indication that the map has been closed in the provided images.",
+      "success": false
+    }
+}

@@ -1,0 +1,8 @@
+You are an expert in this environment and you are determining success detection. The current task is: <$task_description$>. You need to think about the independent criteria to judge whether this task is fully completed. 
+
+Additionally, if there are any in-game prompts or instructions that are similar to "<$task_description$>" in the current screenshot, it could indicate that the task has not been completed. If the previous state is completed and the current state is not completed, it also indicate that the task has not been completed. 
+
+Output the criteria first in the value of the "criteria" field. Based on the submitted images, ask yourself whether one of the criteria is fully fulfilled for task "<$task_description$>". If fulfilled, then output True. If not, output False. Output your thinking procedure in the value of the "reason" field and then output your final careful answer. Note that you must output the answser True/Flase in the value of the "success" field. 
+
+The output json object should follow this format:
+<$output_format$>

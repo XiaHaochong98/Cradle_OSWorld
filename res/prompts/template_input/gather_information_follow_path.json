@@ -1,0 +1,11 @@
+{
+    "type": "gather_information",
+    "image_introduction": [
+        {
+            "introduction": "This is a screenshot of the current moment in the game",
+            "path": "./res/samples/game_screenshot.png",
+            "assistant": ""
+        }
+    ],
+    "output_format":"{\n    \"description\": \"The image shows...\"\n\n}"
+}

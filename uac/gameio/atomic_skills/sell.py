@@ -1,44 +1,65 @@
 import time
 import pydirectinput
 
+from uac.gameio.skill_registry import register_skill
 
+
+@register_skill("sell_product")
 def sell_product(duration=1):
     """
-    Open the trade bar for sale
+    Opens the trade bar for selling products.
+    Note: it must run the shopkeeper_interaction function before running this function
+
+    Parameters:
+     - duration: The duration for which the "r" key is held down (default is 1 second).
     """
     pydirectinput.keyDown("r")
     time.sleep(duration)
     pydirectinput.keyUp("r")
 
 
-def sell_product_all(duration=1):
+@register_skill("sell_single_product_all_quantity")
+def sell_single_product_all_quantity(duration=1.0):
     """
-    Press and hold "f" to sell the full amount of this product
-    But the quantity must be greater than one
+    Presses and holds the "f" key to sell the quantity of one unit of the current product.
+    Note: The product quantity must be greater than one.
+
+    Parameters:
+     - duration: The duration for which the "f" key is held down in seconds (default is 1.0 second).
     """
     pydirectinput.keyDown("f")
     time.sleep(duration)
     pydirectinput.keyUp("f")
 
 
+@register_skill("sell_one_product")
 def sell_one_product():
     """
-    Press "enter" to sell one product
+    Presses "enter" to sell one unit of the current product.
     """
     pydirectinput.press("enter")
 
 
-def next_product_type():
+@register_skill("switch_to_next_product_type")
+def switch_to_next_product_type():
     """
-    press “e” to change products type,
-    Return to next
+    Presses "e" to switch to the next product type.
     """
     pydirectinput.press("e")
 
 
-def previous_product_type():
+@register_skill("switch_to_previous_product_type")
+def switch_to_previous_product_type():
     """
-    press “q” to change products type,
-    Return to previous
+    Presses "q" to switch to the previous product type.
     """
     pydirectinput.press("q")
+
+
+__all__ = [
+    "sell_product",
+    "sell_single_product_all_quantity",
+    "sell_one_product",
+    "switch_to_next_product_type",
+    "switch_to_previous_product_type"
+]

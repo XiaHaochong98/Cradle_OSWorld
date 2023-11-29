@@ -10,14 +10,23 @@ from uac.config import Config
 from uac.log import Logger
 from uac.gameio.atomic_skills.move import turn, move_forward, stop_horse
 from uac.gameio.lifecycle.ui_control import take_screenshot
-
+from uac.gameio.skill_registry import register_skill
 from uac.gameio.composite_skills.go_to_icon import match_template
 
 config = Config()
 logger = Logger()
 
 
+@register_skill("navigate_path")
 def navigate_path(iterations = 100, debug = False):
+    """
+    Navigates an existing waypoint path in the minimap.
+
+    Parameters:
+    - iterations: How many maximum calculation loops to navigate. Default value is 100.
+    - debug: Whether to show debug information. Default value is False.
+    """
+
     time.sleep(1)
     cv_navigation(iterations, debug)
 

@@ -1,0 +1,10 @@
+{
+  "type": "success_detection",
+  "task": "map_create_waypoint",
+  "decision": 
+    {
+      "criteria": "1. A Waypoint is visibly marked on the Map via the Index. 2. The Map is closed and the player has returned to the gameplay without any in-game prompts indicating that the task has to be redone.",
+      "reasoning": "In the first image provided, there is a noticeable Waypoint marked on the map at Valentine, which indicates that the player has successfully created a waypoint. The Index menu on the side also highlights the 'Waypoint' option, suggesting that the player has used the Index to set the waypoint. In the second image, the player character is outside of the Map view, back in the game world, indicating that the Map has been closed after setting the Waypoint. There are no in-game prompts suggesting that the task has to be repeated or has not been completed.",
+      "success": true
+    }
+}

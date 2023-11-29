@@ -5,6 +5,7 @@ from typing import (
     Dict,
     Tuple,
     Optional,
+    Any
 )
 
 
@@ -28,6 +29,7 @@ class LLMProvider(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def assemble_prompt(self, system_prompts: List[str], user_inputs: List[str], image_filenames: List[str]) -> List[str]:
+    def assemble_prompt(self, system_prompt: str = None, template_str: str = None, params: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+    # def assemble_prompt(self, system_prompts: List[str], user_inputs: List[str], image_filenames: List[str]) -> List[str]:
         """Combine parametes in the appropriate way for the provider to use."""
         pass

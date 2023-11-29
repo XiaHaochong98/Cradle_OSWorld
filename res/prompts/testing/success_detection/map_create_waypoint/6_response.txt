@@ -1,0 +1,10 @@
+{
+  "type": "success_detection",
+  "task": "map_create_waypoint",
+  "decision": 
+    {
+      "criteria": "1. A Waypoint is successfully marked on the map at the specified location. 2. The map screen has been closed to return to gameplay.",
+      "reasoning": "In the first image, the index shows that the 'Saloon' is highlighted, but no Waypoint is set. In the second image, the 'Waypoint' is present in the index and a red Waypoint marker is seen on the map at the location of the Saloon, indicating that a Waypoint has been successfully placed. However, the map screen is still open, so we cannot confirm if the map has been closed to return to gameplay.",
+      "success": false
+    }
+}

@@ -1,0 +1,33 @@
+The provided image is a screenshot of the game. Extract the text information on it and summarize it into a JSON from the scene. At the same time, analyze and interpret this screenshot, focusing on understanding and describing the underlying events and relationships depicted within it. This involves going beyond mere object detection to delve into the semantics of the scene, capturing the dynamics, and interactions suggested by the screenshot. Your analysis will be used in conjunction with the OpenAI Embedding model and stored for future retrieval. 
+
+For each object, describe it with a dictionary that has 3 keys "type", "value", and "confidence". The value of the keys should be:
+(1)"type": one of the values in ["Dynamic Information", "Context-Sensitive Prompts", "dialogue", "cash", "others"]. Explanation: i) "Dynamic Information": Onscreen notifications appear in accordance with your actions and events in the world - such as obtaining items or rewards, completing objectives, and becoming wanted. ii)"Context-Sensitive Prompts": Whenever you can perform a context-sensitive action, a corresponding prompt will appear in the lower-right corner of the screen, the 'value' value should be in the format of [instruction task] [instruction keyboard or mouse action]. iii)"Cash": It will appear on the upper right with a dollar symbol. iv)"dialogue": conversations between game characters. (3) "value": the on-screen text; (4) "confidence": the confidence score of your result in [0,10] where 0 is least confident and 10 is most confident.
+
+After you have identified all the objects on the screen, you need to use this information as a foundation to infer and elaborate on the interactions, relationships, and events taking place in the screenshot as the value for "description". I will provide additional detailed information of the screenshot sometime, use it if I provide them. 
+
+You must follow the following criteria:
+(1) The output should only be a JSON file that wraps all JSON objects on the screen. You should not add any other explanation text along with the JSON.
+(2) The value of "type" should only be one of ["Dynamic Information", "Context-Sensitive Prompts", "dialogue", "cash", "others"] 
+(3) There can be multiple objects of the same type.
+(4) The 'value' value of type "Context-Sensitive Prompts" should be in the format of [instruction task] [instruction keyboard or mouse action]
+(5) Identify the objects one by one to ensure accuracy.
+(6) Your "description" should be concise. Do not elaborate on every detail.
+(7) Your "description" should be easy to understand.
+(8) The objective provided in the input is not of the same importance. Instead of elaborating on all the details, you should emphasize the semantic richer objects
+(9) You should make the "description" more narrative like telling a story. Your response should be a semantic analysis of the screenshot, emphasizing the narrative, interactions, and relationships among the identified elements. Describe the scene in a way that conveys the storyline, character dynamics, and the overall context.
+
+Additional Input:
+
+Output Template:
+
+{
+  "type": "scene_information",
+  "objects": [
+    {
+      "type": "others",
+      "value": "",
+      "confidence": 0
+    }
+  ],
+  "description":""
+}

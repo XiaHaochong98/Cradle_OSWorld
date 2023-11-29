@@ -1,3 +1,4 @@
+from copy import deepcopy
 import os
 import base64
 from typing import (
@@ -17,9 +18,11 @@ import tiktoken
 import numpy as np
 from openai import OpenAI, AzureOpenAI, APIError, RateLimitError, BadRequestError, APITimeoutError
 
+from uac.planner.base import to_text
 from uac.provider import LLMProvider, EmbeddingProvider
 from uac.config import Config
 from uac.log import Logger
+from uac.planner.util import get_attr
 from uac.utils.json_utils import load_json
 from uac.utils.file_utils import assemble_project_path
 
@@ -167,7 +170,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         try:
             encoding = tiktoken.encoding_for_model(model_name)
         except KeyError:
-            logger.warning("Warning: model not found. Using cl100k_base encoding.")
+            logger.warn("Warning: model not found. Using cl100k_base encoding.")
             model = "cl100k_base"
             encoding = tiktoken.get_encoding(model)
         for i, text in enumerate(texts):
@@ -255,6 +258,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         messages: List[Dict[str, str]],
         model: str | None = None,
         temperature: float = config.temperature,
+        seed: int = config.seed,
         max_tokens: int = config.max_tokens,
     ) -> Tuple[str, Dict[str, int]]:
         """Create a chat completion using the OpenAI API
@@ -291,6 +295,8 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
 
         if config.debug_mode:
             logger.debug(f"Creating chat completion with model {model}, temperature {temperature}, max_tokens {max_tokens}")
+        else:
+            logger.write(f"Requesting {model} completion...")
 
         @backoff.on_exception(
             backoff.constant,
@@ -305,6 +311,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             messages: List[Dict[str, str]],
             model: str,
             temperature: float,
+            seed: int = None,
             max_tokens: int = 512,
         ) -> Tuple[str, Dict[str, int]]:
             
@@ -315,11 +322,13 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                 model=model,
                 messages=messages,
                 temperature=temperature,
+                seed=seed,
                 max_tokens=max_tokens,)
             else:
                 response = self.client.chat.completions.create(model=model,
                 messages=messages,
                 temperature=temperature,
+                seed=seed,
                 max_tokens=max_tokens,)
 
             if response is None:
@@ -332,7 +341,10 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                 "prompt_tokens" : response.usage.prompt_tokens, 
                 "completion_tokens" : response.usage.completion_tokens, 
                 "total_tokens" : response.usage.total_tokens,
+                "system_fingerprint" : response.system_fingerprint,
             }
+
+            logger.write(f'Response received from {model}.')
 
             return message, info
 
@@ -340,6 +352,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             messages,
             model,
             temperature,
+            seed,
             max_tokens,
         )
 
@@ -396,50 +409,135 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         return self.provider_cfg[PROVIDER_SETTING_DEPLOYMENT_MAP][model_label]
 
 
-    def assemble_prompt(self, system_prompts: List[str], user_inputs: List[str], image_filenames: List[str]) -> List[str]:
+    # def assemble_prompt(self, system_prompts: List[str], user_inputs: List[str], image_filenames: List[str]) -> List[Dict[str, Any]]:
     
-        encoded_images = [encode_image(assemble_project_path(image_path)) for image_path in image_filenames]
+    #     encoded_images = [encode_image(assemble_project_path(image_path)) for image_path in image_filenames]
 
-        messages=[
-            {
+    #     messages=[
+    #         {
+    #             "role": "system",
+    #             "content": [
+    #                 {
+    #                   "type" : "text",
+    #                   "text" : f"{system_prompts[0]}"
+    #                 }
+    #                 ]
+    #         },
+    #         {
+    #             "role": "user",
+    #             "content": [
+    #                 {
+    #                     "type": "text",
+    #                     "text": f"{user_inputs[0]}"
+    #                 },
+    #                # {
+    #                #     "type": "image_url",
+    #                #     "image_url": 
+    #                #         {
+    #                #             "url": f"data:image/jpeg;base64,{encoded_images[0]}"
+    #                #         }
+    #                # }
+    #             ]
+    #         }
+    #     ]
+
+    #     for image in encoded_images:
+    #         messages[1]["content"].append(
+    #             {
+    #                 "type": "image_url",
+    #                 "image_url": 
+    #                     {
+    #                         "url": f"data:image/jpeg;base64,{image}"
+    #                     }
+    #             },
+    #         )
+
+    #     return messages
+
+
+    def assemble_prompt(self, system_prompt: str = None, template_str: str = None, params: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+
+            image_introductions = get_attr(params, 'image_introduction', [])
+
+            system_message = {
                 "role": "system",
                 "content": [
                     {
-                      "type" : "text",
-                      "text" : f"{system_prompts[0]}"
+                        "type" : "text",
+                        "text" : f"{system_prompt}"
                     }
-                    ]
-            },
-            {
+                ]
+            }
+
+            image_introduction_message = []
+            for image_introduction in image_introductions:
+                image_introduction_ = deepcopy(image_introduction)
+
+                introduction = image_introduction_["introduction"]
+                assistant = image_introduction_["assistant"]
+
+                if image_introduction_["path"] is None or image_introduction_["path"] == "":
+
+                    user_item = {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"{introduction}"
+                            }
+                        ]
+                    }
+                else:
+                    image_path = assemble_project_path(image_introduction_["path"])
+                    encoded_image = encode_image(image_path)
+
+                    user_item = {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"{introduction}"
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url":
+                                    {
+                                        "url": f"data:image/jpeg;base64,{encoded_image}"
+                                    }
+                            }
+                        ]
+                    }
+
+                image_introduction_message.append(user_item)
+
+                if assistant:
+                    assistant_item = {
+                        "role": "assistant",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"{assistant}"
+                            }
+                        ]
+                    }
+                    image_introduction_message.append(assistant_item)
+
+
+            prompt = to_text(template_str=template_str, params=params)
+
+            prompt_message = {
                 "role": "user",
                 "content": [
                     {
                         "type": "text",
-                        "text": f"{user_inputs[0]}"
-                    },
-                   # {
-                   #     "type": "image_url",
-                   #     "image_url": 
-                   #         {
-                   #             "url": f"data:image/jpeg;base64,{encoded_images[0]}"
-                   #         }
-                   # }
+                        "text": f"{prompt}"
+                    }
                 ]
             }
-        ]
 
-        for image in encoded_images:
-            messages[1]["content"].append(
-                {
-                    "type": "image_url",
-                    "image_url": 
-                        {
-                            "url": f"data:image/jpeg;base64,{image}"
-                        }
-                },
-            )
+            messages = [system_message] + image_introduction_message + [prompt_message]
 
-        return messages
+            return messages
 
 
 def encode_image(image_path):
