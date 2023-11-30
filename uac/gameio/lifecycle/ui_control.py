@@ -9,10 +9,12 @@ import numpy as np
 
 from uac.config import Config
 from uac.log import Logger
+from uac.gameio import IOEnvironment
 from uac.utils.template_matching import match_template_image
 
 config = Config()
 logger = Logger()
+io_env = IOEnvironment()
 
 
 def pause_game():
@@ -20,6 +22,10 @@ def pause_game():
         pydirectinput.press('esc')
     else:
         logger.debug("The environment is already paused!")
+
+    # While game is paused, quickly re-center mouse location on x axis to avoid clipping at game window border with time
+    io_env.ahk.mouse_move(config.game_resolution[0] // 2, config.game_resolution[1] // 2, speed=1, relative=False)
+
     time.sleep(1)
 
 

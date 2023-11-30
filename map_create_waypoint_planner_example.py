@@ -241,7 +241,7 @@ def main_pipeline():
 
         exec_info = gm.execute_actions(skill_steps)
 
-        pre_skill = exec_info[1]
+        pre_skill = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
 
         pre_reasoning = ''
         if 'res_dict' in data.keys() and 'reason' in data['res_dict'].keys():

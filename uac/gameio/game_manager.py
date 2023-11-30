@@ -16,7 +16,7 @@ io_env = IOEnvironment()
 
 class GameManager:
 
-    POST_ACTION_WAIT_TIME = 4
+    POST_ACTION_WAIT_TIME = 3
 
     def __init__(
         self,
@@ -67,39 +67,39 @@ class GameManager:
 
     def execute_actions(self, actions):
 
-        last_skill = ""
-        errors = False
+        exec_info = {
+            "executed_skills" : [],
+            "last_skill" : '',
+            "errors" : False
+        }
 
         if len(actions) == 0:
             logger.error(f"No actions to execute!")
             return True, None
 
         try: 
+            switch_to_game()
             for skill in actions:
                 
                 skill_name, skill_params = convert_expression_to_skill(skill)
                 
                 logger.write(f"Executing skill: {skill_name} with params: {skill_params}")
 
-                switch_to_game()
-                time.sleep(1)
-                unpause_game()
-                time.sleep(1)
-
                 if "navigate" in skill_name:
                     self.execute_navigation(skill_name)
                 else:
                     execute_skill(name=skill_name, params=skill_params)
                 
-                last_skill = skill_name
-                
+                exec_info["executed_skills"].append(skill_name)
+                exec_info["last_skill"] = skill_name
+
                 self.post_action_wait()
 
         except Exception as e:
             logger.error(f"Error executing skill: {e}")
-            errors = True
+            exec_info["errors"] = True
 
-        return errors, last_skill
+        return exec_info
 
 
     def post_action_wait(self):

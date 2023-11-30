@@ -9,10 +9,34 @@ from uac.gameio.atomic_skills.move import turn, move_forward
 from uac.gameio.lifecycle.ui_control import take_screenshot
 from uac.config import Config
 from uac.log import Logger
+from uac.gameio.skill_registry import register_skill
 from uac.utils.file_utils import assemble_project_path
 
 config = Config()
 logger = Logger()
+
+
+@register_skill("go_to_horse")
+def go_to_horse():
+    """
+    Navigates to the closest horse in the minimap to travel mid to long distances.
+    """
+    go_to_icon("horse")
+
+
+# @register_skill("go_to_icon")
+def go_to_icon(target: str = "horse"):
+    """
+    Navigates to the closed icon of the target in the minimap.
+
+    Parameters:
+    - target: Name of the target icon type on the minimap. The default value is "horse"
+    """
+
+    template_file = f'./res/icons/{target}.jpg'
+    max_iterations = 200
+
+    cv_go_to_icon(max_iterations, template_file)
 
 
 def get_theta(origin_x, origin_y, center_x, center_y):

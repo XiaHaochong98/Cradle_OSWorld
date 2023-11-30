@@ -13,9 +13,9 @@ def register_skill(name):
         return skill
     return decorator
 
+
 def extract_function_info(input_string: str = "open_map()"):
-    
-    #?P<idx>
+
     pattern = re.compile(r'(\w+)\((.*?)\)')
 
     match = pattern.match(input_string)
@@ -27,16 +27,19 @@ def extract_function_info(input_string: str = "open_map()"):
         try:
             parsed_arguments = ast.parse(f"fake_func({raw_arguments})", mode='eval')
         except SyntaxError:
-            raise ValueError("Invalid function call format.")
-        
+            raise ValueError("Invalid function call/arg format to parse.")
+
         arguments = {}
         for node in ast.walk(parsed_arguments):
             if isinstance(node, ast.keyword):
                 arguments[node.arg] = ast.literal_eval(node.value)
 
+        if len(raw_arguments) > 0 and len(arguments.keys()) == 0:
+            raise ValueError("Call arguments not properly parsed!")
+
         return function_name, arguments
     else:
-        raise ValueError("Invalid function arguments format.")
+        raise ValueError("Invalid function call format string.")
 
 
 def execute_skill(name: str = "open_map", params: Dict = None):

@@ -68,7 +68,6 @@ The surrounding context of the minimap is vital for in-game navigation and decis
                 break
 
             # Get environment input
-            self.env_manager.switch_to_game()
             image = self.env_manager.capture_screen()
             self.env_manager.pause_game()
 
@@ -92,8 +91,8 @@ The surrounding context of the minimap is vital for in-game navigation and decis
             output_format = read_resource_file("./res/prompts/api_output/gather_information.json")
             args = {"output_format": output_format, "image_introduction": image_introduction}
 
-            data = self.planner.gather_information(input=args)
-            info_response = data["res_dict"]["description"]
+            # data = self.planner.gather_information(input=args)
+            # info_response = data["res_dict"]["description"]
 
             # Prepare decision making
 
@@ -122,10 +121,11 @@ The surrounding context of the minimap is vital for in-game navigation and decis
 
             args = {"context" : context, "task_description" : task_description, "skill_library" : skill_library, "previous_actions" : previous_actions, "output_format" : output_format, "image_introduction": image_introduction}
 
-            data = self.planner.decision_making(input=args)
+            skills = []
 
-            # Action extraction and execution
-            skills = data['outcome']
+            # data = self.planner.decision_making(input=args)
+            # skills = data['outcome']
+
             if skills is None:
                 skills = []
 
@@ -142,11 +142,14 @@ The surrounding context of the minimap is vital for in-game navigation and decis
                 skill_steps = skills
 
             skill_steps = skill_steps[:1]
+
+            skill_steps = ['turn(theta=30)', 'move_forward(duration=1)', 'turn(theta=90)', 'move_forward(duration=3)']
+
             logger.write(f'Skill Steps: {skill_steps}')
 
             exec_info = self.env_manager.execute_actions(skill_steps)
 
-            pre_skill = exec_info[1]
+            pre_skill = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
 
             post_action_image = self.env_manager.capture_screen(include_minimap=False)[0]
             self.env_manager.pause_game()
@@ -175,15 +178,15 @@ The surrounding context of the minimap is vital for in-game navigation and decis
 
             args = {"task_description" : task_description, "output_format" : output_format, "image_introduction": image_introduction}
 
-            data = self.planner.success_detection(input=args)
+            # data = self.planner.success_detection(input=args)
 
-            # Check success
-            res_dict = data['res_dict']
-            reason = res_dict['decision']['reason']
-            success = data['outcome']
+            # # Check success
+            # res_dict = data['res_dict']
+            # reason = res_dict['decision']['reason']
+            # success = data['outcome']
 
-            logger.write(f'Success: {success}')
-            logger.write(f'Reason: {reason}')
+            # logger.write(f'Success: {success}')
+            # logger.write(f'Reason: {reason}')
 
             # @TODO represent new state for next loop
             # @TODO re-use post-action image for info gathering?
