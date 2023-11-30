@@ -144,13 +144,16 @@ def is_env_paused():
     is_paused = False
     confidence_threshold = 0.85
 
-    # multiple-scale-template-matching example, decide whether the game is paused according to the confidence score
+    # Multiple-scale-template-matching example, decide whether the game is paused according to the confidence score
     pause_clock_template_file = './res/icons/clock.jpg'
     
     screenshot = take_screenshot(time.time(), include_minimap=False)[0]
     match_info = match_template_image(screenshot, pause_clock_template_file, debug=True, output_bb=True, save_matches=True, scale='full')
 
     is_paused = match_info[0]['confidence'] >= confidence_threshold
+
+    # Renaming pause candidate screenshot to ease debugging or gameplay scenarios
+    os.rename(screenshot, screenshot.replace('screen', 'pause_screen_candidate'))
 
     return is_paused
 

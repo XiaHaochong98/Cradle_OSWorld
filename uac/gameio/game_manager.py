@@ -114,3 +114,7 @@ class GameManager:
 
     def extract_minimap(self, screenshot_path):
         return segment_minimap(screenshot_path)
+
+
+    def list_session_screenshots(self, session_dir: str = config.work_dir):
+        return io_env.list_session_screenshots(session_dir)
