@@ -93,7 +93,7 @@ class GameManager:
                 exec_info["executed_skills"].append(skill_name)
                 exec_info["last_skill"] = skill_name
 
-                self.post_action_wait()
+            self.post_action_wait()
 
         except Exception as e:
             logger.error(f"Error executing skill: {e}")

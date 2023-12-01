@@ -26,7 +26,8 @@ def turn(theta):
     Turns the in-game character left or right based on the specified theta angle.
 
     Parameters:
-    - theta: The angle in radians for the turn. Use a negative value to turn left and a positive value to turn right.
+    - theta: The angle for the turn. Use a negative value to turn left and a positive value to turn right.
+    For example, if theta = 30, the character will turn right 30 degrees. If theta = -30, the character will turn left 30 degrees.
     """
     theta = _theta_calculation(theta)
 
@@ -100,10 +101,10 @@ def stop_horse():
 
 __all__ = [
     "turn",
-    "turn_right",
-    "turn_left",
+    #"turn_right",
+    #"turn_left",
     "move_forward",
-    "mount_horse",
-    "dismount_horse",
-    "stop_horse",
+    #"mount_horse",
+    #"dismount_horse",
+    #"stop_horse",
 ]

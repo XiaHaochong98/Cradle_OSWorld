@@ -1,0 +1,18 @@
+{
+    "type": "success_detection",
+    "task_description": "Your task is to enter the general store.",
+    "image_introduction": [
+        {
+            "introduction": "This screenshot is the previous step of the game",
+            "path": "./res/prompts/testing/decision_making/map_create_waypoint/screenshots/1.jpg",
+            "assistant": ""
+        },
+        {
+            "introduction": "This screenshot is the current step of the game",
+            "path": "./res/prompts/testing/decision_making/map_create_waypoint/screenshots/2.jpg",
+            "assistant": ""
+        }
+    ],
+    "output_format": "{\n        \"type\": \"success_detection\",\n        \"task_description\": \"the task description\",\n        \"decision\":\n            {\n                \"criteria\": \"1.,2.,...\",\n                \"reason\": \"the reason for the decision\",\n                \"success\": false\n            }\n    }",
+    "__comments__": "This is a template for success detection"
+}

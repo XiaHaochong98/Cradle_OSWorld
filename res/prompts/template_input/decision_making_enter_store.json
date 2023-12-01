@@ -1,0 +1,44 @@
+{
+    "type": "decision_making",
+    "task_description": "Your task is to enter the general store.",
+    "skill_library": "[\n    {\n      \"function_expression\": \"shopkeeper_interaction()\",\n      \"description\": \"Initiates interaction with the shopkeeper by long-pressing the right mouse button. This action opens the transaction menu. Note: The transaction type must be determined and the interaction closed afterward.\",\n      \"parameters\": {}\n    },\n    {\n    \"function_expression\": \"browse_catalogue()\",\n    \"description\": \"Opens the catalog by pressing the \"e\" key for a specified duration. Note: it must run the shopkeeper_interaction function before running this function. Parameters: - duration: The duration for which the \"e\" key is held down (default is 1 second).\",\n    \"parameters\": {}\n   },\n    {\n    \"function_expression\": \"cancel_shopkeeper_interaction()\",\n    \"description\": \"Cancels the interaction with the shopkeeper by releasing the right mouse button.\",\n    \"parameters\": {}\n   },\n    {\n       \"function_expression\": \"view_next_page()\",\n      \"description\": \"Pressing \"e\" opens the next page in the catalog.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"select_up_product()\",\n      \"description\": \"Select the product above by pressing the \"up\" arrow key.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"select_down_product()\",\n      \"description\": \"Select the product below by pressing the \"down\" arrow key.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"select_left_product()\",\n      \"description\": \"This function simulates the action of selecting the left product. It uses the pydirectinput library to press the \"left\" key.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"select_right_product()\",\n      \"description\": \"This function simulates the action of selecting the right product. It uses the pydirectinput library to press the \"right\" key.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"buy_product()\",\n      \"description\": \"Pressing \"enter\" purchases the selected product.\",\n      \"parameters\": {}\n    },\n  ]",
+    "decision_making_memory_description": "",
+    "gathered_information_description": "",
+    "number_of_execute_skills": 2,
+    "previous_action": "None",
+    "previous_reasoning": "None",
+    "image_introduction":[
+        {
+            "introduction": "Here are some examples of trading in the game.",
+            "path": "",
+            "assistant": ""
+        },
+        {
+            "introduction": "This example shows that the CARROT is currently selected in the image.",
+            "path": "res/prompts/testing/decision_making/buy/14.jpg",
+            "assistant": "Yes. That is correct!"
+        },
+        {
+            "introduction": "This example shows that the Canned peaches is currently selected in the image.",
+            "path": "res/prompts/testing/decision_making/buy/7.jpg",
+            "assistant": "Yes. That is correct!"
+        },
+        {
+            "introduction": "Now, I will give you two screenshots for decision making.",
+            "path": "",
+            "assistant": ""
+        },
+        {
+            "introduction": "This screenshot is the previous step of the game",
+            "path": "res/prompts/testing/decision_making/buy/10.jpg",
+            "assistant": ""
+        },
+        {
+            "introduction": "This screenshot is the current step of the game",
+            "path": "res/prompts/testing/decision_making/buy/11.jpg",
+            "assistant": ""
+        }
+    ],
+    "output_format":"{\n    \"reason\": \"answer the questions and then think step by step to provide the reason why to choose the skill or sequence of skills\"\n  \"skill_steps\": [\"skill1(args1=x,args2=y)\", \"skill2(args1=x,args2=y)\"],\n   }",
+    "__comments__": "This is a template for decision making task, the key are (1) task_description: the goal of the current decision making task and the step-by-step logic to achieve it, (2) input_description: The prompt for gpt to understand the inputs, (3) skills_description: all the skills that gpt can choose from and their description, (4) decision_making_memory_description: input from memory to help decision making, (5) gathered_information_description: input from gather_information to help decision making, (6) output_description: the output format and requirements for decision making."
+}
