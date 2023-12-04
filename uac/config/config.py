@@ -28,6 +28,8 @@ class Config(metaclass=Singleton):
     DEFAULT_FIXED_SEED_VALUE = 42
     DEFAULT_FIXED_TEMPERATURE_VALUE = 0.0
 
+    DEFAULT_POST_ACTION_WAIT_TIME = 3
+
     root_dir = '.'
     work_dir = './runs'
     log_dir = './logs'

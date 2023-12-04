@@ -11,5 +11,5 @@
             "assistant": ""
         }
     ],
-    "output_format":"{\n    \"reason\": \"summary of the reason to chose the skill or sequence of skills\"\n  \"skill_steps\": [\"skill1(args1=x,args2=y)\"],\n   }"
+    "output_format":"{\n    \"reasoning\": \"summary of the reasoning to chose the skill or sequence of skills\"\n  \"skill_steps\": [\"skill1(args1=x,args2=y)\"],\n   }"
 }

@@ -108,6 +108,6 @@ Based on the above input, including input images (the first is from the last two
     skill_2() # the skill you choose from the skill list that does not have parameter
     ```"
     ,
-    "reason": "summary of the reason to chose the action or sequence of actions"
+    "reasoning": "summary of the reasoning to chose the action or sequence of actions"
  }
 

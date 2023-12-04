@@ -51,7 +51,7 @@ def main(args):
 
     # Creating planner, which encapsulates model use
 
-    planner_params = {
+    follow_path_planner_params = {
         "__check_list__":[
             "gather_information"
         ],
@@ -73,6 +73,31 @@ def main(args):
             }
         }
     }
+
+    find_horse_planner_params = {
+        "__check_list__":[
+            "gather_information"
+        ],
+        "prompt_paths": {
+            "input_example": {
+            "gather_information": "./res/prompts/template_input/gather_information.json",
+            "decision_making": "./res/prompts/template_input/decision_making_find_horse.json",
+            "success_detection": "./res/prompts/template_input/success_detection_find_horse.json",
+            },
+            "templates": {
+            "gather_information": "./res/prompts/templates/gather_information.prompt",
+            "decision_making": "./res/prompts/templates/decision_making_find_horse.prompt",
+            "success_detection": "./res/prompts/templates/success_detection_find_horse.prompt",
+            },
+            "output_example": {
+            "gather_information": "./res/prompts/api_output/gather_information.json",
+            "decision_making": "./res/prompts/api_output/decision_making.json",
+            "success_detection": "./res/prompts/api_output/success_detection.json",
+            }
+        }
+    }
+
+    planner_params = find_horse_planner_params
 
     system_prompt_template = read_resource_file("./res/prompts/templates/system.prompt")
     args = {"environment_name" : config.env_name}
@@ -97,7 +122,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--providerConfig",
         type=str,
-        default=None,
+        default="./conf/openai_config.json",
     )
 
     # parser.add_argument(

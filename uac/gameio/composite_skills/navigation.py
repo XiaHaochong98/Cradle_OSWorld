@@ -40,7 +40,6 @@ def cv_navigation(total_iterations, terminal_threshold=100, debug = False):
     terminal_threshold *= config.resolution_ratio
 
     warm_up = True
-    
 
     try:
 
@@ -72,8 +71,6 @@ def cv_navigation(total_iterations, terminal_threshold=100, debug = False):
                 break
 
             turn_angle = calculate_turn_angle(timestep, debug)
-
-
 
     except Exception as e:
         logger.warn(f"Error in cv_navigation: {e}. Usually not a problem.")
@@ -304,3 +301,7 @@ def calculate_turn_angle(tid, debug = False, show_image = False):
 
     return real_turn_angle
 
+
+__all__ = [
+    "navigate_path",
+]

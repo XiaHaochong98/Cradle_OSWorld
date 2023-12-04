@@ -1,6 +1,8 @@
 {
     "type": "success_detection",
-    "task_description": "mark a Waypoint via the Index and close the Map to return to the game",
+    "task_description": "Go to the horse",
+    "current_sub_task": "go to horse",
+    "previous_action": "move(duration=2)",
     "image_introduction": [
         {
             "introduction": "the first image is the observation from the previous timestep",

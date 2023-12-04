@@ -11,7 +11,7 @@ Last executed action:
 Previous reasoning for the last action:
 <$previous_reasoning$>
 
-Based on the above input, including input images, what should be the next action exectued on the current state for the task? You should decide what to do for the next step and choose only one corresponding skill from the following skill library. Note that you can never use mouse to select. Once you think the task is finished, you should always back to the game screen. 
+Based on the above input, including input images, what should be the next action executed on the current state for the task? You should decide what to do for the next step and choose only one corresponding skill from the following skill library. Note that you can never use mouse to select. Once you think the task is finished, you should always back to the game screen. For example, if the goal is to create a waypoint and the last image has it, you can assume it was successfully created.
 
 <$skill_library$>
 

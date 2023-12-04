@@ -166,6 +166,8 @@ class GatherInformation():
             processed_response = parse_semi_formatted_json(response)
 
             # Convert the dict to GatherInformationOutput
+            logger.debug(f'GI response type was {processed_response["type"]}')
+            processed_response["type"] = "gather_information" # @TODO HACK
             llm_provider_gather_information_output = GatherInformationOutput(params=processed_response)
 
         except Exception as e:
@@ -259,6 +261,10 @@ class DecisionMaking():
 
             logger.debug(f'>> Downstream - A: {response}')
 
+            if response is None or len(response) == 0:
+                logger.warn('No response in decision making call')
+                logger.debug(input)
+
             # Convert the response to dict
             processed_response = parse_semi_formatted_json(response)
 
@@ -271,6 +277,7 @@ class DecisionMaking():
 
         except Exception as e:
             logger.error(f"Error in decision_making: {e}")
+            logger.error_ex(e)
             flag = False
 
         data = dict(
@@ -402,15 +409,22 @@ class Planner(BasePlanner):
 
         super(BasePlanner, self).__init__()
 
-        self.planner_params = planner_params
         self.system_prompts = system_prompts
+        self.llm_provider = llm_provider
 
         self.use_screen_classification = use_screen_classification
         self.gather_information_max_steps = gather_information_max_steps
 
-        self.llm_provider = llm_provider
         self.marker_matcher = marker_matcher
         self.object_detector = object_detector
+
+        self.set_internal_params(planner_params, use_screen_classification)
+
+
+    # Allow re-configuring planner
+    def set_internal_params(self, planner_params: Dict = None, use_screen_classification: bool = False):
+
+        self.planner_params = planner_params
 
         if not check_planner_params(self.planner_params):
             raise ValueError(f"Error in planner_params: {self.planner_params}")
@@ -421,30 +435,32 @@ class Planner(BasePlanner):
 
         if use_screen_classification:
             self.screen_classification_ = ScreenClassification(self.system_prompts,
-                                                              self.input_examples["screen_classification"],
-                                                              self.templates["screen_classification"],
-                                                              self.output_examples["screen_classification"],
-                                                              self.llm_provider)
+                                                               self.input_examples["screen_classification"],
+                                                               self.templates["screen_classification"],
+                                                               self.output_examples["screen_classification"],
+                                                               self.llm_provider)
+        else:
+            self.screen_classification_ = None
             
         self.gather_information_ = GatherInformation(self.system_prompts,
-                                                    self.input_examples["gather_information"],
-                                                    self.templates["gather_information"],
-                                                    self.output_examples["gather_information"],
-                                                    self.marker_matcher,
-                                                    self.object_detector,
-                                                    self.llm_provider)
+                                                     self.input_examples["gather_information"],
+                                                     self.templates["gather_information"],
+                                                     self.output_examples["gather_information"],
+                                                     self.marker_matcher,
+                                                     self.object_detector,
+                                                     self.llm_provider)
         
         self.decision_making_ = DecisionMaking(self.system_prompts,
-                                              self.input_examples["decision_making"],
-                                              self.templates["decision_making"],
-                                              self.output_examples["decision_making"],
-                                              self.llm_provider)
+                                               self.input_examples["decision_making"],
+                                               self.templates["decision_making"],
+                                               self.output_examples["decision_making"],
+                                               self.llm_provider)
         
         self.success_detection_ = SuccessDetection(self.system_prompts,
-                                                  self.input_examples["success_detection"],
-                                                  self.templates["success_detection"],
-                                                  self.output_examples["success_detection"],
-                                                  self.llm_provider)
+                                                   self.input_examples["success_detection"],
+                                                   self.templates["success_detection"],
+                                                   self.output_examples["success_detection"],
+                                                   self.llm_provider)
 
 
     def _init_input_example(self):

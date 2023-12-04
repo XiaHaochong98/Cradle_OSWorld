@@ -3,6 +3,6 @@
     "skill_steps": [
         "action1(args1=x,args2=y)"
     ],
-    "reason": "summary of the reason to chose the action or sequence of actions",
+    "reasoning": "summary of the reasoning to chose the action or sequence of actions",
     "__comment__": "This is an output of the decision making."
 }

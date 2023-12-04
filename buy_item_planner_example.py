@@ -106,11 +106,11 @@ def main_test_decision_making():
 
     logger.write(f'Skill Steps: {skill_steps}')
     pre_reasoning = ''
-    if 'res_dict' in data.keys() and 'reason' in data['res_dict'].keys():
-        pre_reasoning = data['res_dict']['reason']
+    if 'res_dict' in data.keys() and 'reasoning' in data['res_dict'].keys():
+        pre_reasoning = data['res_dict']['reasoning']
 
     # For such cases with no expected response, we should define a retry limit
-    logger.write(f'Decision reason: {pre_reasoning}')
+    logger.write(f'Decision reasoning: {pre_reasoning}')
 
 def main_test_success_detection():
 
@@ -176,11 +176,11 @@ def main_test_success_detection():
     data = planner.success_detection(input = input)
 
     res_dict = data['res_dict']['decision']
-    reason = res_dict['reason']
+    reasoning = res_dict['reasoning']
     success = data['outcome']
 
     logger.write(f'Success: {success}')
-    logger.write(f'Reason: {reason}')
+    logger.write(f'Reasoning: {reasoning}')
 
 
 def main_pipeline():
@@ -300,12 +300,12 @@ def main_pipeline():
         pre_skill = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
 
         pre_reasoning = ''
-        if 'res_dict' in data.keys() and 'reason' in data['res_dict'].keys():
-            pre_reasoning = data['res_dict']['reason']
+        if 'res_dict' in data.keys() and 'reasoning' in data['res_dict'].keys():
+            pre_reasoning = data['res_dict']['reasoning']
 
         # For such cases with no expected response, we should define a retry limit
 
-        logger.write(f'Decision reason: {pre_reasoning}')
+        logger.write(f'Decision reasoning: {pre_reasoning}')
 
         pre_screen_shot_path = cur_screen_shot_path
         cur_screen_shot_path, _ = gm.capture_screen()
@@ -331,9 +331,9 @@ def main_pipeline():
         data = planner.success_detection(input = input)
 
         success = data['outcome']
-        success_reason = data['res_dict']['decision']['reason']
+        success_reasoning = data['res_dict']['decision']['reasoning']
         logger.write(f'Success: {success}')
-        logger.write(f'Success reason: {success_reason}')
+        logger.write(f'Success reason: {success_reasoning}')
 
 if __name__ == '__main__':
 
@@ -343,4 +343,4 @@ if __name__ == '__main__':
 
     # main_test_success_detection()
 
-    # main_pipeline()
+    main_pipeline()

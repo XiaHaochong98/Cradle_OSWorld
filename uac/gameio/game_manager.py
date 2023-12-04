@@ -16,8 +16,6 @@ io_env = IOEnvironment()
 
 class GameManager:
 
-    POST_ACTION_WAIT_TIME = 3
-
     def __init__(
         self,
         env_name
@@ -74,8 +72,8 @@ class GameManager:
         }
 
         if len(actions) == 0:
-            logger.error(f"No actions to execute!")
-            return True, None
+            logger.warn(f"No actions to execute!")
+            return exec_info
 
         try: 
             switch_to_game()
@@ -93,7 +91,8 @@ class GameManager:
                 exec_info["executed_skills"].append(skill_name)
                 exec_info["last_skill"] = skill_name
 
-            self.post_action_wait()
+                self.post_action_wait()
+                logger.write(f"Finished executing skill: {skill_name} and wait.")
 
         except Exception as e:
             logger.error(f"Error executing skill: {e}")
@@ -102,8 +101,10 @@ class GameManager:
         return exec_info
 
 
+    # Currently all actions have wait in them, if needed
     def post_action_wait(self):
-        time.sleep(self.POST_ACTION_WAIT_TIME)
+    #    time.sleep(config.POST_ACTION_WAIT_TIME)
+        time.sleep(0.5)
 
 
     def capture_screen(self, include_minimap = False):

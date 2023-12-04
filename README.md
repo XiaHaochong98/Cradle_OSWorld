@@ -140,7 +140,7 @@ input_example = {
             "assistant": ""
         }
     ],
-    "output_format": "{\n    \"type\": \"decision_making\",\n    \"skill_steps\": [\"skill1(args1,args2)\"],\n    \"reason\": \"summary of the reason to chose the skill or sequence of skills\"\n}",
+    "output_format": "{\n    \"type\": \"decision_making\",\n    \"skill_steps\": [\"skill1(args1,args2)\"],\n    \"reasoning\": \"summary of the reasoning to chose the skill or sequence of skills\"\n}",
     "__comments__": "This is a template for decision making task, the key are (1) task_description: the goal of the current decision making task and the step-by-step logic to achieve it, (2) input_description: The prompt for gpt to understand the inputs, (3) skills_description: all the skills that gpt can choose from and their description, (4) decision_making_memory_description: input from memory to help decision making, (5) gathered_information_description: input from gather_information to help decision making, (6) output_description: the output format and requirements for decision making."
 }
 
@@ -189,12 +189,12 @@ input_example = {
 # 8. output_format: str, the output format and requirements for decision making
 
 """
-    "output_format":"{\n    \"type\": \"decision_making\",\n    \"skill_steps\": [\"skill1(args1,args2)\"],\n    \"reason\": \"summary of the reason to chose the skill or sequence of skills\"\n}"
+    "output_format":"{\n    \"type\": \"decision_making\",\n    \"skill_steps\": [\"skill1(args1,args2)\"],\n    \"reasoning\": \"summary of the reasoning to chose the skill or sequence of skills\"\n}"
 """
 
     # 8.1 type: str, the type of the prompt, should be "decision_making"
     # 8.2 skill_steps: list of str, the sequence of function expression that GPT-4V chose
-    # 8.3 reason: str, summary of the reason to chose the action or sequence of actions
+    # 8.3 reasoning: str, summary of the reasoning to chose the action or sequence of actions
 
 # 9. __comments__: str, comments for the input_example
 ```
@@ -272,15 +272,15 @@ output_example = {
     "skill_steps": [
         "skill1(args1,args2)"
     ],
-    "reason": "summary of the reason to chose the skill or sequence of skills",
-    "__comments__": "skill_steps is a list of skills that gpt should choose from, reason is the summary of the reason to chose the skill or sequence of skills."
+    "reasoning": "summary of the reasoning to chose the skill or sequence of skills",
+    "__comments__": "skill_steps is a list of skills that gpt should choose from, reasoning is the summary of the reasoning to chose the skill or sequence of skills."
 }
 
 # 1. type: str, the type of the prompt, should be "decision_making"
 
 # 2. skill_steps: list of str, the sequence of function expression that GPT-4V chose
 
-# 3. reason: str, summary of the reason to chose the action or sequence of actions
+# 3. reasoning: str, summary of the reasoning to chose the action or sequence of actions
 
 # 4. __comments__: str, comments for the output_example
 ```
@@ -329,7 +329,7 @@ input_example = {
             "assistant": ""
         }
     ],
-    "output_format": "{\n        \"type\": \"success_detection\",\n        \"task_description\": \"the task description\",\n        \"decision\":\n            {\n                \"criteria\": \"1.,2.,...\",\n                \"reason\": \"the reason for the decision\",\n                \"success\": false\n            }\n    }",
+    "output_format": "{\n        \"type\": \"success_detection\",\n        \"task_description\": \"the task description\",\n        \"decision\":\n            {\n                \"criteria\": \"1.,2.,...\",\n                \"reasoning\": \"the reasoning for the decision\",\n                \"success\": false\n            }\n    }",
     "__comments__": "This is a template for success detection"
 }
 
@@ -355,13 +355,13 @@ input_example = {
     # 3.3 assistant: str, the response of the GPT-4V, if it is empty, indicates that this image has not had a reply from GPT-4V and will not have an assitant message
 
 # 4. output_format: str, the output format and requirements for decision making
-    "output_format":"{\n        \"type\": \"success_detection\",\n        \"task_description\": \"the task description\",\n        \"decision\":\n            {\n                \"criteria\": \"1.,2.,...\",\n                \"reason\": \"the reason for the decision\",\n                \"success\": false\n            }\n    }"
+    "output_format":"{\n        \"type\": \"success_detection\",\n        \"task_description\": \"the task description\",\n        \"decision\":\n            {\n                \"criteria\": \"1.,2.,...\",\n                \"reasoning\": \"the reasoning for the decision\",\n                \"success\": false\n            }\n    }"
 
     # 4.1 type: str, the type of the prompt, should be "success_detection"
     # 4.2 task_description: str, the goal of the current success detection task
     # 4.3 decision:
     #    criteria: str, the criteria for success detection
-    #    reason: str, the reasoning for success detection
+    #    reasoning: str, the reasoning for success detection
     #    success: bool, whether the success detection is successful
 
 # 5. __comments__: str, comments for the input_example
@@ -442,7 +442,7 @@ output_example = {
     "decision":
         {
             "criteria": "The map must be open with the 'Saloon' marked as a Waypoint, and then the map must be closed to indicate the task completion.",
-            "reason": "Both provided images show the in-game character standing near a campfire, with the mini-map visible on the bottom left corner. The mini-map does not provide sufficient information to determine if the 'Saloon' has been marked as a Waypoint via the Index, nor do these images show the main map being closed after marking a Waypoint. We can not see any waypoint marker on the mini-map nor any actions related to opening or navigating the full map.",
+            "reasoning": "Both provided images show the in-game character standing near a campfire, with the mini-map visible on the bottom left corner. The mini-map does not provide sufficient information to determine if the 'Saloon' has been marked as a Waypoint via the Index, nor do these images show the main map being closed after marking a Waypoint. We can not see any waypoint marker on the mini-map nor any actions related to opening or navigating the full map.",
             "success": false
         },
     "__comments__": "This is a output example for success detection."
@@ -454,7 +454,7 @@ output_example = {
 
 # 3. decision:
 #    criteria: str, the criteria for success detection
-#    reason: str, the reasoning for success detection
+#    reasoning: str, the reasoning for success detection
 #    success: bool, whether the success detection is successful
         
 # 4. __comments__: str, comments for the output_example

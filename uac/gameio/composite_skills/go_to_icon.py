@@ -19,7 +19,7 @@ logger = Logger()
 @register_skill("go_to_horse")
 def go_to_horse():
     """
-    Navigates to the closest horse in the minimap to travel mid to long distances.
+    Best way to go to the closest horse. Uses the minimap. Horses are useful to travel mid to long distances.
     """
     go_to_icon("horse")
 
@@ -34,9 +34,9 @@ def go_to_icon(target: str = "horse"):
     """
 
     template_file = f'./res/icons/{target}.jpg'
-    max_iterations = 200
+    max_iterations = 20
 
-    cv_go_to_icon(max_iterations, template_file)
+    cv_go_to_icon(max_iterations, template_file, debug=True)
 
 
 def get_theta(origin_x, origin_y, center_x, center_y):
@@ -110,6 +110,8 @@ def cv_go_to_icon(
 
     for step in range(total_iterations):
         
+        logger.write(f'Go to icon iter #{step}')
+
         timestep = time.time()
 
         # 1. Get observation screenshot
@@ -138,17 +140,18 @@ def cv_go_to_icon(
             # if not dis_stat:  # first time
             #     dis_stat.append(dis)
             # if debug: logger.debug('checking mode is on')
-            logger.debug('Success! Reached the icon.')
+            logger.write('Success! Reached the icon.')
             return True
         
         # 2. Check stuck
         if abs(prev_dis - dis) < 0.5 and abs(prev_theta - theta) < 0.5:
             counter += 1
             if counter >= 1:
-                if debug: logger.debug('begin to get rid of stuck')
+                if debug: 
+                    logger.debug('Move randomly to get unstuck')
                 for _ in range(2):
                     turn(np.random.randint(30, 60) if np.random.rand()<0.5 else -np.random.randint(30, 60))
-                    move_forward(np.random.randint(2, 6))
+                    move_forward(np.random.randint(2, 4))
         else:
             counter = 0
 
@@ -158,9 +161,15 @@ def cv_go_to_icon(
         move_forward(1.5)
         time.sleep(0.5)
 
-        if debug: logger.debug(
-            f"step {step:03d} | timestep {timestep} done | theta: {theta:.2f} | distance: {dis:.2f} | confidence: {confidence:.3f} {'below threshold' if confidence < 0.5 else ''}")
+        if debug: 
+            logger.debug(f"step {step:03d} | timestep {timestep} done | theta: {theta:.2f} | distance: {dis:.2f} | confidence: {confidence:.3f} {'below threshold' if confidence < 0.5 else ''}")
 
         prev_dis, prev_theta = dis, theta
 
+    logger.error(f'Go to icon failed to reach icon.')
     return False  # failed
+
+
+__all__ = [
+    "go_to_horse",
+]

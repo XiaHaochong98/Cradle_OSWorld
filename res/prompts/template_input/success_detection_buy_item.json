@@ -13,6 +13,6 @@
             "assistant": ""
         }
     ],
-    "output_format": "{\n        \"type\": \"success_detection\",\n        \"task_description\": \"the task description\",\n        \"decision\":\n            {\n                \"criteria\": \"1.,2.,...\",\n                \"reason\": \"the reason for the decision\",\n                \"success\": false\n            }\n    }",
+    "output_format": "{\n        \"type\": \"success_detection\",\n        \"task_description\": \"the task description\",\n        \"decision\":\n            {\n                \"criteria\": \"1.,2.,...\",\n                \"reasoning\": \"the reasoning for the decision\",\n                \"success\": false\n            }\n    }",
     "__comments__": "This is a template for success detection"
 }

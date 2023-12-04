@@ -64,7 +64,7 @@ class Object():
         self.type = get_attr(params, 'type', '')
         self.name = get_attr(params, 'name', '')
         self.bounding_box = get_attr(params, 'bounding_box', [])
-        self.reason = get_attr(params, 'reason', '')
+        self.reasoning = get_attr(params, 'reasoning', '')
         self.value = get_attr(params, 'value', '')
         self.confidence = get_attr(params, 'confidence', '')
         self.__comments__ = get_attr(params, '__comments__', '')
@@ -75,12 +75,12 @@ class Object():
         return self.type == other.type and \
                self.name == other.name and \
                self.bounding_box == other.bounding_box and \
-               self.reason == other.reason and \
+               self.reasoning == other.reasoning and \
                self.value == other.value and \
                self.confidence == other.confidence
 
     def __str__(self):
-        return f"Object: {self.type}, {self.name}, {self.bounding_box}, {self.reason}, {self.value}, {self.confidence}"
+        return f"Object: {self.type}, {self.name}, {self.bounding_box}, {self.reasoning}, {self.value}, {self.confidence}"
 
     def __hash__(self):
         return hash(str(self))
@@ -143,7 +143,7 @@ class DecisionMakingInput(BaseInput):
         self.gathered_information_description = get_attr(params, 'gathered_information_description', '')
         self.image_introduction = get_attr(params, 'image_introduction', [])
         self.output_format = get_attr(params, 'output_format', {})
-        self.reason = get_attr(params, 'reason', '')
+        self.reasoning = get_attr(params, 'reasoning', '')
         self.__comments__ = get_attr(params, '__comments__', '')
 
         self.params = params
@@ -168,7 +168,7 @@ class DecisionMakingOutput(BaseOutput):
 
         self.type = get_attr(params, 'type', 'decision_making')
         self.skill_steps = get_attr(params, 'skill_steps', [])
-        self.reason = get_attr(params, 'reason', '')
+        self.reasoning = get_attr(params, 'reasoning', '')
         self.__comments__ = get_attr(params, '__comments__', '')
 
         if not self.check():
@@ -219,7 +219,7 @@ class SuccessDetectionOutput(BaseOutput):
         self.decision = get_attr(params, 'decision', '')
         
         self.criteria = get_attr(self.decision, 'criteria', '')
-        self.reason = get_attr(self.decision, 'reason', '')
+        self.reasoning = get_attr(self.decision, 'reasoning', '')
         self.succcess = get_attr(self.decision, 'success', False)
         
         self.__comments__ = get_attr(params, '__comments__', '')

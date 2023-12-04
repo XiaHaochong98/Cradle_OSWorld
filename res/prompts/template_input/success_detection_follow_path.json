@@ -13,5 +13,5 @@
             "assistant": ""
         }
     ],
-    "output_format":"{\n  \"type\": \"success_detection\",\n  \"goal\": \"Go to store\",\n  \"decision\": \n    {\n      \"criteria\": \"1.\",\n      \"reason\": \"The selected place 'Grub' in the index is not the target place 'General Store'.\",\n      \"success\": false\n    }\n}"
+    "output_format":"{\n  \"type\": \"success_detection\",\n  \"goal\": \"Go to store\",\n  \"decision\": \n    {\n      \"criteria\": \"1.\",\n      \"reasoning\": \"The selected place 'Grub' in the index is not the target place 'General Store'.\",\n      \"success\": false\n    }\n}"
 }

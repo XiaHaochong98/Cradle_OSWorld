@@ -52,7 +52,7 @@ class MemoryInterface:
     ) -> None:
         """Add previous action and reasoning to memory."""
         self.action_history.append(info.skill_steps)
-        self.prev_reasoning.append(info.reason)
+        self.prev_reasoning.append(info.reasoning)
 
     def get_prev_action(self) -> str:
         """Query the previous action of the player."""

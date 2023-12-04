@@ -120,3 +120,10 @@ class Logger(metaclass=Singleton):
         ):
 
         self._log(title, title_color, message, logging.WARN)
+
+
+    def error_ex(self, exception: Exception):
+        traceback = exception.__traceback__
+        while traceback:
+            self.error("{}: {}".format(traceback.tb_frame.f_code.co_filename, traceback.tb_lineno))
+            traceback = traceback.tb_next

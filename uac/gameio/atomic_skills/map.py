@@ -1,8 +1,13 @@
 import pyautogui
 import pydirectinput
-from uac.gameio import IOEnvironment
-from uac.gameio.skill_registry import register_skill
 
+from uac.config import Config
+from uac.log import Logger
+from uac.gameio import IOEnvironment
+from uac.gameio.skill_registry import register_skill, post_skill_wait
+
+config = Config()
+logger = Logger()
 io_env = IOEnvironment()
 ahk = io_env.ahk
 
@@ -12,7 +17,12 @@ def open_map():
     """
     Opens the in-game map.
     """
+
+    logger.write("Running open_map()")
+
     pydirectinput.press("m")
+
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
 
 @register_skill("add_mark")
@@ -30,8 +40,10 @@ def add_waypoint():
     """
     Creates a waypoint at the item selected in the opened map index, by pressing "enter".
     Waypoint creation displays the path to the target location.
-
     """
+
+    logger.write("Running add_waypoint()")
+
     pydirectinput.press("enter")
 
 
@@ -42,8 +54,10 @@ def close_map():
     """
     pydirectinput.press("esc")
 
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
-@register_skill("zoom_in_map")
+
+#@register_skill("zoom_in_map")
 def zoom_in_map():
     """
     Zooms in on the in-game map by scrolling the mouse wheel up.
@@ -51,7 +65,7 @@ def zoom_in_map():
     ahk.click(button="WU")
 
 
-@register_skill("zoom_out_map")
+#@register_skill("zoom_out_map")
 def zoom_out_map():
     """
     Zooms out on the in-game map by scrolling the mouse wheel down.
@@ -62,9 +76,14 @@ def zoom_out_map():
 @register_skill("open_index")
 def open_index():
     """
-    Opens the game index by pressing the "space" key.
+    Opens the map index by pressing the "space" key, after the map is open.
     """
+
+    logger.write("Running open_index()")
+
     pydirectinput.press("space")
+
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
 
 @register_skill("close_index")
@@ -74,8 +93,10 @@ def close_index():
     """
     pydirectinput.press("space")
 
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
-@register_skill("switch_to_next_index_object")
+
+#@register_skill("switch_to_next_index_object")
 def switch_to_next_index_object():
     """
     Switches to the next index object type after opening the index by pressing "q".
@@ -83,7 +104,7 @@ def switch_to_next_index_object():
     pydirectinput.press("q")
 
 
-@register_skill("switch_to_previous_index_object")
+#@register_skill("switch_to_previous_index_object")
 def switch_to_previous_index_object():
     """
     Switches to the previous index object type after opening the index by pressing "e".
@@ -91,7 +112,7 @@ def switch_to_previous_index_object():
     pydirectinput.press("e")
 
 
-@register_skill("select_mouse_index_object")
+#@register_skill("select_mouse_index_object")
 def select_mouse_index_object():
     """
     Selects the index object at the current mouse position by clicking the left mouse button once.
@@ -100,7 +121,7 @@ def select_mouse_index_object():
     pyautogui.mouseUp()
 
 
-@register_skill("adjust_map_position")
+#@register_skill("adjust_map_position")
 def adjust_map_position(width, height):
     """
     Drags the in-game map by using the mouse drag function, adjusting the map position based on
@@ -113,7 +134,7 @@ def adjust_map_position(width, height):
     ahk.mouse_drag(width, height, relative=True)
 
 
-@register_skill("move_mouse_on_map")
+#@register_skill("move_mouse_on_map")
 def move_mouse_on_map(width, height, speed=100, relative=True):
     """
     Moves the mouse to a specific position on the in-game map based on the provided width and height offsets.
@@ -143,6 +164,7 @@ def select_next_index_object():
     Items of interest may be out of view, so this skill is useful for scrolling through the index.
     """
     pydirectinput.press("down")
+
 
 __all__ = [
     "open_map",

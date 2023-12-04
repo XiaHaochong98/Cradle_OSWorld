@@ -7,6 +7,6 @@
                 "params": {}
             }
         ],
-        "reason": "To mark the 'Saloon' on the map as a waypoint, the first step is to open the map index, which allows for navigation to various points of interest on the map, including the 'Saloon'."
+        "reasoning": "To mark the 'Saloon' on the map as a waypoint, the first step is to open the map index, which allows for navigation to various points of interest on the map, including the 'Saloon'."
 }
 ```

@@ -1,6 +1,6 @@
 The screenshot is a map describing the game world. On the left side of the screenshot, there is an index listing all the possible places to be chosen as the waypoint.
 
-The index lists all the possible places in a sequential manner. The selected place is marked with a red rectangle. Your task is to decide whether the selected place is the same as the target place. Your input contains a screenshot of the map containing the index list and text of the target place. Your output should be a JSON file that contains the distance of the target place to the current selected place. 
+The index lists all the possible places in a sequential manner. The selected place is marked with a red rectangle. Your task is to decide whether the selected place is the same as the target place. Your input contains a screenshot of the map containing the index list and text of the target place. Your output should be a JSON file that contains the distance of the target place to the current selected place. Do not add a waypoint to random places. Always check if the target is correct.
 
 The JSON file should be in the following format:
 <$output_format$>

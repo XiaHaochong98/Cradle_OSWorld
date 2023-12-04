@@ -1,9 +1,12 @@
 import re
 import ast
-from typing import Dict
+import time
+from typing import Dict, Any
 import inspect
-from typing import Any
 
+from uac.config import Config
+
+config = Config()
 SKILL_REGISTRY = {}
 
 
@@ -85,3 +88,8 @@ def get_skill_library(skill: Any) -> Dict:
 
 def get_skill_library_in_code(skill: Any) -> str:
     return inspect.getsource(skill)
+
+
+def post_skill_wait(wait_time: config.DEFAULT_POST_ACTION_WAIT_TIME):
+    """Wait for skill to finish. Like if there is an animation"""
+    time.sleep(wait_time)

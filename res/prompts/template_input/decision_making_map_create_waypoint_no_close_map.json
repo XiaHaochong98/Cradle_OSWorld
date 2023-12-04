@@ -19,6 +19,6 @@
             "assistant": ""
         }
     ],
-    "output_format":"{\n    \"reason\": \"summary of the reason to chose the skill or sequence of skills\"\n  \"skill_steps\": [\"skill1(args1=x,args2=y)\"],\n   }",
+    "output_format":"{\n    \"reasoning\": \"summary of the reasoning to chose the skill or sequence of skills\"\n  \"skill_steps\": [\"skill1(args1=x,args2=y)\"],\n   }",
     "__comments__": "This is a template for decision making task, the key are (1) task_description: the goal of the current decision making task and the step-by-step logic to achieve it, (2) input_description: The prompt for gpt to understand the inputs, (3) skills_description: all the skills that gpt can choose from and their description, (4) decision_making_memory_description: input from memory to help decision making, (5) gathered_information_description: input from gather_information to help decision making, (6) output_description: the output format and requirements for decision making."
 }

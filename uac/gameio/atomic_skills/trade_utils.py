@@ -1,9 +1,11 @@
 import pyautogui
 import pydirectinput
 
+from uac.config import Config
 from uac.gameio import IOEnvironment
-from uac.gameio.skill_registry import register_skill
+from uac.gameio.skill_registry import register_skill, post_skill_wait
 
+config = Config()
 io_env = IOEnvironment()
 ahk = io_env.ahk
 
@@ -17,6 +19,8 @@ def shopkeeper_interaction():
     """
     pyautogui.mouseDown(button="right")
 
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
+
 
 @register_skill("cancel_shopkeeper_interaction")
 def cancel_shopkeeper_interaction():
@@ -24,6 +28,8 @@ def cancel_shopkeeper_interaction():
     Cancels the interaction with the shopkeeper by releasing the right mouse button.
     """
     pyautogui.mouseUp(button="right")
+
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
 
 @register_skill("select_products_by_mouse")
@@ -55,6 +61,8 @@ def go_back():
     Returns to the upper level by pressing the "esc" key.
     """
     pydirectinput.press("esc")
+
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
 
 @register_skill("select_next_up_product")

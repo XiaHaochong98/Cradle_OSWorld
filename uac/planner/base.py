@@ -87,6 +87,12 @@ def to_text(template_str: str = None, params: Dict[str, Any] = None) -> str:
             if isinstance(params[key], list) or isinstance(params[key], dict):
                 str = str.replace(f'<${key}$>', json.dumps(params[key], indent=4))
             else:
+
+                if params[key] is None:
+
+                    logger.warn(f"Value for: {key} is None!")
+                    params[key] = ''
+                    
                 str = str.replace(f'<${key}$>', params[key])
     return str
 

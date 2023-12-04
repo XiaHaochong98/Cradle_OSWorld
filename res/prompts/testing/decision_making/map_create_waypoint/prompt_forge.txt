@@ -115,7 +115,7 @@ Based on the above input, including input images (the first is from the last two
                 "params": {}
             }
         ],
-        "reason": "summary of the reason to chose the action or sequence of actions"
+        "reasoning": "summary of the reasoning to chose the action or sequence of actions"
   }
 
  You should only output a JSON file without other explanation, do not give a markdown of a JSON file.

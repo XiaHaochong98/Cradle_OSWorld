@@ -25,18 +25,18 @@ def main_test_decision_making():
         ],
         "prompt_paths": {
             "input_example": {
-                "decision_making": "./res/prompts/template_input/decision_making_enter_store.json",
+                "decision_making": "./res/prompts/template_input/decision_making_get_close_to_shopkeeper.json",
                 "gather_information": "./res/prompts/template_input/gather_information.json",
                 "success_detection": "./res/prompts/template_input/success_detection.json"
 
             },
             "templates": {
-                "decision_making": "./res/prompts/templates/decision_making_enter_store.prompt",
+                "decision_making": "./res/prompts/templates/decision_making_get_close_to_shopkeeper.prompt",
                 "gather_information": "./res/prompts/templates/gather_information.prompt",
                 "success_detection": "./res/prompts/templates/success_detection.prompt"
             },
             "output_example": {
-                "decision_making": "./res/prompts/api_output/decision_making_enter_store.json",
+                "decision_making": "./res/prompts/api_output/decision_making_get_close_to_shopkeeper.json",
                 "gather_information": "./res/prompts/api_output/gather_information.json",
                 "success_detection": "./res/prompts/api_output/success_detection.json"
             }
@@ -120,17 +120,17 @@ def main_test_success_detection():
         ],
         "prompt_paths": {
             "input_example": {
-                "decision_making": "./res/prompts/template_input/decision_making_enter_store.json",
+                "decision_making": "./res/prompts/template_input/decision_making_get_close_to_shopkeeper.json",
                 "gather_information": "./res/prompts/template_input/gather_information.json",
-                "success_detection": "./res/prompts/template_input/success_detection_enter_store.json"
+                "success_detection": "./res/prompts/template_input/success_detection_get_close_to_shopkeeper.json"
             },
             "templates": {
-                "decision_making": "./res/prompts/templates/decision_making_enter_store.prompt",
+                "decision_making": "./res/prompts/templates/decision_making_get_close_to_shopkeeper.prompt",
                 "gather_information": "./res/prompts/templates/gather_information.prompt",
-                "success_detection": "./res/prompts/templates/success_detection_enter_store.prompt"
+                "success_detection": "./res/prompts/templates/success_detection_get_close_to_shopkeeper2.prompt"
             },
             "output_example": {
-                "decision_making": "./res/prompts/api_output/decision_making_enter_store.json",
+                "decision_making": "./res/prompts/api_output/decision_making_get_close_to_shopkeeper.json",
                 "gather_information": "./res/prompts/api_output/gather_information.json",
                 "success_detection": "./res/prompts/api_output/success_detection.json"
             }
@@ -154,12 +154,12 @@ def main_test_success_detection():
     image_introduction = [
         {
             "introduction": input["image_introduction"][-2]["introduction"],
-            "path": "res/prompts/testing/success_detection/enter_store/2.jpg",
+            "path": r"C:\Users\28094\Desktop\UAC_close_shopkeeper\UAC\runs\1701448567.7958703\screen_1701448637.1428964.jpg",
             "assistant": input["image_introduction"][-2]["assistant"]
         },
         {
             "introduction": input["image_introduction"][-1]["introduction"],
-            "path": "res/prompts/testing/success_detection/enter_store/3.jpg",
+            "path": r"C:\Users\28094\Desktop\UAC_close_shopkeeper\UAC\runs\1701448567.7958703\screen_1701448670.9772367.jpg",
             "assistant": input["image_introduction"][-1]["assistant"]
         }
     ]
@@ -176,8 +176,8 @@ def main_test_success_detection():
     # pre_reasoning = "In the current screenshot, the character has moved closer to the door of the general store, indicating that the previous action of moving forward was correct. There are no visible obstacles directly in front of the character that would prevent entry into the store. The door to the general store is right in front of the character and no additional turning is required to face it. The character seems well aligned with the door, thus no turn function is needed at this moment. The next reasonable action is to continue moving forward to enter the general store. Since the duration parameter for moving forward should be exactly 1 second, we will proceed with that."
 
     # 2/3.jpg 
-    pre_skill = ''
-    pre_reasoning = "In the current screenshot, the character has successfully entered the general store, which was the given task. There is no need for further movement or turning since the character is already inside the store, facing the shopkeeper, and properly aligned to interact. Hence, no action is required at this precise moment. The last executed action of moving forward for 1 second seems to have been appropriate as it resulted in the character positioning himself just inside the store without any obstacles in the immediate vicinity. There is no inconsistency with the current screenshot; the previous reasoning was correct, and the task to enter the general store has been completed."
+    pre_skill = 'move_forward(duration=1)'
+    pre_reasoning = "1. The character is located near the entrance of the shop, slightly to the left side of the center aisle as we look at the screen. 2. The target, the shopkeeper, is on the right side of the image but not directly in front. The character needs to turn slightly right to face the shopkeeper directly. 3. The previous reasoning seems to be incorrect; the character has not moved forward significantly since the last action and still requires a slight right turn before moving forward to approach the shopkeeper more accurately. 4. To correct the direction, the character needs to turn right slightly. Then the character should move forward to get closer to the shopkeeper. Since the shopkeeper is only slightly to the right, a small turn angle should suffice. Thus, I will choose a turn of 15 degrees to the right, followed by moving forward for a duration of 1 second. 5. Yes, the reasoning is consistent with the provided screenshot and in adherence to the instructions for turning and moving forward in every action."
 
     input["previous_action"] = pre_skill
     input["previous_reasoning"] = pre_reasoning
@@ -201,18 +201,18 @@ def main_pipeline():
         ],
         "prompt_paths": {
             "input_example": {
-                "decision_making": "./res/prompts/template_input/decision_making_enter_store.json",
+                "decision_making": "./res/prompts/template_input/decision_making_get_close_to_shopkeeper.json",
                 "gather_information": "./res/prompts/template_input/gather_information.json",
-                "success_detection": "./res/prompts/template_input/success_detection_enter_store.json"
+                "success_detection": "./res/prompts/template_input/success_detection_get_close_to_shopkeeper.json"
 
             },
             "templates": {
-                "decision_making": "./res/prompts/templates/decision_making_enter_store.prompt",
+                "decision_making": "./res/prompts/templates/decision_making_get_close_to_shopkeeper.prompt",
                 "gather_information": "./res/prompts/templates/gather_information.prompt",
-                "success_detection": "./res/prompts/templates/success_detection_enter_store.prompt"
+                "success_detection": "./res/prompts/templates/success_detection_get_close_to_shopkeeper.prompt"
             },
             "output_example": {
-                "decision_making": "./res/prompts/api_output/decision_making_enter_store.json",
+                "decision_making": "./res/prompts/api_output/decision_making_get_close_to_shopkeeper.json",
                 "gather_information": "./res/prompts/api_output/gather_information.json",
                 "success_detection": "./res/prompts/api_output/success_detection.json"
             }
@@ -281,7 +281,7 @@ def main_pipeline():
             # },
             # {
             #     "introduction": "This image is the front scene of the general store for reference.",
-            #     "path": r"C:\Users\28094\Desktop\UAC_main_1129\UAC\res\prompts\testing\decision_making\enter_store\screen_1701265459.72348.jpg",
+            #     "path": r"C:\Users\28094\Desktop\UAC_main_1129\UAC\res\prompts\testing\decision_making\get_close_to_shopkeeper\screen_1701265459.72348.jpg",
             #     "assistant": ""
             # },
             {
@@ -361,7 +361,8 @@ if __name__ == '__main__':
 
     # not implemented
     # main_test_decision_making()
-
+    
+    # not implemented
     #main_test_success_detection()
 
     main_pipeline()

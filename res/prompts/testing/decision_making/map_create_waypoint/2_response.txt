@@ -7,6 +7,6 @@
     confirm_selection() # Confirms selection of the Saloon on the index
     close_map() # Closes the map to return to the gameplay
     ```",
-    "reason": "Based on the second image, the index is already open and the 'Player' is selected. The next steps would be to select the 'Saloon' in the index, confirm this selection to set it as a waypoint, and finally close the map to return to the game."
+    "reasoning": "Based on the second image, the index is already open and the 'Player' is selected. The next steps would be to select the 'Saloon' in the index, confirm this selection to set it as a waypoint, and finally close the map to return to the game."
  }
 ```

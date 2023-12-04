@@ -3,7 +3,7 @@ import pydirectinput
 
 from uac.config import Config
 from uac.gameio import IOEnvironment
-from uac.gameio.skill_registry import register_skill
+from uac.gameio.skill_registry import register_skill, post_skill_wait
 
 config = Config()
 io_env = IOEnvironment()
@@ -78,9 +78,11 @@ def move_forward(duration):
 @register_skill("mount_horse")
 def mount_horse():
     """
-    Mounts the horse by pressing the "e" key.
+    Needs to be close to the horse. Mounts the horse by pressing the "e" key.
     """
     pydirectinput.press("e")
+
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
 
 @register_skill("dismount_horse")
@@ -89,6 +91,8 @@ def dismount_horse():
     Dismounts the horse by pressing the "e" key.
     """
     pydirectinput.press("e")
+
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
 
 @register_skill("stop_horse")
@@ -104,7 +108,7 @@ __all__ = [
     #"turn_right",
     #"turn_left",
     "move_forward",
-    #"mount_horse",
-    #"dismount_horse",
-    #"stop_horse",
+    "mount_horse",
+    "dismount_horse",
+    "stop_horse",
 ]

@@ -2,9 +2,11 @@ import time
 import pyautogui
 import pydirectinput
 
+from uac.config import Config
 from uac.gameio import IOEnvironment
-from uac.gameio.skill_registry import register_skill
+from uac.gameio.skill_registry import register_skill, post_skill_wait
 
+config = Config()
 io_env = IOEnvironment()
 ahk = io_env.ahk
 
@@ -38,6 +40,8 @@ def browse_catalogue(duration=1):
     time.sleep(duration)
     pydirectinput.keyUp("e")
 
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
+
 
 @register_skill("view_next_page")
 def view_next_page():
@@ -46,6 +50,8 @@ def view_next_page():
     """
     pydirectinput.press("e")
 
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
+
 
 @register_skill("view_previous_page")
 def view_previous_page():
@@ -53,6 +59,8 @@ def view_previous_page():
     Pressing "q" returns to the previous page in the catalog.
     """
     pydirectinput.press("q")
+
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
 
 @register_skill("confirm_selection_in_menu")

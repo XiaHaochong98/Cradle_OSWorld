@@ -1,6 +1,6 @@
 {
     "type": "success_detection",
-    "task_description": "Mark the \"Saloon\" on a Map as the Waypoint via the Index.",
+    "task_description": "Your task is to get close to the shopkeeper.",
     "image_introduction": [
         {
             "introduction": "This screenshot is the previous step of the game",
@@ -13,6 +13,6 @@
             "assistant": ""
         }
     ],
-    "output_format": "{\n        \"type\": \"success_detection\",\n        \"task_description\": \"the task description\",\n        \"decision\":\n            {\n                \"criteria\": \"1.,2.,...\",\n                \"reasoning\": \"the reasoning for the decision\",\n                \"success\": false\n            }\n    }",
+    "output_format": "{\n        \"type\": \"success_detection\",\n        \"task_description\": \"the task description\",\n        \"decision\":\n            {\n                \"criteria\": \"1.,2.,...\",\n                \"reasoning\": \"the reason for the decision\",\n                \"success\": false\n            }\n    }",
     "__comments__": "This is a template for success detection"
 }
