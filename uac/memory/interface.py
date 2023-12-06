@@ -46,6 +46,8 @@ class MemoryInterface:
         self.current_status: str = ""
         self.action_history: List[str] = []
         self.prev_reasoning: List[str] = []
+        self.hidden_state: str = 'This is the character in Red Dead Redemption 2.'
+        self.image_history: List[Image] = []
 
     def add_gathered_info(
         self,
@@ -128,6 +130,28 @@ class MemoryInterface:
     def get_recent_experiences(self, recent_k: int) -> List[Dict]:
         """Query the recent k experiences."""
         return self.memory.recent_search(recent_k = recent_k)
+    
+    def add_hidden_state(self, hidden_state: str) -> None:
+        """Update the hidden_state."""
+        self.hidden_state = hidden_state
+    
+    def get_hidden_state(self) -> str:
+        """Query the hidden_state."""
+        return self.hidden_state
+    
+    def add_image_history(self, img: Image) -> None:
+        """Update the image_history."""
+        self.image_history.append(img)
+        if len(self.image_history) > 5:
+            self.image_history.pop(0)
+    
+    def get_image_history(self) -> List[Image]:
+        """Query the image_history."""
+        return self.image_history
+
+    def get_history_length(self) -> int:
+        """Query the length of image_history."""
+        return len(self.image_history)
 
 
     def load_local(

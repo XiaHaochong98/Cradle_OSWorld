@@ -27,16 +27,19 @@ find_horse_params = {
         "gather_information": "./res/prompts/template_input/gather_information.json",
         "decision_making": "./res/prompts/template_input/decision_making_find_horse.json",
         "success_detection": "./res/prompts/template_input/success_detection_find_horse.json",
+        "information_summary": "./res/prompts/template_input/information_summary.json",
         },
         "templates": {
         "gather_information": "./res/prompts/templates/gather_information.prompt",
         "decision_making": "./res/prompts/templates/decision_making_find_horse.prompt",
         "success_detection": "./res/prompts/templates/success_detection_find_horse.prompt",
+        "information_summary": "./res/prompts/templates/information_summary.prompt",
         },
         "output_example": {
         "gather_information": "./res/prompts/api_output/gather_information.json",
         "decision_making": "./res/prompts/api_output/decision_making.json",
         "success_detection": "./res/prompts/api_output/success_detection.json",
+        "information_summary": "./res/prompts/api_output/information_summary.json",
         }
     }
 }
@@ -45,23 +48,27 @@ create_waypoint_params = {
     "__check_list__": [
         "decision_making",
         "gather_information",
-        "success_detection"
+        "success_detection",
+        "information_summary"
     ],
     "prompt_paths": {
         "input_example": {
             "decision_making": "./res/prompts/template_input/decision_making_map_create_waypoint.json",
             "gather_information": "./res/prompts/template_input/gather_information.json",
-            "success_detection": "./res/prompts/template_input/success_detection_map_create_waypoint.json"
+            "success_detection": "./res/prompts/template_input/success_detection_map_create_waypoint.json",
+            "information_summary": "./res/prompts/template_input/information_summary.json",
         },
         "templates": {
             "decision_making": "./res/prompts/templates/decision_making_map_create_waypoint.prompt",
             "gather_information": "./res/prompts/templates/gather_information.prompt",
-            "success_detection": "./res/prompts/templates/success_detection_map_create_waypoint.prompt"
+            "success_detection": "./res/prompts/templates/success_detection_map_create_waypoint.prompt",
+            "information_summary": "./res/prompts/templates/information_summary.prompt",
         },
         "output_example": {
             "decision_making": "./res/prompts/api_output/decision_making.json",
             "gather_information": "./res/prompts/api_output/gather_information.json",
-            "success_detection": "./res/prompts/api_output/success_detection.json"
+            "success_detection": "./res/prompts/api_output/success_detection.json",
+            "information_summary": "./res/prompts/api_output/information_summary.json",
         }
     }
 }
@@ -75,16 +82,19 @@ follow_path_params = {
         "gather_information": "./res/prompts/template_input/gather_information_follow_path.json",
         "decision_making": "./res/prompts/template_input/decision_making_follow_path.json",
         "success_detection": "./res/prompts/template_input/success_detection_follow_path.json",
+        "information_summary": "./res/prompts/template_input/information_summary.json"
         },
         "templates": {
         "gather_information": "./res/prompts/templates/gather_information_follow_path.prompt",
         "decision_making": "./res/prompts/templates/decision_making_follow_path.prompt",
         "success_detection": "./res/prompts/templates/success_detection.prompt",
+        "information_summary": "./res/prompts/templates/information_summary.prompt",
         },
         "output_example": {
         "gather_information": "./res/prompts/api_output/gather_information.json",
         "decision_making": "./res/prompts/api_output/decision_making.json",
         "success_detection": "./res/prompts/api_output/success_detection.json",
+        "information_summary": "./res/prompts/api_output/information_summary.json",
         }
     }
 }
@@ -93,24 +103,28 @@ enter_store_params = {
     "__check_list__": [
         "decision_making",
         "gather_information",
-        "success_detection"
+        "success_detection",
+        "information_summary"
     ],
     "prompt_paths": {
         "input_example": {
             "decision_making": "./res/prompts/template_input/decision_making_enter_store.json",
             "gather_information": "./res/prompts/template_input/gather_information.json",
-            "success_detection": "./res/prompts/template_input/success_detection_enter_store.json"
+            "success_detection": "./res/prompts/template_input/success_detection_enter_store.json",
+            "information_summary": "./res/prompts/template_input/information_summary.json",
 
         },
         "templates": {
             "decision_making": "./res/prompts/templates/decision_making_enter_store.prompt",
             "gather_information": "./res/prompts/templates/gather_information.prompt",
-            "success_detection": "./res/prompts/templates/success_detection_enter_store.prompt"
+            "success_detection": "./res/prompts/templates/success_detection_enter_store.prompt",
+            "information_summary": "./res/prompts/templates/information_summary.prompt",
         },
         "output_example": {
             "decision_making": "./res/prompts/api_output/decision_making_enter_store.json",
             "gather_information": "./res/prompts/api_output/gather_information.json",
-            "success_detection": "./res/prompts/api_output/success_detection.json"
+            "success_detection": "./res/prompts/api_output/success_detection.json",
+            "information_summary": "./res/prompts/api_output/information_summary.json",
         }
     }
 }
@@ -119,24 +133,28 @@ approach_shopkeeper_params = {
     "__check_list__": [
         "decision_making",
         "gather_information",
-        "success_detection"
+        "success_detection",
+        "information_summary"
     ],
     "prompt_paths": {
         "input_example": {
             "decision_making": "./res/prompts/template_input/decision_making_get_close_to_shopkeeper.json",
             "gather_information": "./res/prompts/template_input/gather_information.json",
-            "success_detection": "./res/prompts/template_input/success_detection_get_close_to_shopkeeper.json"
+            "success_detection": "./res/prompts/template_input/success_detection_get_close_to_shopkeeper.json",
+            "information_summary": "./res/prompts/template_input/information_summary.json",
 
         },
         "templates": {
             "decision_making": "./res/prompts/templates/decision_making_get_close_to_shopkeeper.prompt",
             "gather_information": "./res/prompts/templates/gather_information.prompt",
-            "success_detection": "./res/prompts/templates/success_detection_get_close_to_shopkeeper.prompt"
+            "success_detection": "./res/prompts/templates/success_detection_get_close_to_shopkeeper.prompt",
+            "information_summary": "./res/prompts/templates/information_summary.prompt",
         },
         "output_example": {
             "decision_making": "./res/prompts/api_output/decision_making_get_close_to_shopkeeper.json",
             "gather_information": "./res/prompts/api_output/gather_information.json",
-            "success_detection": "./res/prompts/api_output/success_detection.json"
+            "success_detection": "./res/prompts/api_output/success_detection.json",
+            "information_summary": "./res/prompts/api_output/information_summary.json",
         }
     }
 }
@@ -146,24 +164,28 @@ buy_item_params = {
     "__check_list__": [
         "decision_making",
         "gather_information",
-        "success_detection"
+        "success_detection",
+        "information_summary"
     ],
     "prompt_paths": {
         "input_example": {
             "decision_making": "./res/prompts/template_input/decision_making_buy_item.json",
             "gather_information": "./res/prompts/template_input/gather_information.json",
-            "success_detection": "./res/prompts/template_input/success_detection_buy_item.json"
+            "success_detection": "./res/prompts/template_input/success_detection_buy_item.json",
+            "information_summary": "./res/prompts/template_input/information_summary.json",
 
         },
         "templates": {
             "decision_making": "./res/prompts/templates/decision_making_buy_item.prompt",
             "gather_information": "./res/prompts/templates/gather_information.prompt",
-            "success_detection": "./res/prompts/templates/success_detection_buy_item.prompt"
+            "success_detection": "./res/prompts/templates/success_detection_buy_item.prompt",
+            "information_summary": "./res/prompts/templates/information_summary.prompt",
         },
         "output_example": {
             "decision_making": "./res/prompts/api_output/decision_making_buy_item.json",
             "gather_information": "./res/prompts/api_output/gather_information.json",
-            "success_detection": "./res/prompts/api_output/success_detection.json"
+            "success_detection": "./res/prompts/api_output/success_detection.json",
+            "information_summary": "./res/prompts/api_output/information_summary.json",
         }
     }
 }
@@ -225,6 +247,42 @@ def suc_det_args(previous_state_image, current_state_image, current_sub_task, pl
     image_introduction = images_info
 
     args = {"task_description" : current_sub_task, "current_sub_task" : plan_reasoning, "last_executed_skills" : last_executed_skill, "previous_action" : last_executed_skill, "previous_reasoning" : last_reasoning, "output_format" : output_format, "image_introduction": image_introduction}
+    return args
+
+def info_sum_args(hidden_state, images, introductions):
+            
+    output_format = read_resource_file("./res/prompts/api_output/information_summary.json")
+
+    images_info = [
+        {
+            "introduction": introductions[0],
+            "path": images[0],
+            "assistant": ""
+        },
+        {
+            "introduction": introductions[1],
+            "path": images[1],
+            "assistant": ""
+        },
+        {
+            "introduction": introductions[2],
+            "path": images[2],
+            "assistant": ""
+        },
+        {
+            "introduction": introductions[3],
+            "path": images[3],
+            "assistant": ""
+        },
+        {
+            "introduction": introductions[4],
+            "path": images[4],
+            "assistant": ""
+        }
+    ]
+    image_introduction = images_info
+
+    args = {"hidden_state" : hidden_state, "output_format" : output_format, "image_introduction": image_introduction}
     return args
 
 def cw_decision_args(previous_state_image, current_state_image, current_sub_task, current_context, last_executed_skill, last_reasoning, planner):
@@ -393,31 +451,37 @@ find_horse_args = dict()
 find_horse_args['gathering_info'] = gather_info_args
 find_horse_args['decision_making'] = decision_args
 find_horse_args['success_detection'] = suc_det_args
+find_horse_args['information_summary'] = info_sum_args
 
 create_waypoint_args = dict()
 create_waypoint_args['gathering_info'] = None
 create_waypoint_args['decision_making'] = cw_decision_args
 create_waypoint_args['success_detection'] = cw_suc_det_args
+find_horse_args['information_summary'] = info_sum_args
 
 frl_args = dict()
 frl_args['gathering_info'] = gather_info_args
 frl_args['decision_making'] = decision_args
 frl_args['success_detection'] = suc_det_args
+find_horse_args['information_summary'] = info_sum_args
 
 enter_args = dict()
 enter_args['gathering_info'] = None
 enter_args['decision_making'] = enter_decision_args
 enter_args['success_detection'] = enter_suc_det_args
+find_horse_args['information_summary'] = info_sum_args
 
 buy_args = dict()
 buy_args['gathering_info'] = None
 buy_args['decision_making'] = buy_decision_args
 buy_args['success_detection'] = buy_suc_det_args
+find_horse_args['information_summary'] = info_sum_args
 
 approach_shopkeeper_args = dict()
 approach_shopkeeper_args['gathering_info'] = None
 approach_shopkeeper_args['decision_making'] = enter_decision_args
 approach_shopkeeper_args['success_detection'] = enter_suc_det_args
+find_horse_args['information_summary'] = info_sum_args
 
 # Here the Agent using the LLM provider direcly, but we could have a Planner class to wrap the planning prompts.
 # This is an incomplete example with not complete quality code, just to bootstrap the repo.
@@ -576,6 +640,23 @@ class Agent:
             previous_state_image = current_state_image
             current_state_image, _ = self.env_manager.capture_screen(include_minimap=False)
             self.pause_if_needed(last_executed_skill) # Decide to press pause or not based on skill
+
+            # summarization starts
+            self.memory.add_image_history(current_state_image)
+            if self.memory.get_history_length() == 5:
+                args_func = sub_task_args["information_summary"]
+                logger.write(f'> Information summary call...')
+                introductions = ['the first image is the first screenshot of recent events',
+                                'the second image is the second screenshot of recent events',
+                                'the third image is the third screenshot of recent events',
+                                'the fourth image is the fourth screenshot of recent events',
+                                'the fifth image is the fifth screenshot of recent events'] #todo: adding more descriptions
+                data = self.planner.information_summary(input=args_func(self.memory.get_hidden_state(),self.memory.get_image_history(),introductions))
+                info_summary = data['outcome']
+                logger.write(f'R: Rummary: {info_summary}')
+                self.memory.add_hidden_state(info_summary)
+
+            # summarization ends
 
             # Prepare success detection
 

@@ -1,7 +1,34 @@
 {
     "type": "information_summary",
-    "event_num" : "5",
     "recent_info": "",
+    "hidden_state": "",
+    "image_introduction":[
+        {
+            "introduction": "the first image is the first screenshot of recent events",
+            "path": "./res/prompts/testing/decision_making/map_create_waypoint/screenshots/1.jpg",
+            "assistant": ""
+        },
+        {
+            "introduction": "the second image is the second screenshot of recent events",
+            "path": "./res/prompts/testing/decision_making/map_create_waypoint/screenshots/2.jpg",
+            "assistant": ""
+        },
+        {
+            "introduction": "the third image is the third screenshot of recent events",
+            "path": "./res/prompts/testing/decision_making/map_create_waypoint/screenshots/3.jpg",
+            "assistant": ""
+        },
+        {
+            "introduction": "the fourth image is the fourth screenshot of recent events",
+            "path": "./res/prompts/testing/decision_making/map_create_waypoint/screenshots/4.jpg",
+            "assistant": ""
+        },
+        {
+            "introduction": "the fifth image is the fifth screenshot of recent events",
+            "path": "./res/prompts/testing/decision_making/map_create_waypoint/screenshots/5.jpg",
+            "assistant": ""
+        }
+    ],
     
     "output_format":"{\n    \"info_summary\": \"What happened recentlly is that ...\"\n\n}",
     "__comments__": "This is a template for information summary."
