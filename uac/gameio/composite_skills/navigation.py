@@ -68,6 +68,8 @@ def cv_navigation(total_iterations, terminal_threshold=100, debug = False):
                 logger.debug('success! Reach the red marker.')
                 stop_horse()
                 time.sleep(2)
+                theta, measure = match_template(os.path.join(save_dir, f"minimap_{timestep}.jpg"), './res/icons/red_marker.jpg', config.resolution_ratio, debug=False)
+                turn(theta)
                 break
 
             turn_angle = calculate_turn_angle(timestep, debug)

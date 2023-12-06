@@ -6,11 +6,8 @@ Your inputs contains: 1. The screenshot of the environment and the current state
 
 Your inputs are:
 
-Context:
-<$context$>
-
 Previous actions:
-<$previous_actions$>
+mount_horse()
 
 Goal:
 <$task_description$>
@@ -19,7 +16,7 @@ Skills:
 <$skill_library$>
 
 Your output should include: 
-An action, or short sequence of actions, to execute next to progress in achieving the goal. Pay attention to the previous step already executed, if any. You should only respond with a valid JSON object as the example below.
+Only one action to execute next to progress in achieving the goal. The action and parameters should be in Python format. Pay attention to the previous step already executed, if any. You should only respond with a valid JSON object as the example below.
 
 Example output:
 ```

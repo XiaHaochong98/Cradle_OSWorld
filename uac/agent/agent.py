@@ -479,7 +479,7 @@ class Agent:
 
         # Which sub-task to start on, for debugging later steps in the flow
         # But please try to run the whole thing, as the states starting from later are not fully the same
-        start_at_step = -1
+        start_at_step = 0
 
         # Start interaction loop
         while True:
@@ -598,6 +598,7 @@ class Agent:
                 logger.write(f'Finished sub-task: {current_sub_task}')
                 previous_sub_task = current_sub_task
                 sub_task_index += 1
+                start_at_step += 1
                 plan_reasoning = ""
                 last_reasoning = ""
 

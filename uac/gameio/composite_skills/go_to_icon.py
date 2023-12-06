@@ -63,7 +63,7 @@ def match_template(src_file, template_file, template_resize_scale = 1, debug=Fal
     if template_resize_scale != 1:
         template = cv2.resize(template, (0, 0), fx=template_resize_scale, fy=template_resize_scale)
 
-    detection = matchTemplates([('', cv2.resize(template, (0, 0), fx=s, fy=s)) for s in [0.5, 0.6, 0.7, 0.8, 0.9, 1]],
+    detection = matchTemplates([('', cv2.resize(template, (0, 0), fx=s, fy=s)) for s in [1]],
                                srcimg,
                                N_object=1,
                                method=cv2.TM_CCOEFF_NORMED,
