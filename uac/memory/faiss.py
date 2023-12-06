@@ -176,12 +176,14 @@ class FAISS(VectorStore):
         cls,
         embedding_provider: EmbeddingProvider,
         memory_path: str,
+        name: str,
     ) -> "FAISS":
         """Load FAISS index and index_to_key from disk.
 
         Args:
             embedding_provider: Embeddings to use when generating queries
             memory_path: folder path to load index and index_to_key from.
+            name: name of the vectorstore.
 
         Returns:
             The FAISS vectorstore class.
@@ -189,9 +191,9 @@ class FAISS(VectorStore):
         path = Path(memory_path)
         # load index separately since it is not picklable
         faiss = dependable_faiss_import()
-        index = faiss.read_index(str(path / "index.faiss"))
+        index = faiss.read_index(str(path / f"{name}.faiss"))
         # load index_to_key
-        with open(path / "index.pkl", "rb") as f:
+        with open(path / f"{name}.pkl", "rb") as f:
             index_to_key = pickle.load(f)
 
         return cls(
@@ -201,13 +203,13 @@ class FAISS(VectorStore):
             index_to_key=index_to_key,
         )
 
-    def save_local(self) -> None:
+    def save_local(self, name: str) -> None:
         """Save FAISS index and index_to_key to disk."""
         path = Path(self.memory_path)
         path.mkdir(exist_ok=True, parents=True)
         # save index separately since it is not picklable
         faiss = dependable_faiss_import()
-        faiss.write_index(self.index, str(path / "index.faiss"))
+        faiss.write_index(self.index, str(path / f"{name}.faiss"))
         # save index_to_key
-        with open(path / "index.pkl", "wb") as f:
+        with open(path / f"{name}.pkl", "wb") as f:
             pickle.dump(self.index_to_key, f)

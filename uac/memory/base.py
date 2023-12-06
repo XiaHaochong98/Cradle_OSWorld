@@ -58,35 +58,22 @@ class VectorStore(abc.ABC):
         """Return keys most similar to query."""
 
     @abc.abstractmethod
-    def save_local(self) -> None:
+    def save_local(self, name: str) -> None:
         """Save FAISS index and index_to_key to disk."""
 
 
 class BaseMemory:
     """Base class for all memories."""
 
-    def __init__(
-        self,
-        memory_path: str,
-        vectorstore: VectorStore,
-        embedding_provider: EmbeddingProvider,
-        memory: Optional[Dict] = None,
-    ) -> None:
-        if memory is None:
-            self.memory = {}
-        self.memory_path = memory_path
-        self.vectorstore = vectorstore
-        self.embedding_provider = embedding_provider
-
     @abc.abstractmethod
     def add(
         self,
-        data: Dict[str, Union[str, Image]],
+        **kwargs,
     ) -> None:
         """Add data to memory.
 
         Args:
-            data: the mapping from unique name (id) to text/image.
+            **kwargs: Other keyword arguments that subclasses might use.
         """
         pass
 
@@ -97,7 +84,7 @@ class BaseMemory:
         top_k: int,
         **kwargs: Any,
     ) -> List[Union[str, Image]]:
-        """Retrieve the keys from the vectorstore.
+        """Retrieve the keys from the vectorstores.
 
         Args:
             data: the query data.
