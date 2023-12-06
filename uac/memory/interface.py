@@ -10,8 +10,10 @@ from uac.config import Config
 from uac.log import Logger
 from uac.provider.base_embedding import EmbeddingProvider
 from uac.memory.base import VectorStore, Image
+from uac.memory import BasicMemory
 from uac.memory.short_term_memory import ConversationMemory
-from uac.agent import GatherInformationOutput
+from uac.agent import GatherInformationOutput, DecisionMakingOutput
+
 
 config = Config()
 logger = Logger()
@@ -24,6 +26,12 @@ class MemoryInterface:
         vectorstores: Dict[str, Dict[str, VectorStore]],
         embedding_provider: EmbeddingProvider,
     ) -> None:
+
+
+        self.memory = BasicMemory(memory_path = memory_path, 
+                                   vectorstores = vectorstores["basic_memory"], 
+                                   embedding_provider = embedding_provider)  
+
         self.decision_making_memory = ConversationMemory(
             memory_path=memory_path,
             vectorstores=vectorstores["decision_making"],
@@ -34,6 +42,7 @@ class MemoryInterface:
             vectorstores=vectorstores["success_detection"],
             embedding_provider=embedding_provider,
         )
+
         self.current_status: str = ""
         self.action_history: List[str] = []
         self.prev_reasoning: List[str] = []
@@ -107,6 +116,19 @@ class MemoryInterface:
         """Query the previous reasoning of the player."""
         assert len(self.prev_reasoning) > 0, "No reasoning history found."
         return self.prev_reasoning[-k:] if len(self.prev_reasoning) >= k else self.prev_reasoning
+    
+    def add_experiences(self, data: Dict[str, Union[str, Image]]) -> None:
+        """Add experiences to memory."""
+        self.memory.add(data = data)
+
+    def get_similar_experiences(self, data : str, top_k: int) -> List[Dict]:
+        """Query the top-k experiences that are most similar to data."""
+        return self.memory.similarity_search(data = data, top_k = top_k)
+
+    def get_recent_experiences(self, recent_k: int) -> List[Dict]:
+        """Query the recent k experiences."""
+        return self.memory.recent_search(recent_k = recent_k)
+
 
     def load_local(
         self,

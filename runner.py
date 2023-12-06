@@ -60,16 +60,19 @@ def main(args):
             "gather_information": "./res/prompts/template_input/gather_information_follow_path.json",
             "decision_making": "./res/prompts/template_input/decision_making_follow_path.json",
             "success_detection": "./res/prompts/template_input/success_detection_follow_path.json",
+            "information_summary": "./res/prompts/template_input/information_summary.json",
             },
             "templates": {
             "gather_information": "./res/prompts/templates/gather_information_follow_path.prompt",
             "decision_making": "./res/prompts/templates/decision_making_follow_path.prompt",
             "success_detection": "./res/prompts/templates/success_detection.prompt",
+            "information_summary": "./res/prompts/templates/information_summary.prompt",
             },
             "output_example": {
             "gather_information": "./res/prompts/api_output/gather_information.json",
             "decision_making": "./res/prompts/api_output/decision_making.json",
             "success_detection": "./res/prompts/api_output/success_detection.json",
+            "information_summary": "./res/prompts/api_output/information_summary.json",
             }
         }
     }
@@ -83,16 +86,19 @@ def main(args):
             "gather_information": "./res/prompts/template_input/gather_information.json",
             "decision_making": "./res/prompts/template_input/decision_making_find_horse.json",
             "success_detection": "./res/prompts/template_input/success_detection_find_horse.json",
+            "information_summary": "./res/prompts/template_input/information_summary.json",
             },
             "templates": {
             "gather_information": "./res/prompts/templates/gather_information.prompt",
             "decision_making": "./res/prompts/templates/decision_making_find_horse.prompt",
             "success_detection": "./res/prompts/templates/success_detection_find_horse.prompt",
+            "information_summary": "./res/prompts/templates/information_summary.prompt",
             },
             "output_example": {
             "gather_information": "./res/prompts/api_output/gather_information.json",
             "decision_making": "./res/prompts/api_output/decision_making.json",
             "success_detection": "./res/prompts/api_output/success_detection.json",
+            "information_summary": "./res/prompts/api_output/information_summary.json",
             }
         }
     }

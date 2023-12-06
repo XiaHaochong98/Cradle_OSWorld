@@ -1,12 +1,10 @@
 from uac.memory.base import VectorStore, BaseMemory
 from uac.memory.faiss import FAISS
-from uac.memory.semantic_memory import SemanticMemory
-from uac.memory.episodic_memory import EpisodicMemory
+from uac.memory.basic_memory import BasicMemory
 
 __all__ = [
     "VectorStore",
     "FAISS",
     "BaseMemory",
-    "SemanticMemory",
-    "EpisodicMemory",
+    "BasicMemory"
 ]

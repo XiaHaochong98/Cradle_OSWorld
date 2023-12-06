@@ -12,7 +12,9 @@ from uac.agent.data import (ScreenClassificationInput,
                             DecisionMakingInput,
                             DecisionMakingOutput,
                             SuccessDetectionInput,
-                            SuccessDetectionOutput)
+                            SuccessDetectionOutput,
+                            InformationSummaryInput,
+                            InformationSummaryOutput)
 from uac.provider.base_llm import LLMProvider
 from uac.utils.check import check_planner_params
 from uac.utils.json_utils import load_json, parse_semi_formatted_json
@@ -363,7 +365,74 @@ class SuccessDetection():
     def _post(self, *args, data: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return data
 
+class InformationSummary():
+    def __init__(self,
+                 system_prompts: List[str] = None,
+                 input_map: Dict = None,
+                 template: Dict = None,
+                 output_example: Dict = None,
+                 llm_provider: LLMProvider = None,
+                ):
 
+        self.system_prompts = system_prompts
+        self.input_map = input_map
+        self.template = template
+        self.output_example = output_example
+        self.llm_provider = llm_provider
+
+    def _pre(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
+        return input
+
+    def __call__(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
+
+        input = self.input_map if input is None else input
+        input = self._pre(input=input)
+
+        flag = True
+        processed_response = {}
+        outcome = None
+
+        try:
+
+            # Call the LLM provider for information summary
+            information_summary_input = InformationSummaryInput(params=input)
+
+            message_prompts = self.llm_provider.assemble_prompt(system_prompt=self.system_prompts[0], template_str=self.template, params=input)
+
+            logger.debug(f'>> Upstream - R: {message_prompts}')
+
+            response, info = self.llm_provider.create_completion(message_prompts)
+
+            logger.debug(f'>> Downstream - A: {response}')
+
+            # Convert the response to dict
+            processed_response = parse_semi_formatted_json(response)
+
+            # Convert the dict to InformationSummaryOutput
+            information_summary_output = InformationSummaryOutput(params=processed_response)
+
+            outcome = information_summary_output.info_summary
+
+            # res_json = json.dumps(information_summary_output, default=json_encoder, indent=4)
+
+        except Exception as e:
+            logger.error(f"Error in information_summary: {e}")
+            flag = False
+
+        data = dict(
+            flag=flag,
+            input=input,
+            # res_json=res_json,
+            res_dict=processed_response,
+            outcome=outcome,
+        )
+
+        data = self._post(data=data)
+        return data
+
+    def _post(self, *args, data: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
+        return data
+    
 class Planner(BasePlanner):
     def __init__(self,
                  llm_provider: Any = None,
@@ -462,6 +531,12 @@ class Planner(BasePlanner):
                                                    self.output_examples["success_detection"],
                                                    self.llm_provider)
 
+        self.information_summary_ = InformationSummary(self.system_prompts,
+                                                  self.input_examples["information_summary"],
+                                                  self.templates["information_summary"],
+                                                  self.output_examples["information_summary"],
+                                                  self.llm_provider)
+
 
     def _init_input_example(self):
         input_examples = dict()
@@ -536,5 +611,14 @@ class Planner(BasePlanner):
             input = self.input_examples["success_detection"]
 
         data = self.success_detection_(input=input)
+
+        return data
+
+    def information_summary(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
+
+        if input is None:
+            input = self.input_examples["information_summary"]
+
+        data = self.information_summary_(input=input)
 
         return data

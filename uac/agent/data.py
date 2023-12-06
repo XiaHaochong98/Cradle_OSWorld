@@ -240,6 +240,56 @@ class SuccessDetectionOutput(BaseOutput):
         return flag
 
 
+
+class InformationSummaryInput(BaseInput):
+    def __init__(self, *args, params, **kwargs):
+        super(InformationSummaryInput, self).__init__(args = args, params=params, kwargs = kwargs)
+
+        self.type = get_attr(params, 'type', 'information_summary')
+        self.history_information = get_attr(params, 'history_information', '')
+        self.output_format = get_attr(params, 'output_format', {})
+        self.__comments__ = get_attr(params, '__comments__', '')
+
+        self.params = params
+
+        if not self.check():
+            raise ValueError(f"Error in check InformationSummaryInput: {params}")
+
+    def check(self):
+        flag = True
+        try:
+            assert self.type == 'information_summary', f"type is not information_summary"
+        except Exception as e:
+            logger.error(f"Error in check: {e}")
+            flag = False
+
+        return flag
+
+
+class InformationSummaryOutput(BaseOutput):
+    def __init__(self, *args, params, **kwargs):
+        super(InformationSummaryOutput, self).__init__(args = args, params=params, kwargs = kwargs)
+
+        self.type = get_attr(params, 'type', 'information_summary')
+        self.info_summary = get_attr(params, 'info_summary', '')
+        
+        self.__comments__ = get_attr(params, '__comments__', '')
+        
+        self.params = params
+
+        if not self.check():
+            raise ValueError(f"Error in check InformationSummaryOutput: {params}")
+
+    def check(self):
+        flag = True
+        try:
+            assert self.type == 'information_summary', f"type is not information_summary"
+        except Exception as e:
+            logger.error(f"Error in check: {e}")
+            flag = False
+
+        return flag
+    
 def json_encoder(object):
     return object.params
 
@@ -260,6 +310,10 @@ def json_decoder(params):
         return SuccessDetectionInput(params=params)
     elif params['type'] == 'success_detection':
         return SuccessDetectionOutput(params=params)
+    elif params['type'] == 'information_summary':
+        return InformationSummaryInput(params=params)
+    elif params['type'] == 'information_summary':
+        return InformationSummaryOutput(params=params)
     elif params['type'] == 'params':
         return params(params=params)
     else:

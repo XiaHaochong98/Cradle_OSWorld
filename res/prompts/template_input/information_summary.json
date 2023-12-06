@@ -1,0 +1,8 @@
+{
+    "type": "information_summary",
+    "event_num" : "5",
+    "recent_info": "",
+    
+    "output_format":"{\n    \"info_summary\": \"What happened recentlly is that ...\"\n\n}",
+    "__comments__": "This is a template for information summary."
+}
