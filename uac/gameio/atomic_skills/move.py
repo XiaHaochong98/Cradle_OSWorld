@@ -100,8 +100,9 @@ def stop_horse():
     """
     Stops the horse by pressing the "Ctrl" key.
     """
-    pydirectinput.press("ctrl")
-
+    pydirectinput.keyDown("ctrl")
+    time.sleep(0.5)
+    pydirectinput.keyUp("ctrl")
 
 __all__ = [
     "turn",

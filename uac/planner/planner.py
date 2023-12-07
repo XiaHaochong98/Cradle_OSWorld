@@ -439,6 +439,7 @@ class Planner(BasePlanner):
                  system_prompts: List[str] = None,
                  planner_params: Dict = None,
                  use_screen_classification: bool = False,
+                 use_information_summary: bool = False,
                  gather_information_max_steps: int = 1, # 5,
                  marker_matcher: Any = None,
                  object_detector: Any = None,
@@ -487,11 +488,11 @@ class Planner(BasePlanner):
         self.marker_matcher = marker_matcher
         self.object_detector = object_detector
 
-        self.set_internal_params(planner_params, use_screen_classification)
+        self.set_internal_params(planner_params, use_screen_classification, use_information_summary)
 
 
     # Allow re-configuring planner
-    def set_internal_params(self, planner_params: Dict = None, use_screen_classification: bool = False):
+    def set_internal_params(self, planner_params: Dict = None, use_screen_classification: bool = False, use_information_summary: bool = False):
 
         self.planner_params = planner_params
 
@@ -531,11 +532,14 @@ class Planner(BasePlanner):
                                                    self.output_examples["success_detection"],
                                                    self.llm_provider)
 
-        self.information_summary_ = InformationSummary(self.system_prompts,
-                                                  self.input_examples["information_summary"],
-                                                  self.templates["information_summary"],
-                                                  self.output_examples["information_summary"],
-                                                  self.llm_provider)
+        if use_information_summary:
+            self.information_summary_ = InformationSummary(self.system_prompts,
+                                                    self.input_examples["information_summary"],
+                                                    self.templates["information_summary"],
+                                                    self.output_examples["information_summary"],
+                                                    self.llm_provider)
+        else:
+            self.information_summary_ = None
 
 
     def _init_input_example(self):

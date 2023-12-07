@@ -47,10 +47,11 @@ def cv_navigation(total_iterations, terminal_threshold=100, debug = False):
             timestep = time.time()
             logger.debug(f"step {step}, {timestep}")
             if step > 0:
-                turn(turn_angle)
-                if abs(turn_angle) > 60:
+                if abs(turn_angle) > 65:
                     stop_horse()
                     time.sleep(0.3)
+                    warm_up = True
+                turn(turn_angle)
                 if warm_up:
                     move_forward(1)
                     warm_up = False
@@ -67,9 +68,9 @@ def cv_navigation(total_iterations, terminal_threshold=100, debug = False):
             if measure['distance'] < terminal_threshold and abs(theta) < 90:
                 logger.debug('success! Reach the red marker.')
                 stop_horse()
-                time.sleep(2)
+                time.sleep(1)
                 theta, measure = match_template(os.path.join(save_dir, f"minimap_{timestep}.jpg"), './res/icons/red_marker.jpg', config.resolution_ratio, debug=False)
-                turn(theta)
+                turn(theta * 1.2)
                 break
 
             turn_angle = calculate_turn_angle(timestep, debug)

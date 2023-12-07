@@ -8,6 +8,7 @@ from uac.agent import Agent
 from uac.planner.base import to_text
 from uac.planner.planner import Planner
 from uac.memory.interface import MemoryInterface
+from uac.memory.faiss import FAISS
 from uac.provider.openai import OpenAIProvider
 from uac.gameio.lifecycle.ui_control import switch_to_game
 from uac.gameio.atomic_skills.trade_utils import __all__ as trade_skills
@@ -223,10 +224,15 @@ def main_pipeline():
     planner = Planner(llm_provider=llm_provider,
                       system_prompts=[system_prompt],
                       planner_params=planner_params)
+    
+    recent_history = {"image": [], "skill": [], "decision_making_reasoning": [], "success_detection_reasoning": [], "reflection_reasoning": []}
+    vectorstore = FAISS(embedding_provider = llm_provider, memory_path = './res/memory')
     memory = MemoryInterface(
         memory_path='./res/memory',
-        vectorstores={},
-        embedding_provider=llm_provider
+        vectorstores = {"basic_memory":{"description":vectorstore},'decision_making':{},'success_detection':{}}, 
+        embedding_provider=llm_provider,
+        recent_history=recent_history,
+        max_recent_steps=5
     )
 
     gm = GameManager(config.env_name)
@@ -235,8 +241,10 @@ def main_pipeline():
 
     switch_to_game()
 
-    pre_screen_shot_path, _ = gm.capture_screen()
-    cur_screen_shot_path = pre_screen_shot_path
+    cur_screen_shot_path, _ = gm.capture_screen()
+    memory.add_recent_history("image", cur_screen_shot_path)
+    memory.add_recent_history("image", cur_screen_shot_path)
+
     success = False
     pre_skill = "None"
     pre_reasoning = "None"
@@ -248,9 +256,8 @@ def main_pipeline():
         number_of_execute_skills = input["number_of_execute_skills"]
 
         if pre_skill != "None":
-            #input["previous_action"] = "Your previous executed skill is " + pre_skill + "."
-            input["previous_action"] = memory.get_prev_action(k=1)[-1]
-            input["previous_reasoning"] = memory.get_prev_reasoning(k=1)[-1]
+            input["previous_action"] = memory.get_recent_history("skill", k=1)[-1]
+            input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
 
         input['skill_library'] = skill_library
 
@@ -278,12 +285,12 @@ def main_pipeline():
             # },
             {
                 "introduction": input["image_introduction"][-2]["introduction"],
-                "path": pre_screen_shot_path,
+                "path": memory.get_recent_history("image", k=2)[0],
                 "assistant": input["image_introduction"][-2]["assistant"]
             },
             {
                 "introduction": input["image_introduction"][-1]["introduction"],
-                "path": cur_screen_shot_path,
+                "path": memory.get_recent_history("image", k=1)[0],
                 "assistant": input["image_introduction"][-1]["assistant"]
             }
         ]
@@ -309,42 +316,39 @@ def main_pipeline():
         if 'res_dict' in data.keys() and 'reasoning' in data['res_dict'].keys():
             pre_reasoning = data['res_dict']['reasoning']
 
-        memory.add_history(
-            {
-                "skill": pre_skill,
-                "reasoning": pre_reasoning,
-            }
-        )
+        memory.add_recent_history("skill", pre_skill)
+        memory.add_recent_history("decision_making_reasoning", pre_reasoning)
 
         # For such cases with no expected response, we should define a retry limit
 
         logger.write(f'Decision reasoning: {pre_reasoning}')
 
-        pre_screen_shot_path = cur_screen_shot_path
         cur_screen_shot_path, _ = gm.capture_screen()
+        memory.add_recent_history("image", cur_screen_shot_path)
 
         # for success detection
         input = planner.success_detection_.input_map
         image_introduction = [
             {
                 "introduction": input["image_introduction"][-2]["introduction"],
-                "path": pre_screen_shot_path,
+                "path": memory.get_recent_history("image", k=2)[0],
                 "assistant": input["image_introduction"][-2]["assistant"]
             },
             {
                 "introduction": input["image_introduction"][-1]["introduction"],
-                "path": cur_screen_shot_path,
+                "path": memory.get_recent_history("image", k=1)[0],
                 "assistant": input["image_introduction"][-1]["assistant"]
             }
         ]
         input["image_introduction"] = image_introduction
-        input["previous_action"] = memory.get_prev_action(k=1)
-        input["previous_reasoning"] = memory.get_prev_reasoning(k=1)
+        input["previous_action"] = memory.get_recent_history("skill", k=1)[-1]
+        input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
 
         data = planner.success_detection(input = input)
 
         success = data['outcome']
         success_reasoning = data['res_dict']['decision']['reasoning']
+        memory.add_recent_history("success_detection_reasoning", success_reasoning)
         logger.write(f'Success: {success}')
         logger.write(f'Success reason: {success_reasoning}')
 

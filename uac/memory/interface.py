@@ -25,6 +25,8 @@ class MemoryInterface:
         memory_path: str,
         vectorstores: Dict[str, Dict[str, VectorStore]],
         embedding_provider: EmbeddingProvider,
+        max_recent_steps = 5,
+        recent_history = None
     ) -> None:
 
 
@@ -44,10 +46,14 @@ class MemoryInterface:
         )
 
         self.current_status: str = ""
-        self.action_history: List[str] = []
-        self.prev_reasoning: List[str] = []
         self.hidden_state: str = 'This is the character in Red Dead Redemption 2.'
-        self.image_history: List[Image] = []
+        self.max_recent_steps = max_recent_steps
+
+        if recent_history:
+            self.recent_history = recent_history
+        else:
+            self.recent_history = {"image": [], "skill": [], "decision_making_reasoning": [], "success_detection_reasoning": [], "reflection_reasoning": []}
+
 
     def add_gathered_info(
         self,
@@ -101,23 +107,24 @@ class MemoryInterface:
             # top_k=config.memory.success_detection.top_k,
         )
 
-    def add_history(
+    def add_recent_history(
         self,
-        info: Dict[str, Any],
+        key: str,
+        info: Any,
     ) -> None:
-        """Add previous action and reasoning to memory."""
-        self.action_history.append(info["skill"])
-        self.prev_reasoning.append(info["reasoning"])
+        """Add recent info (skill/image/reasoning) to memory."""
+        self.recent_history[key].append(info)
+        if len(self.recent_history[key]) > self.max_recent_steps:
+            self.recent_history[key].pop(0)
 
-    def get_prev_action(self, k: int = 1) -> List[str]:
-        """Query the previous action of the player."""
-        assert len(self.action_history) > 0, "No action history found."
-        return self.action_history[-k:] if len(self.action_history) >= k else self.action_history
-
-    def get_prev_reasoning(self, k: int = 1) -> List[str]:
-        """Query the previous reasoning of the player."""
-        assert len(self.prev_reasoning) > 0, "No reasoning history found."
-        return self.prev_reasoning[-k:] if len(self.prev_reasoning) >= k else self.prev_reasoning
+    def get_recent_history(
+        self,
+        key: str,
+        k: int = 1,
+    ) -> List[Any]:
+        """Query recent info (skill/image/reasoning) from memory."""
+        assert len(self.recent_history[key]) > 0, f"No {key} history found."
+        return self.recent_history[key][-k:] if len(self.recent_history[key]) >= k else self.recent_history[key]
     
     def add_experiences(self, data: Dict[str, Union[str, Image]]) -> None:
         """Add experiences to memory."""
@@ -138,21 +145,6 @@ class MemoryInterface:
     def get_hidden_state(self) -> str:
         """Query the hidden_state."""
         return self.hidden_state
-    
-    def add_image_history(self, img: Image) -> None:
-        """Update the image_history."""
-        self.image_history.append(img)
-        if len(self.image_history) > 5:
-            self.image_history.pop(0)
-    
-    def get_image_history(self) -> List[Image]:
-        """Query the image_history."""
-        return self.image_history
-
-    def get_history_length(self) -> int:
-        """Query the length of image_history."""
-        return len(self.image_history)
-
 
     def load_local(
         self,

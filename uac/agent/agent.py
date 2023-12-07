@@ -545,6 +545,8 @@ class Agent:
         # But please try to run the whole thing, as the states starting from later are not fully the same
         start_at_step = 0
 
+        use_information_summary = False
+
         # Start interaction loop
         while True:
 
@@ -556,7 +558,7 @@ class Agent:
                 logger.write(f'Starting loop from sub-task #{sub_task_index} - {current_sub_task}')
                 
                 sub_task_params = decomposed_task_planner_params[sub_task_index]
-                self.planner.set_internal_params(sub_task_params)
+                self.planner.set_internal_params(sub_task_params, use_information_summary = use_information_summary)
                 sub_task_args = decomposed_task_args[sub_task_index]
 
             if current_sub_task is None:
@@ -642,20 +644,20 @@ class Agent:
             self.pause_if_needed(last_executed_skill) # Decide to press pause or not based on skill
 
             # summarization starts
-            self.memory.add_image_history(current_state_image)
-            if self.memory.get_history_length() == 5:
-                args_func = sub_task_args["information_summary"]
-                logger.write(f'> Information summary call...')
-                introductions = ['the first image is the first screenshot of recent events',
-                                'the second image is the second screenshot of recent events',
-                                'the third image is the third screenshot of recent events',
-                                'the fourth image is the fourth screenshot of recent events',
-                                'the fifth image is the fifth screenshot of recent events'] #todo: adding more descriptions
-                data = self.planner.information_summary(input=args_func(self.memory.get_hidden_state(),self.memory.get_image_history(),introductions))
-                info_summary = data['outcome']
-                logger.write(f'R: Rummary: {info_summary}')
-                self.memory.add_hidden_state(info_summary)
-
+            if use_information_summary:
+                self.memory.add_recent_history('image', current_state_image)
+                if len(self.memory.get_recent_history("image", self.memory.max_recent_steps)) == 5:
+                    args_func = sub_task_args["information_summary"]
+                    logger.write(f'> Information summary call...')
+                    introductions = ['the first image is the first screenshot of recent events',
+                                    'the second image is the second screenshot of recent events',
+                                    'the third image is the third screenshot of recent events',
+                                    'the fourth image is the fourth screenshot of recent events',
+                                    'the fifth image is the fifth screenshot of recent events'] #todo: adding more descriptions
+                    data = self.planner.information_summary(input=args_func(self.memory.get_hidden_state(),self.memory.get_image_history(),introductions))
+                    info_summary = data['outcome']
+                    logger.write(f'R: Rummary: {info_summary}')
+                    self.memory.add_hidden_state(info_summary)
             # summarization ends
 
             # Prepare success detection
