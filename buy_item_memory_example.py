@@ -5,7 +5,6 @@ from uac.config import Config
 from uac.gameio.game_manager import GameManager
 from uac.log import Logger
 from uac.agent import Agent
-from uac.planner.base import to_text
 from uac.planner.planner import Planner
 from uac.memory.interface import MemoryInterface
 from uac.memory.faiss import FAISS
@@ -23,38 +22,30 @@ def main_test_decision_making():
         "__check_list__": [
             "decision_making",
             "gather_information",
-            "success_detection"
+            "success_detection",
+            "information_summary"
         ],
         "prompt_paths": {
-            "input_example": {
-                "decision_making": "./res/prompts/template_input/decision_making_buy_item.json",
-                "gather_information": "./res/prompts/template_input/gather_information.json",
-                "success_detection": "./res/prompts/template_input/success_detection.json"
-
+            "inputs": {
+                "decision_making": "./res/prompts/inputs/decision_making_buy_item.json",
+                "gather_information": "./res/prompts/inputs/gather_information.json",
+                "success_detection": "./res/prompts/inputs/success_detection_buy_item.json",
+                "information_summary": "./res/prompts/inputs/information_summary.json"
             },
             "templates": {
                 "decision_making": "./res/prompts/templates/decision_making_buy_item.prompt",
                 "gather_information": "./res/prompts/templates/gather_information.prompt",
-                "success_detection": "./res/prompts/templates/success_detection.prompt"
+                "success_detection": "./res/prompts/templates/success_detection_buy_item.prompt",
+                "information_summary": "./res/prompts/templates/information_summary.prompt"
             },
-            "output_example": {
-                "decision_making": "./res/prompts/api_output/decision_making_buy_item.json",
-                "gather_information": "./res/prompts/api_output/gather_information.json",
-                "success_detection": "./res/prompts/api_output/success_detection.json"
-            }
         }
     }
-
-    system_prompt_template = read_resource_file("./res/prompts/templates/system.prompt")
-    args = {"environment_name" : config.env_name}
-    system_prompt = to_text(system_prompt_template, args)
 
     llm_provider_config_path = './conf/openai_config.json'
 
     llm_provider = OpenAIProvider()
     llm_provider.init_provider(llm_provider_config_path)
     planner = Planner(llm_provider=llm_provider,
-                      system_prompts=[system_prompt],
                       planner_params=planner_params)
     input = planner.decision_making_.input_map
 
@@ -115,42 +106,34 @@ def main_test_decision_making():
     logger.write(f'Decision reasoning: {pre_reasoning}')
 
 def main_test_success_detection():
-
     planner_params = {
         "__check_list__": [
             "decision_making",
             "gather_information",
-            "success_detection"
+            "success_detection",
+            "information_summary"
         ],
         "prompt_paths": {
-            "input_example": {
-                "decision_making": "./res/prompts/template_input/decision_making_buy_item.json",
-                "gather_information": "./res/prompts/template_input/gather_information.json",
-                "success_detection": "./res/prompts/template_input/success_detection_buy_item.json"
+            "inputs": {
+                "decision_making": "./res/prompts/inputs/decision_making_buy_item.json",
+                "gather_information": "./res/prompts/inputs/gather_information.json",
+                "success_detection": "./res/prompts/inputs/success_detection_buy_item.json",
+                "information_summary": "./res/prompts/inputs/information_summary.json"
             },
             "templates": {
                 "decision_making": "./res/prompts/templates/decision_making_buy_item.prompt",
                 "gather_information": "./res/prompts/templates/gather_information.prompt",
-                "success_detection": "./res/prompts/templates/success_detection_buy_item.prompt"
+                "success_detection": "./res/prompts/templates/success_detection_buy_item.prompt",
+                "information_summary": "./res/prompts/templates/information_summary.prompt"
             },
-            "output_example": {
-                "decision_making": "./res/prompts/api_output/decision_making_buy_item.json",
-                "gather_information": "./res/prompts/api_output/gather_information.json",
-                "success_detection": "./res/prompts/api_output/success_detection.json"
-            }
         }
     }
-
-    system_prompt_template = read_resource_file("./res/prompts/templates/system.prompt")
-    args = {"environment_name" : config.env_name}
-    system_prompt = to_text(system_prompt_template, args)
 
     llm_provider_config_path = './conf/openai_config.json'
 
     llm_provider = OpenAIProvider()
     llm_provider.init_provider(llm_provider_config_path)
     planner = Planner(llm_provider=llm_provider,
-                      system_prompts=[system_prompt],
                       planner_params=planner_params)
 
 
@@ -190,31 +173,24 @@ def main_pipeline():
         "__check_list__": [
             "decision_making",
             "gather_information",
-            "success_detection"
+            "success_detection",
+            "information_summary"
         ],
         "prompt_paths": {
-            "input_example": {
-                "decision_making": "./res/prompts/template_input/decision_making_buy_item.json",
-                "gather_information": "./res/prompts/template_input/gather_information.json",
-                "success_detection": "./res/prompts/template_input/success_detection_buy_item.json"
-
+            "inputs": {
+                "decision_making": "./res/prompts/inputs/decision_making_buy_item.json",
+                "gather_information": "./res/prompts/inputs/gather_information.json",
+                "success_detection": "./res/prompts/inputs/success_detection_buy_item.json",
+                "information_summary": "./res/prompts/inputs/information_summary.json"
             },
             "templates": {
                 "decision_making": "./res/prompts/templates/decision_making_buy_item.prompt",
                 "gather_information": "./res/prompts/templates/gather_information.prompt",
-                "success_detection": "./res/prompts/templates/success_detection_buy_item.prompt"
+                "success_detection": "./res/prompts/templates/success_detection_buy_item.prompt",
+                "information_summary": "./res/prompts/templates/information_summary.prompt"
             },
-            "output_example": {
-                "decision_making": "./res/prompts/api_output/decision_making_buy_item.json",
-                "gather_information": "./res/prompts/api_output/gather_information.json",
-                "success_detection": "./res/prompts/api_output/success_detection.json"
-            }
         }
     }
-
-    system_prompt_template = read_resource_file("./res/prompts/templates/system.prompt")
-    args = {"environment_name" : config.env_name}
-    system_prompt = to_text(system_prompt_template, args)
 
     llm_provider_config_path = './conf/openai_config.json'
 
@@ -222,7 +198,6 @@ def main_pipeline():
     llm_provider.init_provider(llm_provider_config_path)
 
     planner = Planner(llm_provider=llm_provider,
-                      system_prompts=[system_prompt],
                       planner_params=planner_params)
     
     recent_history = {"image": [], "skill": [], "decision_making_reasoning": [], "success_detection_reasoning": [], "reflection_reasoning": []}

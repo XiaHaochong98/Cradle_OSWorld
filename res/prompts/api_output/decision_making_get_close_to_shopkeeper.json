@@ -1,6 +1,0 @@
-{
-    "skill_steps": [
-        "action1(args1=x,args2=y)", "action2(args3=a,args4=b)"
-    ],
-    "reasoning": "answer the questions and then think step by step to provide the reason to choose the action according to the answers"
-}

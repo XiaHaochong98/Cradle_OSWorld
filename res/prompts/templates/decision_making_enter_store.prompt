@@ -5,14 +5,19 @@ Here are some useful information to help you make decision. Neglect them if they
 Current task:
 <$task_description$>
 
+Few shot examples:
+<$image_introduction$>
+
+Memory examples:
+<$memory_introduction$>
+
 Last executed action:
 <$previous_action$>
 
 Previous reasoning for the last action:
 <$previous_reasoning$>
 
-Based on the above input, including input images, what should be the next action exectued on the current state for the task? You should decide what to do for the next step and choose only one corresponding skill from the following skill library. 
-
+Based on the above input, including input images, what should be the next action exectued on the current state for the task? You should decide what to do for the next step and choose only one corresponding skill from the following skill library.
 <$skill_library$>
 
 You need to pay attention to the hitching post, people, horses and so on, which will prevent you from moving forward. If you are stopped by the obstacles from reaching the target place, you should turn at a big angle to get around it. 
@@ -26,4 +31,9 @@ Assume that the character always have his back to the screen. You need to think 
 4. For the current game interface, give the code and corresponding parameters for the next 1 seconds. You should always turn the character to face the door of the store.
 
 You should think step-by-step, and output your reasoning process in the value of "reasoning". If it is not on the catalogue page, you Must choose skill 'view_next_page'. Fill the "skill_steps" with the function you choose to perform. You should only choose one function. If the function has a parameter, you should also decide the parameter for it. If it does not have a parameter just output "function_name()". You should only output a JSON file without other explanation, do not give a markdown of a JSON file, and respond with the string format. Your output should be in the following format:
-<$output_format$>
+{
+    "skill_steps": [
+        "action1(args1=x,args2=y)"
+    ],
+    "reasoning": "answer the questions and then think step by step to provide the reasoning to choose the action according to the answers",
+}

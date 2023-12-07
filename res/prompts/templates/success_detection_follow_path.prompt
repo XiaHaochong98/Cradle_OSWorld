@@ -5,6 +5,12 @@ Here are some useful information to help you make decision. Neglect them if they
 Current task:
 <$task_description$>
 
+Few shot examples:
+<$image_introduction$>
+
+Memory examples:
+<$memory_introduction$>
+
 Last executed action:
 <$previous_action$>
 
@@ -16,4 +22,12 @@ Based on the above input, including the input images. You need to think about th
 For example, if navigating or following a path and the path appears in one image, but doesn't appear in the other, then it is likely the action was successful.
 
 You should only output a JSON file without other explanation, do not give a markdown of a JSON file, and respond with the string format. The output json object should follow this format:
-<$output_format$>
+{
+    "task_description": "map_create_waypoint",
+    "decision":
+    {
+            "criteria": "The map must be open with the 'Saloon' marked as a Waypoint, and then the map must be closed to indicate the task completion.",
+            "reasoning": "Both provided images show the in-game character standing near a campfire, with the mini-map visible on the bottom left corner. The mini-map does not provide sufficient information to determine if the 'Saloon' has been marked as a Waypoint via the Index, nor do these images show the main map being closed after marking a Waypoint. We can not see any waypoint marker on the mini-map nor any actions related to opening or navigating the full map.",
+            "success": false
+    }
+}

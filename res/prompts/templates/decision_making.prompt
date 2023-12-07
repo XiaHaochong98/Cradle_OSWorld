@@ -4,15 +4,19 @@ The task is to <$task_description$>.
 
 I will give you extra information retrieved from memory and gathered from the game, you may use them to help your decision, neglect them if they are empty.
 
-Memory:
-<$decision_making_memory_description$>
+Few shot examples:
+<$image_introduction$>
 
-Gathered_information:
-<$gathered_information_description$>
+Memory examples:
+<$memory_introduction$>
 
 Decomposed {<$task_description$>} to multiple automatic skills based on skills description, and choose some of them to finish the {<$task_description$>} and output the decomposed names of the sequence fo skills in the value of "skills".
-
 <$skill_library$>
 
 Based on the above input, including input images, what should be the next steps or one step? You should think step-by-step, and give your reasoning process in the value of "reasoning". The maximum number of skills you can include in the "skill_steps" must obey the requirement in {<$task_description$>}. Fill the "skill_steps" with the sequence of functions you chose to perform, if the function has a parameter, you should also decide the parameter for it, if it does not have a parameter just output "function_name()". Output an empty "skill_steps" list if no skill needs to be take further. You should only output a JSON file without other explanation, do not give a markdown of a JSON file, and respond with the string format. Your output should be in the following format:
-<$output_format$>
+{
+    "skill_steps": [
+        "action1(args1=x,args2=y)"
+    ],
+    "reasoning": "summary of the reasoning to chose the action or sequence of actions",
+}

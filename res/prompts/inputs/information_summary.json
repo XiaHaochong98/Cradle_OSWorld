@@ -1,5 +1,4 @@
 {
-    "type": "information_summary",
     "recent_info": "",
     "hidden_state": "",
     "image_introduction":[
@@ -29,7 +28,5 @@
             "assistant": ""
         }
     ],
-    
-    "output_format":"{\n    \"info_summary\": \"What happened recentlly is that ...\"\n\n}",
-    "__comments__": "This is a template for information summary."
+    "output_format":"{\n    \"info_summary\": \"What happened recentlly is that ...\"\n\n}"
 }

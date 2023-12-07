@@ -6,6 +6,12 @@ Your inputs contains: 1. The screenshot of the environment and the current state
 
 Your inputs are:
 
+Few shot examples:
+<$image_introduction$>
+
+Memory examples:
+<$memory_introduction$>
+
 Previous actions:
 mount_horse()
 
@@ -19,6 +25,9 @@ Your output should include:
 Only one action to execute next to progress in achieving the goal. The action and parameters should be in Python format. Pay attention to the previous step already executed, if any. You should only respond with a valid JSON object as the example below.
 
 Example output:
-```
-<$output_format$>
-```
+{
+    "skill_steps": [
+        "action1(args1=x,args2=y)"
+    ],
+    "reasoning": "answer the questions and then think step by step to provide the reasoning to choose the action according to the answers",
+}

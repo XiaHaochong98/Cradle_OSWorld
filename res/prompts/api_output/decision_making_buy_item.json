@@ -1,8 +1,0 @@
-{
-    "type": "decision_making",
-    "skill_steps": [
-        "action1(args1=x,args2=y)"
-    ],
-    "reasoning": "answer the questions and then think step by step to provide the reasoning to choose the action according to the answers",
-    "__comment__": "This is an output of the decision making."
-}

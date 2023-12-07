@@ -9,6 +9,12 @@ Your inputs contains: 1. The screenshot of the environment; 2. the current envir
 
 Your inputs are:
 
+Few shot examples:
+<$image_introduction$>
+
+Memory examples:
+<$memory_introduction$>
+
 Context:
 <$context$>
 
@@ -25,6 +31,9 @@ Your output should include:
 The best action, or short sequence of actions without gaps, to execute next to progress in achieving the goal. Pay attention to the names of the available skills and to the previous skills already executed, if any. You should only respond with a valid JSON object as the example below. Pay attention to the available skills and any necessary skill arguments they may require. If you think the task is already complete, you can return an empty list of actions ("[]").
 
 Example output:
-```
-<$output_format$>
-```
+{
+    "skill_steps": [
+        "action1(args1=x,args2=y)"
+    ],
+    "reasoning": "answer the questions and then think step by step to provide the reasoning to choose the action according to the answers",
+}

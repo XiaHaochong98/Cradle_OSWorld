@@ -5,6 +5,7 @@ import time
 from uac.config import Config
 from uac.log import Logger
 from uac.utils.file_utils import assemble_project_path, read_resource_file
+from uac.utils.json_utils import load_json
 from uac.gameio import GameManager
 from uac.planner.planner import Planner
 from uac.gameio.atomic_skills.map import __all__ as map_skills
@@ -19,28 +20,22 @@ logger = Logger()
 
 
 find_horse_params = {
-    "__check_list__":[
-        "gather_information"
+    "__check_list__": [
+        "gather_information",
     ],
     "prompt_paths": {
-        "input_example": {
-        "gather_information": "./res/prompts/template_input/gather_information.json",
-        "decision_making": "./res/prompts/template_input/decision_making_find_horse.json",
-        "success_detection": "./res/prompts/template_input/success_detection_find_horse.json",
-        "information_summary": "./res/prompts/template_input/information_summary.json",
+        "inputs": {
+            "decision_making": "./res/prompts/inputs/decision_making_find_horse.json",
+            "gather_information": "./res/prompts/inputs/gather_information.json",
+            "success_detection": "./res/prompts/inputs/success_detection_find_horse.json",
+            "information_summary": "./res/prompts/inputs/information_summary.json"
         },
         "templates": {
-        "gather_information": "./res/prompts/templates/gather_information.prompt",
-        "decision_making": "./res/prompts/templates/decision_making_find_horse.prompt",
-        "success_detection": "./res/prompts/templates/success_detection_find_horse.prompt",
-        "information_summary": "./res/prompts/templates/information_summary.prompt",
+            "decision_making": "./res/prompts/templates/decision_making_find_horse.prompt",
+            "gather_information": "./res/prompts/templates/gather_information.prompt",
+            "success_detection": "./res/prompts/templates/success_detection_find_horse.prompt",
+            "information_summary": "./res/prompts/templates/information_summary.prompt"
         },
-        "output_example": {
-        "gather_information": "./res/prompts/api_output/gather_information.json",
-        "decision_making": "./res/prompts/api_output/decision_making.json",
-        "success_detection": "./res/prompts/api_output/success_detection.json",
-        "information_summary": "./res/prompts/api_output/information_summary.json",
-        }
     }
 }
 
@@ -52,52 +47,41 @@ create_waypoint_params = {
         "information_summary"
     ],
     "prompt_paths": {
-        "input_example": {
-            "decision_making": "./res/prompts/template_input/decision_making_map_create_waypoint.json",
-            "gather_information": "./res/prompts/template_input/gather_information.json",
-            "success_detection": "./res/prompts/template_input/success_detection_map_create_waypoint.json",
-            "information_summary": "./res/prompts/template_input/information_summary.json",
+        "inputs": {
+            "decision_making": "./res/prompts/inputs/decision_making_map_create_waypoint.json",
+            "gather_information": "./res/prompts/inputs/gather_information.json",
+            "success_detection": "./res/prompts/inputs/success_detection_map_create_waypoint.json",
+            "information_summary": "./res/prompts/inputs/information_summary.json"
         },
         "templates": {
             "decision_making": "./res/prompts/templates/decision_making_map_create_waypoint.prompt",
             "gather_information": "./res/prompts/templates/gather_information.prompt",
             "success_detection": "./res/prompts/templates/success_detection_map_create_waypoint.prompt",
-            "information_summary": "./res/prompts/templates/information_summary.prompt",
+            "information_summary": "./res/prompts/templates/information_summary.prompt"
         },
-        "output_example": {
-            "decision_making": "./res/prompts/api_output/decision_making.json",
-            "gather_information": "./res/prompts/api_output/gather_information.json",
-            "success_detection": "./res/prompts/api_output/success_detection.json",
-            "information_summary": "./res/prompts/api_output/information_summary.json",
-        }
     }
 }
 
 follow_path_params = {
-    "__check_list__":[
-        "gather_information"
+    "__check_list__": [
+        "gather_information",
     ],
     "prompt_paths": {
-        "input_example": {
-        "gather_information": "./res/prompts/template_input/gather_information_follow_path.json",
-        "decision_making": "./res/prompts/template_input/decision_making_follow_path.json",
-        "success_detection": "./res/prompts/template_input/success_detection_follow_path.json",
-        "information_summary": "./res/prompts/template_input/information_summary.json"
+        "inputs": {
+            "decision_making": "./res/prompts/inputs/decision_making_follow_path.json",
+            "gather_information": "./res/prompts/inputs/gather_information_follow_path.json",
+            "success_detection": "./res/prompts/inputs/success_detection_follow_path.json",
+            "information_summary": "./res/prompts/inputs/information_summary.json"
         },
         "templates": {
-        "gather_information": "./res/prompts/templates/gather_information_follow_path.prompt",
-        "decision_making": "./res/prompts/templates/decision_making_follow_path.prompt",
-        "success_detection": "./res/prompts/templates/success_detection.prompt",
-        "information_summary": "./res/prompts/templates/information_summary.prompt",
+            "decision_making": "./res/prompts/templates/decision_making_follow_path.prompt",
+            "gather_information": "./res/prompts/templates/gather_information_follow_path.prompt",
+            "success_detection": "./res/prompts/templates/success_detection_follow_path.prompt",
+            "information_summary": "./res/prompts/templates/information_summary.prompt"
         },
-        "output_example": {
-        "gather_information": "./res/prompts/api_output/gather_information.json",
-        "decision_making": "./res/prompts/api_output/decision_making.json",
-        "success_detection": "./res/prompts/api_output/success_detection.json",
-        "information_summary": "./res/prompts/api_output/information_summary.json",
-        }
     }
 }
+
 
 enter_store_params = {
     "__check_list__": [
@@ -107,25 +91,18 @@ enter_store_params = {
         "information_summary"
     ],
     "prompt_paths": {
-        "input_example": {
-            "decision_making": "./res/prompts/template_input/decision_making_enter_store.json",
-            "gather_information": "./res/prompts/template_input/gather_information.json",
-            "success_detection": "./res/prompts/template_input/success_detection_enter_store.json",
-            "information_summary": "./res/prompts/template_input/information_summary.json",
-
+        "inputs": {
+            "decision_making": "./res/prompts/inputs/decision_making_enter_store.json",
+            "gather_information": "./res/prompts/inputs/gather_information.json",
+            "success_detection": "./res/prompts/inputs/success_detection_enter_store.json",
+            "information_summary": "./res/prompts/inputs/information_summary.json"
         },
         "templates": {
             "decision_making": "./res/prompts/templates/decision_making_enter_store.prompt",
             "gather_information": "./res/prompts/templates/gather_information.prompt",
             "success_detection": "./res/prompts/templates/success_detection_enter_store.prompt",
-            "information_summary": "./res/prompts/templates/information_summary.prompt",
+            "information_summary": "./res/prompts/templates/information_summary.prompt"
         },
-        "output_example": {
-            "decision_making": "./res/prompts/api_output/decision_making_enter_store.json",
-            "gather_information": "./res/prompts/api_output/gather_information.json",
-            "success_detection": "./res/prompts/api_output/success_detection.json",
-            "information_summary": "./res/prompts/api_output/information_summary.json",
-        }
     }
 }
 
@@ -137,25 +114,18 @@ approach_shopkeeper_params = {
         "information_summary"
     ],
     "prompt_paths": {
-        "input_example": {
-            "decision_making": "./res/prompts/template_input/decision_making_get_close_to_shopkeeper.json",
-            "gather_information": "./res/prompts/template_input/gather_information.json",
-            "success_detection": "./res/prompts/template_input/success_detection_get_close_to_shopkeeper.json",
-            "information_summary": "./res/prompts/template_input/information_summary.json",
-
+        "inputs": {
+            "decision_making": "./res/prompts/inputs/decision_making_get_close_to_shopkeeper.json",
+            "gather_information": "./res/prompts/inputs/gather_information.json",
+            "success_detection": "./res/prompts/inputs/success_detection_get_close_to_shopkeeper.json",
+            "information_summary": "./res/prompts/inputs/information_summary.json"
         },
         "templates": {
             "decision_making": "./res/prompts/templates/decision_making_get_close_to_shopkeeper.prompt",
             "gather_information": "./res/prompts/templates/gather_information.prompt",
             "success_detection": "./res/prompts/templates/success_detection_get_close_to_shopkeeper.prompt",
-            "information_summary": "./res/prompts/templates/information_summary.prompt",
+            "information_summary": "./res/prompts/templates/information_summary.prompt"
         },
-        "output_example": {
-            "decision_making": "./res/prompts/api_output/decision_making_get_close_to_shopkeeper.json",
-            "gather_information": "./res/prompts/api_output/gather_information.json",
-            "success_detection": "./res/prompts/api_output/success_detection.json",
-            "information_summary": "./res/prompts/api_output/information_summary.json",
-        }
     }
 }
 
@@ -168,25 +138,18 @@ buy_item_params = {
         "information_summary"
     ],
     "prompt_paths": {
-        "input_example": {
-            "decision_making": "./res/prompts/template_input/decision_making_buy_item.json",
-            "gather_information": "./res/prompts/template_input/gather_information.json",
-            "success_detection": "./res/prompts/template_input/success_detection_buy_item.json",
-            "information_summary": "./res/prompts/template_input/information_summary.json",
-
+        "inputs": {
+            "decision_making": "./res/prompts/inputs/decision_making_buy_item.json",
+            "gather_information": "./res/prompts/inputs/gather_information.json",
+            "success_detection": "./res/prompts/inputs/success_detection_buy_item.json",
+            "information_summary": "./res/prompts/inputs/information_summary.json"
         },
         "templates": {
             "decision_making": "./res/prompts/templates/decision_making_buy_item.prompt",
             "gather_information": "./res/prompts/templates/gather_information.prompt",
             "success_detection": "./res/prompts/templates/success_detection_buy_item.prompt",
-            "information_summary": "./res/prompts/templates/information_summary.prompt",
+            "information_summary": "./res/prompts/templates/information_summary.prompt"
         },
-        "output_example": {
-            "decision_making": "./res/prompts/api_output/decision_making_buy_item.json",
-            "gather_information": "./res/prompts/api_output/gather_information.json",
-            "success_detection": "./res/prompts/api_output/success_detection.json",
-            "information_summary": "./res/prompts/api_output/information_summary.json",
-        }
     }
 }
 
@@ -201,7 +164,7 @@ def gather_info_args(state_image):
     ]
     image_introduction = images_info
 
-    output_format = read_resource_file("./res/prompts/api_output/gather_information.json")
+    output_format = load_json(assemble_project_path("./res/prompts/inputs/gather_information.json"))["output_format"]
     args = {"output_format": output_format, "image_introduction": image_introduction}
     return args
 
@@ -214,7 +177,7 @@ def decision_args(previous_state_image, current_state_image, current_sub_task, c
     skillset = go_skills + nav_skills + move_skills 
     skill_library = GameManager(config.env_name).get_filtered_skills(skillset)
 
-    output_format = read_resource_file("./res/prompts/api_output/decision_making.json")
+    output_format = load_json(assemble_project_path("./res/prompts/inputs/decision_making.json"))["output_format"]
 
     images_info = [
         {
@@ -230,7 +193,7 @@ def decision_args(previous_state_image, current_state_image, current_sub_task, c
 
 def suc_det_args(previous_state_image, current_state_image, current_sub_task, plan_reasoning, last_executed_skill, last_reasoning, planner):
             
-    output_format = read_resource_file("./res/prompts/api_output/success_detection.json")
+    output_format = load_json(assemble_project_path("./res/prompts/inputs/success_detection.json"))["output_format"]
 
     images_info = [
         {
@@ -250,8 +213,8 @@ def suc_det_args(previous_state_image, current_state_image, current_sub_task, pl
     return args
 
 def info_sum_args(hidden_state, images, introductions):
-            
-    output_format = read_resource_file("./res/prompts/api_output/information_summary.json")
+
+    output_format = load_json(assemble_project_path("./res/prompts/inputs/information_summary.json"))["output_format"]
 
     images_info = [
         {

@@ -5,7 +5,6 @@ from uac.config import Config
 from uac.gameio.game_manager import GameManager
 from uac.log import Logger
 from uac.agent import Agent
-from uac.planner.base import to_text
 from uac.planner.planner import Planner
 from uac.provider.openai import OpenAIProvider
 from uac.gameio.lifecycle.ui_control import switch_to_game
@@ -21,38 +20,30 @@ def main_test_decision_making():
         "__check_list__": [
             "decision_making",
             "gather_information",
-            "success_detection"
+            "success_detection",
+            "information_summary"
         ],
         "prompt_paths": {
-            "input_example": {
-                "decision_making": "./res/prompts/template_input/decision_making_map_create_waypoint.json",
-                "gather_information": "./res/prompts/template_input/gather_information.json",
-                "success_detection": "./res/prompts/template_input/success_detection_map_create_waypoint.json"
-
+            "inputs": {
+                "decision_making": "./res/prompts/inputs/decision_making_map_create_waypoint.json",
+                "gather_information": "./res/prompts/inputs/gather_information.json",
+                "success_detection": "./res/prompts/inputs/success_detection_map_create_waypoint.json",
+                "information_summary": "./res/prompts/inputs/information_summary.json"
             },
             "templates": {
                 "decision_making": "./res/prompts/templates/decision_making_map_create_waypoint.prompt",
                 "gather_information": "./res/prompts/templates/gather_information.prompt",
-                "success_detection": "./res/prompts/templates/success_detection.prompt"
+                "success_detection": "./res/prompts/templates/success_detection_map_create_waypoint.prompt",
+                "information_summary": "./res/prompts/templates/information_summary.prompt"
             },
-            "output_example": {
-                "decision_making": "./res/prompts/api_output/decision_making.json",
-                "gather_information": "./res/prompts/api_output/gather_information.json",
-                "success_detection": "./res/prompts/api_output/success_detection.json"
-            }
         }
     }
-
-    system_prompt_template = read_resource_file("./res/prompts/templates/system.prompt")
-    args = {"environment_name" : config.env_name}
-    system_prompt = to_text(system_prompt_template, args)
 
     llm_provider_config_path = './conf/openai_config.json'
 
     llm_provider = OpenAIProvider()
     llm_provider.init_provider(llm_provider_config_path)
     planner = Planner(llm_provider=llm_provider,
-                      system_prompts=[system_prompt],
                       planner_params=planner_params)
 
     gm = GameManager(config.env_name)
@@ -80,40 +71,31 @@ def main_test_success_detection():
         "__check_list__": [
             "decision_making",
             "gather_information",
-            "success_detection"
+            "success_detection",
+            "information_summary"
         ],
         "prompt_paths": {
-            "input_example": {
-                "decision_making": "./res/prompts/template_input/decision_making_map_create_waypoint.json",
-                "gather_information": "./res/prompts/template_input/gather_information.json",
-                "success_detection": "./res/prompts/template_input/success_detection_map_create_waypoint.json"
-
+            "inputs": {
+                "decision_making": "./res/prompts/inputs/decision_making_map_create_waypoint.json",
+                "gather_information": "./res/prompts/inputs/gather_information.json",
+                "success_detection": "./res/prompts/inputs/success_detection_map_create_waypoint.json",
+                "information_summary": "./res/prompts/inputs/information_summary.json"
             },
             "templates": {
                 "decision_making": "./res/prompts/templates/decision_making_map_create_waypoint.prompt",
                 "gather_information": "./res/prompts/templates/gather_information.prompt",
-                "success_detection": "./res/prompts/templates/success_detection_map_create_waypoint.prompt"
+                "success_detection": "./res/prompts/templates/success_detection_map_create_waypoint.prompt",
+                "information_summary": "./res/prompts/templates/information_summary.prompt"
             },
-            "output_example": {
-                "decision_making": "./res/prompts/api_output/decision_making.json",
-                "gather_information": "./res/prompts/api_output/gather_information.json",
-                "success_detection": "./res/prompts/api_output/success_detection.json"
-            }
         }
     }
-
-    system_prompt_template = read_resource_file("./res/prompts/templates/system.prompt")
-    args = {"environment_name" : config.env_name}
-    system_prompt = to_text(system_prompt_template, args)
 
     llm_provider_config_path = './conf/openai_config.json'
 
     llm_provider = OpenAIProvider()
     llm_provider.init_provider(llm_provider_config_path)
     planner = Planner(llm_provider=llm_provider,
-                      system_prompts=[system_prompt],
                       planner_params=planner_params)
-
 
     input = planner.success_detection_.input_map
     image_introduction = [
@@ -137,11 +119,7 @@ def main_test_success_detection():
 
     data = planner.success_detection(input = input)
 
-    
-    # print("data['res_dict']", data['res_dict']['decision'])
-    # print("keys", data['res_dict']['decision'].keys())
-
-    res_dict = data['res_dict']['decision']
+    res_dict = data['res_dict']
     reasoning = res_dict['reasoning']
     success = data['outcome']
 
@@ -154,37 +132,30 @@ def main_pipeline():
         "__check_list__": [
             "decision_making",
             "gather_information",
-            "success_detection"
+            "success_detection",
+            "information_summary"
         ],
         "prompt_paths": {
-            "input_example": {
-                "decision_making": "./res/prompts/template_input/decision_making_map_create_waypoint.json",
-                "gather_information": "./res/prompts/template_input/gather_information.json",
-                "success_detection": "./res/prompts/template_input/success_detection_map_create_waypoint.json"
+            "inputs": {
+                "decision_making": "./res/prompts/inputs/decision_making_map_create_waypoint.json",
+                "gather_information": "./res/prompts/inputs/gather_information.json",
+                "success_detection": "./res/prompts/inputs/success_detection_map_create_waypoint.json",
+                "information_summary": "./res/prompts/inputs/information_summary.json"
             },
             "templates": {
                 "decision_making": "./res/prompts/templates/decision_making_map_create_waypoint.prompt",
                 "gather_information": "./res/prompts/templates/gather_information.prompt",
-                "success_detection": "./res/prompts/templates/success_detection_map_create_waypoint.prompt"
+                "success_detection": "./res/prompts/templates/success_detection_map_create_waypoint.prompt",
+                "information_summary": "./res/prompts/templates/information_summary.prompt"
             },
-            "output_example": {
-                "decision_making": "./res/prompts/api_output/decision_making.json",
-                "gather_information": "./res/prompts/api_output/gather_information.json",
-                "success_detection": "./res/prompts/api_output/success_detection.json"
-            }
         }
     }
-
-    system_prompt_template = read_resource_file("./res/prompts/templates/system.prompt")
-    args = {"environment_name" : config.env_name}
-    system_prompt = to_text(system_prompt_template, args)
 
     llm_provider_config_path = './conf/openai_config.json'
 
     llm_provider = OpenAIProvider()
     llm_provider.init_provider(llm_provider_config_path)
     planner = Planner(llm_provider=llm_provider,
-                      system_prompts=[system_prompt],
                       planner_params=planner_params)
 
     gm = GameManager(config.env_name)
@@ -222,11 +193,6 @@ def main_pipeline():
             }
         ]
         input["image_introduction"] = image_introduction
-        #skill_steps = planner.decision_making(input = input)['']
-
-        # logger.warn(f'Images are: {pre_screen_shot_path}, {cur_screen_shot_path}')
-
-        # logger.write(f'U: {input}')
 
         data = planner.decision_making(input = input)
 
