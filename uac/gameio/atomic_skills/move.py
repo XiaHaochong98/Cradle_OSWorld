@@ -111,5 +111,5 @@ __all__ = [
     "move_forward",
     "mount_horse",
     "dismount_horse",
-    #"stop_horse",
+    "stop_horse",
 ]

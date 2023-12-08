@@ -12,7 +12,6 @@ from uac.provider.base_embedding import EmbeddingProvider
 from uac.memory.base import VectorStore, Image
 from uac.memory import BasicMemory
 from uac.memory.short_term_memory import ConversationMemory
-from uac.agent import GatherInformationOutput, DecisionMakingOutput
 
 
 config = Config()
@@ -55,13 +54,13 @@ class MemoryInterface:
             self.recent_history = {"image": [], "skill": [], "decision_making_reasoning": [], "success_detection_reasoning": [], "reflection_reasoning": []}
 
 
-    def add_gathered_info(
-        self,
-        info: GatherInformationOutput,
-    ) -> None:
-        """Add gathered information to memory."""
-        # currently we only store description for the simplest retrieval
-        self.current_status = info.description
+    # def add_gathered_info(
+    #     self,
+    #     info: GatherInformationOutput,
+    # ) -> None:
+    #     """Add gathered information to memory."""
+    #     # currently we only store description for the simplest retrieval
+    #     self.current_status = info.description
 
     def get_current_status(self) -> str:
         """Query current status of the player."""

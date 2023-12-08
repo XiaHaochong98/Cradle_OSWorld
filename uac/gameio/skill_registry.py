@@ -27,6 +27,10 @@ def extract_function_info(input_string: str = "open_map()"):
         function_name = match.group(1)
         raw_arguments = match.group(2)
 
+        # To avoid simple errors based on faulty model output
+        if raw_arguments is not None and len(raw_arguments) > 0:
+            raw_arguments = raw_arguments.replace("=false", "=False").replace("=true", "=True")
+
         try:
             parsed_arguments = ast.parse(f"fake_func({raw_arguments})", mode='eval')
         except SyntaxError:

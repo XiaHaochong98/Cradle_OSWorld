@@ -16,7 +16,9 @@ logger = Logger()
 PROMPT_EXT = ".prompt"
 JSON_EXT = ".json"
 
+
 class ScreenClassification():
+
     def __init__(self,
                  input_example: Dict = None,
                  template: Dict = None,
@@ -204,6 +206,7 @@ class GatherInformation():
 
 
 class DecisionMaking():
+
     def __init__(self,
                  input_map: Dict = None,
                  template: Dict = None,
@@ -270,6 +273,7 @@ class DecisionMaking():
 
 
 class SuccessDetection():
+
     def __init__(self,
                  input_map: Dict = None,
                  template: Dict = None,
@@ -328,7 +332,9 @@ class SuccessDetection():
     def _post(self, *args, data: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return data
 
+
 class InformationSummary():
+
     def __init__(self,
                  input_map: Dict = None,
                  template: Dict = None,
@@ -389,6 +395,7 @@ class InformationSummary():
         return data
     
 class Planner(BasePlanner):
+
     def __init__(self,
                  llm_provider: Any = None,
                  planner_params: Dict = None,
@@ -410,14 +417,14 @@ class Planner(BasePlanner):
             ],
             "prompt_paths": {
               "inputs": {
-                "screen_classification": "./res/prompts/gather_information/inputs/screen_classification.json",
-                "gather_information": "./res/prompts/gather_information/inputs/gather_information.json",
-                "decision_making": "./res/prompts/decision_making/inputs/decision_making.json"
+                "screen_classification": "./res/prompts/inputs/screen_classification.json",
+                "gather_information": "./res/prompts/inputs/gather_information.json",
+                "decision_making": "./res/prompts/inputs/decision_making.json"
               },
               "templates": {
-                "screen_classification": "./res/prompts/gather_information/templates/screen_classification.prompt",
-                "gather_information": "./res/prompts/gather_information/templates/gather_information.prompt",
-                "decision_making": "./res/prompts/decision_making/templates/decision_making.prompt"
+                "screen_classification": "./res/prompts/templates/screen_classification.prompt",
+                "gather_information": "./res/prompts/templates/gather_information.prompt",
+                "decision_making": "./res/prompts/templates/decision_making.prompt"
               }
             }
           }

@@ -506,7 +506,7 @@ class Agent:
 
         # Which sub-task to start on, for debugging later steps in the flow
         # But please try to run the whole thing, as the states starting from later are not fully the same
-        start_at_step = 0
+        start_at_step = -1
 
         use_information_summary = False
 
@@ -523,6 +523,9 @@ class Agent:
                 sub_task_params = decomposed_task_planner_params[sub_task_index]
                 self.planner.set_internal_params(sub_task_params, use_information_summary = use_information_summary)
                 sub_task_args = decomposed_task_args[sub_task_index]
+
+                # So it doesn't reset in the next loop iteration
+                start_at_step = -1
 
             if current_sub_task is None:
                 current_sub_task = decomposed_task_steps[sub_task_index]
@@ -644,7 +647,6 @@ class Agent:
                 logger.write(f'Finished sub-task: {current_sub_task}')
                 previous_sub_task = current_sub_task
                 sub_task_index += 1
-                start_at_step += 1
                 plan_reasoning = ""
                 last_reasoning = ""
 

@@ -41,6 +41,8 @@ def cv_navigation(total_iterations, terminal_threshold=100, debug = False):
 
     warm_up = True
 
+    waypoint_marker_filename = './res/icons/red_marker.jpg'
+
     try:
 
         for step in range(total_iterations):
@@ -61,7 +63,7 @@ def cv_navigation(total_iterations, terminal_threshold=100, debug = False):
         
             game_image, minimap_image = take_screenshot(timestep, game_screen_region, minimap_region, draw_axis=False)
 
-            theta, measure = match_template(os.path.join(save_dir, f"minimap_{timestep}.jpg"), './res/icons/red_marker.jpg', config.resolution_ratio, debug=False)
+            theta, measure = match_template(os.path.join(save_dir, f"minimap_{timestep}.jpg"), waypoint_marker_filename, config.resolution_ratio, debug=False)
 
             logger.debug(f"distance  {measure['distance']}")
 
@@ -69,7 +71,7 @@ def cv_navigation(total_iterations, terminal_threshold=100, debug = False):
                 logger.debug('success! Reach the red marker.')
                 stop_horse()
                 time.sleep(1)
-                theta, measure = match_template(os.path.join(save_dir, f"minimap_{timestep}.jpg"), './res/icons/red_marker.jpg', config.resolution_ratio, debug=False)
+                theta, measure = match_template(os.path.join(save_dir, f"minimap_{timestep}.jpg"), waypoint_marker_filename, config.resolution_ratio, debug=False)
                 turn(theta * 1.2)
                 break
 
