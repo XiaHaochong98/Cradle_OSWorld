@@ -8,15 +8,94 @@ conda activate uac-dev
 pip3 install -r requirements.txt
 ```
 
-To install Faiss:
+### To install Faiss:
 ```bash
 # CPU-only version
 conda install -c pytorch faiss-cpu=1.7.4 mkl=2021 blas=1.0=mkl
-# GPU(+CPU) version
-conda install -c pytorch -c nvidia faiss-gpu=1.7.4 mkl=2021 blas=1.0=mkl
 ```
 
-Keep the requirements.txt file updated in your branch, but only add dependencies that are really required by the system.
+### To install GroundingDino:
+
+Download its weights to the cache directory:
+
+```bash
+mkdir cache
+cd cache
+curl -L -C - -O https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth
+cd ..
+```
+
+**Note:**
+You should have a CUDA environment, please make sure you have properly installed CUDA dependencies first. You can use the following command to detect it on Linux.
+```bash
+nvcc -V
+```
+
+Or search for its environment variable: CUDA_HOME or CUDA_PATH. On Windows it should be something like "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8" and on Linux like "/usr/local/cuda".
+
+If you don't get the specific version, you should download cudatoolkit and cuDNN first (version 11.8 is recommended).
+
+If you don't download CUDA correctly, after installing GroundingDino, the code will produce: 
+
+```bash
+NameError: name '_C' is not defined
+```
+
+If this happened, please re-setup CUDA and pytorch, reclone the git and perform all installation steps again.
+
+On Windows install from https://developer.nvidia.com/cuda-11-8-0-download-archive (Linux packages also available).
+
+Make sure pytorch is installed using the rught CUDA dependencies.
+
+```bash
+conda install pytorch torchvision cudatoolkit=11.8 -c nvidia -c pytorch
+```
+
+If this doesn't work, or you prefer the pip way, you can try something like:
+
+```bash
+pip3 install --upgrade torch==2.1.1+cu118 -f https://download.pytorch.org/whl/torch_stable.html
+pip3 install torchvision==0.16.1+cu118 -f https://download.pytorch.org/whl/torch_stable.html
+```
+
+Clone the GroundingDino repo and compile/install it.
+
+```bash
+# Clone
+cd ..
+git clone https://github.com/IDEA-Research/GroundingDINO.git
+cd GroundingDINO
+
+# Define the necessary environment variables, this can be done in the .env file in the uac directory
+HUGGINGFACE_HUB_CACHE = "../uac/cache/hf" # This can be the full path too, if the relative one doesn't work
+
+# Pre-download huggingface files needed by GroundingDino
+# This step may require a VPN connection
+mkdir $HUGGINGFACE_HUB_CACHE
+huggingface-cli download bert-base-uncased config.json tokenizer.json vocab.txt tokenizer_config.json model.safetensors --cache-dir $HUGGINGFACE_HUB_CACHE
+
+# Define the last necessary environment variable, this can be done in the .env file in the uac directory
+# This step will avoid needing a VPN to run
+TRANSFORMERS_OFFLINE = "TRUE"
+
+# Build and install it
+pip3 install -r requirements.txt
+pip3 install .
+```
+
+It should install without errors and now it will be available for any project using the same conda environment (uac-dev).
+
+To build the C++ code on Windows, you may need to install build tools.
+
+Download them from https://visualstudio.microsoft.com/visual-cpp-build-tools/
+Make sure to select "Desktop Environment with C++" and include the 1st 3 optional packages:
+- MSVC v141 or higher
+- Windows SDK for your OS version
+- CMake tools
+
+### Other dependencies
+
+Keep the UAC requirements.txt file updated in your branch, but only add dependencies that are really required by the system.
 
 runner.py is the entry point to run an agent. Currently not working code, just an introductory sample.
 
