@@ -45,7 +45,7 @@ If this happened, please re-setup CUDA and pytorch, reclone the git and perform 
 
 On Windows install from https://developer.nvidia.com/cuda-11-8-0-download-archive (Linux packages also available).
 
-Make sure pytorch is installed using the rught CUDA dependencies.
+Make sure pytorch is installed using the right CUDA dependencies.
 
 ```bash
 conda install pytorch torchvision cudatoolkit=11.8 -c nvidia -c pytorch
@@ -58,16 +58,19 @@ pip3 install --upgrade torch==2.1.1+cu118 -f https://download.pytorch.org/whl/to
 pip3 install torchvision==0.16.1+cu118 -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
-Clone the GroundingDino repo and compile/install it.
+Now, you should install the pre-compiled GroundingDino with the project dependencies. You can use the package in our repo and the following commands:
 
 ```bash
-# Clone
+cd deps
+pip install groundingdino-0.1.0-cp310-cp310-win_amd64.whl
 cd ..
-git clone https://github.com/IDEA-Research/GroundingDINO.git
-cd GroundingDINO
+```
 
+Once it is installed, we need to pre-download some required model files and set some environment variables.
+
+```bash
 # Define the necessary environment variables, this can be done in the .env file in the uac directory
-HUGGINGFACE_HUB_CACHE = "../uac/cache/hf" # This can be the full path too, if the relative one doesn't work
+HUGGINGFACE_HUB_CACHE = "./cache/hf" # This can be the full path too, if the relative one doesn't work
 
 # Pre-download huggingface files needed by GroundingDino
 # This step may require a VPN connection
@@ -77,10 +80,22 @@ huggingface-cli download bert-base-uncased config.json tokenizer.json vocab.txt 
 # Define the last necessary environment variable, this can be done in the .env file in the uac directory
 # This step will avoid needing a VPN to run
 TRANSFORMERS_OFFLINE = "TRUE"
+```
+
+If for some reason there is some incompatibility in installing or running GroundingDino, it's recommended to recreate your environment.
+
+Only if really necessary, you can try to clone and compile/install GroundingDino yourself.
+
+```bash
+# Clone
+cd ..
+git clone https://github.com/IDEA-Research/GroundingDINO.git
+cd GroundingDINO
 
 # Build and install it
 pip3 install -r requirements.txt
 pip3 install .
+cd ../UAC
 ```
 
 It should install without errors and now it will be available for any project using the same conda environment (uac-dev).

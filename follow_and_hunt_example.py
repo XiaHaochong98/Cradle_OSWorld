@@ -32,3 +32,5 @@ if __name__ == '__main__':
     
     #detection example by GroundingDINO
     groundingDINO_detect("./res/samples/camp-on-horse-no-line-000.jpg")
+
+    logger.write()
