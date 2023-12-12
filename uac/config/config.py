@@ -30,6 +30,8 @@ class Config(metaclass=Singleton):
 
     DEFAULT_POST_ACTION_WAIT_TIME = 3
 
+    DEFAULT_MESSAGE_CONSTRUCTION_MODE = "tripartite"
+
     root_dir = '.'
     work_dir = './runs'
     log_dir = './logs'

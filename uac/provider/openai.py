@@ -407,138 +407,185 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
     def _get_azure_deployment_id_for_model(self, model_label) -> list:
         return self.provider_cfg[PROVIDER_SETTING_DEPLOYMENT_MAP][model_label]
 
+    def assemble_prompt_tripartite(self, template_str: str = None, params: Dict[str, Any] = None) -> List[Dict[str, Any]]:
 
-    # def assemble_prompt(self, system_prompts: List[str], user_inputs: List[str], image_filenames: List[str]) -> List[Dict[str, Any]]:
-    
-    #     encoded_images = [encode_image(assemble_project_path(image_path)) for image_path in image_filenames]
+        """
+        A tripartite prompt is a message with the following structure:
+        <system message>
 
-    #     messages=[
-    #         {
-    #             "role": "system",
-    #             "content": [
-    #                 {
-    #                   "type" : "text",
-    #                   "text" : f"{system_prompts[0]}"
-    #                 }
-    #                 ]
-    #         },
-    #         {
-    #             "role": "user",
-    #             "content": [
-    #                 {
-    #                     "type": "text",
-    #                     "text": f"{user_inputs[0]}"
-    #                 },
-    #                # {
-    #                #     "type": "image_url",
-    #                #     "image_url": 
-    #                #         {
-    #                #             "url": f"data:image/jpeg;base64,{encoded_images[0]}"
-    #                #         }
-    #                # }
-    #             ]
-    #         }
-    #     ]
+        <user message part 1 before image introduction>
+        <image introduction>
+        <user message part 2 after image introduction>
+        """
+        pattern = re.compile(r"(.+?)(?=\n\n|$)", re.DOTALL)
 
-    #     for image in encoded_images:
-    #         messages[1]["content"].append(
-    #             {
-    #                 "type": "image_url",
-    #                 "image_url": 
-    #                     {
-    #                         "url": f"data:image/jpeg;base64,{image}"
-    #                     }
-    #             },
-    #         )
+        paragraphs = re.findall(pattern, template_str)
 
-    #     return messages
+        filtered_paragraphs = [p for p in paragraphs if p.strip() != '']
 
+        system_content = filtered_paragraphs[0]  # the system content defaults to the first paragraph of the template
+        system_message = {
+            "role": "system",
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"{system_content}"
+                }
+            ]
+        }
 
-    # def assemble_prompt(self, system_prompt: str = None, template_str: str = None, params: Dict[str, Any] = None) -> List[Dict[str, Any]]:
-    #
-    #         image_introductions = get_attr(params, 'image_introduction', [])
-    #
-    #         system_message = {
-    #             "role": "system",
-    #             "content": [
-    #                 {
-    #                     "type" : "text",
-    #                     "text" : f"{system_prompt}"
-    #                 }
-    #             ]
-    #         }
-    #
-    #         image_introduction_message = []
-    #         for image_introduction in image_introductions:
-    #             image_introduction_ = deepcopy(image_introduction)
-    #
-    #             introduction = image_introduction_["introduction"]
-    #             assistant = image_introduction_["assistant"]
-    #
-    #             if image_introduction_["path"] is None or image_introduction_["path"] == "":
-    #
-    #                 user_item = {
-    #                     "role": "user",
-    #                     "content": [
-    #                         {
-    #                             "type": "text",
-    #                             "text": f"{introduction}"
-    #                         }
-    #                     ]
-    #                 }
-    #             else:
-    #                 image_path = assemble_project_path(image_introduction_["path"])
-    #                 encoded_image = encode_image(image_path)
-    #
-    #                 user_item = {
-    #                     "role": "user",
-    #                     "content": [
-    #                         {
-    #                             "type": "text",
-    #                             "text": f"{introduction}"
-    #                         },
-    #                         {
-    #                             "type": "image_url",
-    #                             "image_url":
-    #                                 {
-    #                                     "url": f"data:image/jpeg;base64,{encoded_image}"
-    #                                 }
-    #                         }
-    #                     ]
-    #                 }
-    #
-    #             image_introduction_message.append(user_item)
-    #
-    #             if assistant:
-    #                 assistant_item = {
-    #                     "role": "assistant",
-    #                     "content": [
-    #                         {
-    #                             "type": "text",
-    #                             "text": f"{assistant}"
-    #                         }
-    #                     ]
-    #                 }
-    #                 image_introduction_message.append(assistant_item)
-    #
-    #
-    #         prompt = to_text(template_str=template_str, params=params)
-    #
-    #         prompt_message = {
-    #             "role": "user",
-    #             "content": [
-    #                 {
-    #                     "type": "text",
-    #                     "text": f"{prompt}"
-    #                 }
-    #             ]
-    #         }
-    #
-    #         messages = [system_message] + image_introduction_message + [prompt_message]
-    #
-    #         return messages
+        image_introduction_paragraph_index = None
+        image_introduction_paragraph = None
+        for i, paragraph in enumerate(filtered_paragraphs):
+            if "<$image_introduction$>" in paragraph:
+                image_introduction_paragraph_index = i
+                image_introduction_paragraph = paragraph
+                break
 
-    def assemble_prompt(self, template_str: str = None, params: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+        user_messages_part1_paragraphs = filtered_paragraphs[1:image_introduction_paragraph_index]
+        user_messages_part2_paragraphs = filtered_paragraphs[image_introduction_paragraph_index + 1:]
+
+        # assemble user messages part 1
+        user_messages_part1_contents = []
+        for paragraph in user_messages_part1_paragraphs:
+            search_placeholder_pattern = re.compile(r"<\$[^\$]+\$>")
+
+            placeholder = re.search(search_placeholder_pattern, paragraph)
+            if not placeholder:
+                user_messages_part1_contents.append(paragraph)
+            else:
+                placeholder = placeholder.group()
+                placeholder_name = placeholder.replace("<$", "").replace("$>", "")
+
+                paragraph_input = params.get(placeholder_name, None)
+                if paragraph_input is None or paragraph_input == "" or paragraph_input == []:
+                    continue
+                else:
+                    if isinstance(paragraph_input, str):
+                        paragraph_content = paragraph.replace(placeholder, paragraph_input)
+                        user_messages_part1_contents.append(paragraph_content)
+                    elif isinstance(paragraph_input, list):
+                        paragraph_content = paragraph.replace(placeholder, json.dumps(paragraph_input))
+                        user_messages_part1_contents.append(paragraph_content)
+                    else:
+                        raise ValueError(f"Unexpected input type: {type(paragraph_input)}")
+
+        user_messages_part1_content = "\n\n".join(user_messages_part1_contents)
+        user_messages_part1 = {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"{user_messages_part1_content}"
+                }
+            ]
+        }
+
+        # assemble image introduction messages
+        image_introduction_messages = []
+        paragraph_input = params.get("image_introduction", None)
+        if paragraph_input is None or paragraph_input == "" or paragraph_input == []:
+            image_introduction_messages = []
+        else:
+            paragraph_content_pre = image_introduction_paragraph.replace("<$image_introduction$>", "")
+            message = {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": f"{paragraph_content_pre}"
+                    }
+                ]
+            }
+            image_introduction_messages.append(message)
+            for item in paragraph_input:
+                introduction = item.get("introduction", None)
+                path = item.get("path", None)
+                assistant = item.get("assistant", None)
+
+                if introduction is not None and introduction != "":
+                    message = {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"{introduction}"
+                            }
+                        ]
+                    }
+                    if path is not None and path != "":
+                        encoded_image = encode_image(assemble_project_path(path))
+
+                        # image type. e.g., "jpeg", "png" or "jpg"
+                        image_type = os.path.splitext(path)[1]
+
+                        message["content"].append(
+                            {
+                                "type": "image_url",
+                                "image_url":
+                                    {
+                                        "url": f"data:image/{image_type};base64,{encoded_image}"
+                                    }
+                            }
+                        )
+                    image_introduction_messages.append(message)
+
+                if assistant is not None and assistant != "":
+                    message = {
+                        "role": "assistant",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"{assistant}"
+                            }
+                        ]
+                    }
+                    image_introduction_messages.append(message)
+
+        # assemble user messages part 2
+        user_messages_part2_contents = []
+        for paragraph in user_messages_part2_paragraphs:
+            search_placeholder_pattern = re.compile(r"<\$[^\$]+\$>")
+
+            placeholder = re.search(search_placeholder_pattern, paragraph)
+            if not placeholder:
+                user_messages_part2_contents.append(paragraph)
+            else:
+                placeholder = placeholder.group()
+                placeholder_name = placeholder.replace("<$", "").replace("$>", "")
+
+                paragraph_input = params.get(placeholder_name, None)
+                if paragraph_input is None or paragraph_input == "" or paragraph_input == []:
+                    continue
+                else:
+                    if isinstance(paragraph_input, str):
+                        paragraph_content = paragraph.replace(placeholder, paragraph_input)
+                        user_messages_part2_contents.append(paragraph_content)
+                    elif isinstance(paragraph_input, list):
+                        paragraph_content = paragraph.replace(placeholder, json.dumps(paragraph_input))
+                        user_messages_part2_contents.append(paragraph_content)
+                    else:
+                        raise ValueError(f"Unexpected input type: {type(paragraph_input)}")
+
+        user_messages_part2_content = "\n\n".join(user_messages_part2_contents)
+        user_messages_part2 = {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"{user_messages_part2_content}"
+                }
+            ]
+        }
+
+        return [system_message] + [user_messages_part1] + image_introduction_messages + [user_messages_part2]
+
+    def assemble_prompt_paragraph(self, template_str: str = None, params: Dict[str, Any] = None) -> List[
+        Dict[str, Any]]:
+
+        """
+        A paragraph is a message
+        """
 
         pattern = re.compile(r"(.+?)(?=\n\n|$)", re.DOTALL)
 
@@ -610,7 +657,8 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                         user_messages.append(message)
                     # TODO: re-visit this later and try to remove such assumptions about the input content structure "introduction" from prompt assembling
                     elif isinstance(paragraph_input, list) and "introduction" in placeholder_name:
-                        paragraph_content_pre = paragraph.replace(placeholder, "")  # Some suggestive text, e.g., "Few shot examples:"
+                        paragraph_content_pre = paragraph.replace(placeholder,
+                                                                  "")  # Some suggestive text, e.g., "Few shot examples:"
                         message = {
                             "role": "user",
                             "content": [
@@ -671,6 +719,12 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         messages = [system_message] + user_messages
 
         return messages
+
+    def assemble_prompt(self, template_str: str = None, params: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+        if config.DEFAULT_MESSAGE_CONSTRUCTION_MODE == "tripartite":
+            return self.assemble_prompt_tripartite(template_str=template_str, params=params)
+        elif config.DEFAULT_MESSAGE_CONSTRUCTION_MODE == "paragraph":
+            return self.assemble_prompt_paragraph(template_str=template_str, params=params)
 
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:

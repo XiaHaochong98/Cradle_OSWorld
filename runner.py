@@ -11,6 +11,8 @@ from uac.planner.planner import Planner
 from uac.log import Logger
 from uac.provider.openai import OpenAIProvider, encode_image
 from uac.utils.file_utils import assemble_project_path, read_resource_file
+from uac.memory.interface import MemoryInterface
+from uac.memory.faiss import FAISS
 
 
 def main(args):
@@ -48,57 +50,46 @@ def main(args):
     # Creating game manager to interact with game
     gm = GameManager(config.env_name)
 
+    # Creating MemoryInterface to store recent historical information
+    vectorstore = FAISS(embedding_provider = provider, memory_path = './res/memory')
+    memory = MemoryInterface(
+        memory_path='./res/memory',
+        vectorstores = {"basic_memory":{"description":vectorstore},'decision_making':{},'success_detection':{}}, 
+        embedding_provider=provider
+    )
+
     # Creating planner, which encapsulates model use
 
-    follow_path_planner_params = {
+    planner_params = {
         "__check_list__": [
+            "decision_making",
             "gather_information",
+            "success_detection",
+            "information_summary"
         ],
         "prompt_paths": {
             "inputs": {
-                "decision_making": "./res/prompts/inputs/decision_making_follow_path.json",
-                "gather_information": "./res/prompts/inputs/gather_information_follow_path.json",
-                "success_detection": "./res/prompts/inputs/success_detection_follow_path.json",
-                "information_summary": "./res/prompts/inputs/information_summary.json"
-            },
-            "templates": {
-                "decision_making": "./res/prompts/templates/decision_making_follow_path.prompt",
-                "gather_information": "./res/prompts/templates/gather_information_follow_path.prompt",
-                "success_detection": "./res/prompts/templates/success_detection_follow_path.prompt",
-                "information_summary": "./res/prompts/templates/information_summary.prompt"
-            },
-        }
-    }
-
-    find_horse_planner_params = {
-        "__check_list__": [
-            "gather_information",
-        ],
-        "prompt_paths": {
-            "inputs": {
-                "decision_making": "./res/prompts/inputs/decision_making_find_horse.json",
+                "decision_making": "./res/prompts/inputs/decision_making.json",
                 "gather_information": "./res/prompts/inputs/gather_information.json",
-                "success_detection": "./res/prompts/inputs/success_detection_find_horse.json",
+                "success_detection": "./res/prompts/inputs/success_detection.json",
                 "information_summary": "./res/prompts/inputs/information_summary.json"
             },
             "templates": {
-                "decision_making": "./res/prompts/templates/decision_making_find_horse.prompt",
+                "decision_making": "./res/prompts/templates/decision_making.prompt",
                 "gather_information": "./res/prompts/templates/gather_information.prompt",
-                "success_detection": "./res/prompts/templates/success_detection_find_horse.prompt",
+                "success_detection": "./res/prompts/templates/success_detection.prompt",
                 "information_summary": "./res/prompts/templates/information_summary.prompt"
             },
         }
     }
 
-    planner_params = find_horse_planner_params
-
-    planner = Planner(llm_provider=provider, planner_params=planner_params)
+    planner = Planner(llm_provider=provider, planner_params=planner_params, use_screen_classification = False, use_information_summary= False)
 
     # result_str = planner._gather_information(screenshot_file=rel_image)
     # result = json.loads(result_str)["description"]
 
     # Creating agent with its dependencies
-    agent = Agent("UAC Agent", None, gm, planner)
+    agent = Agent("UAC Agent", memory, gm, planner)
     agent.loop()
 
     logger.write()

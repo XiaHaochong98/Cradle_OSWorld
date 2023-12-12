@@ -63,8 +63,8 @@ def view_previous_page():
     post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
 
-@register_skill("confirm_selection_in_menu")
-def confirm_selection_in_menu():
+@register_skill("confirm_selection")
+def confirm_selection():
     """
     Confirm the selected item in the menu.
     """
@@ -279,7 +279,7 @@ __all__ = [
     "browse_catalogue",
     "view_next_page",
     "view_previous_page",
-    #"confirm_selection_in_menu",
+    #"confirm_selection",
     #"select_product_type",
     #"select_next_product_type_in_menu",
     #"select_previous_product_type_in_menu",

@@ -1,20 +1,42 @@
 {
-    "task_description": "mark the \"Saloon\" on a Map as the Waypoint via the Index and close the Map to return to the gameplay. You should only output one skill",
-    "skill_library": "[\n    {\n      \"function_expression\": \"open_map()\",\n      \"description\": \"Toggles the map view in the game, opening or closing it.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"add_marker()\",\n      \"description\": \"Places a marker on the map at the current mouse location by pressing 'z'.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"add_waypoint()\",\n      \"description\": \"Sets a waypoint at the current selection or mouse location on the map by pressing 'enter'.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"close_map()\",\n      \"description\": \"Closes the map view in the game by pressing 'esc'.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"zoom_map()\",\n      \"description\": \"Zooms in on the map.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"reduce_map()\",\n      \"description\": \"Zooms out on the map.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"open_index()\",\n      \"description\": \"Opens the game index by pressing 'space'.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"close_index()\",\n      \"description\": \"Closes the game index by pressing 'space'.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"next_index_object()\",\n      \"description\": \"Cycles to the next index object after the index is open, using 'q'.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"previous_index_object()\",\n      \"description\": \"Cycles to the previous index object after the index is open, using 'e'.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"confirm_mouse_selection()\",\n      \"description\": \"Confirms a selection by simulating a mouse click.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"move_map(width,height)\",\n      \"description\": \"Moves the map based on specified width and height offsets.\",\n      \"parameters\": {\n        \"width\": \"Horizontal offset for the map movement.\",\n        \"height\": \"Vertical offset for the map movement.\"\n      }\n    },\n    {\n       \"function_expression\": \"move_mouse_on_map(width,height,speed,relative)\",\n      \"description\": \"Moves the mouse on the map to specified width and height, with optional speed and relative position adjustment.\",\n      \"parameters\": {\n        \"width\": \"Horizontal position for mouse movement.\",\n        \"height\": \"Vertical position for mouse movement.\",\n        \"speed\": \"Speed of the mouse movement.\",\n        \"relative\": \"Boolean indicating if movement is relative to the current position.\"\n      }\n    },\n    {\n       \"function_expression\": \"select_up_index_object()\",\n      \"description\": \"Selects the next object in the index upwards.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"select_down_index_object()\",\n      \"description\": \"Selects the next object in the index downwards.\",\n      \"parameters\": {}\n    }\n  ]",
+    "type": "decision_making",
+    "task_description": "Your task is to buy one 'APPLE'.",
+    "skill_library": "[\n    {\n      \"function_expression\": \"shopkeeper_interaction()\",\n      \"description\": \"Initiates interaction with the shopkeeper by long-pressing the right mouse button. This action opens the transaction menu. Note: The transaction type must be determined and the interaction closed afterward.\",\n      \"parameters\": {}\n    },\n    {\n    \"function_expression\": \"browse_catalogue()\",\n    \"description\": \"Opens the catalog by pressing the \"e\" key for a specified duration. Note: it must run the shopkeeper_interaction function before running this function. Parameters: - duration: The duration for which the \"e\" key is held down (default is 1 second).\",\n    \"parameters\": {}\n   },\n    {\n    \"function_expression\": \"cancel_shopkeeper_interaction()\",\n    \"description\": \"Cancels the interaction with the shopkeeper by releasing the right mouse button.\",\n    \"parameters\": {}\n   },\n    {\n       \"function_expression\": \"view_next_page()\",\n      \"description\": \"Pressing \"e\" opens the next page in the catalog.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"select_up_product()\",\n      \"description\": \"Select the product above by pressing the \"up\" arrow key.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"select_down_product()\",\n      \"description\": \"Select the product below by pressing the \"down\" arrow key.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"select_left_product()\",\n      \"description\": \"This function simulates the action of selecting the left product. It uses the pydirectinput library to press the \"left\" key.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"select_right_product()\",\n      \"description\": \"This function simulates the action of selecting the right product. It uses the pydirectinput library to press the \"right\" key.\",\n      \"parameters\": {}\n    },\n    {\n       \"function_expression\": \"buy_product()\",\n      \"description\": \"Pressing \"enter\" purchases the selected product.\",\n      \"parameters\": {}\n    },\n  ]",
     "decision_making_memory_description": "",
     "gathered_information_description": "",
     "number_of_execute_skills": 1,
+    "previous_action": "view_next_page()",
+    "previous_reasoning": "The current page displayed is the 'Canned Food' section of the Wheeler, Rawson & Co. catalogue, which includes a variety of canned goods. Items on the page, from the top left and moving to the right, are: Big Valley Canned Apricots, Schmitz Baked Beans, Flock of Sparrows Canned Kidney Beans, Big Valley Canned Peaches, Edna McSweeney Brand Canned Corned Beef, Blackwing Foods Canned Sweetcorn, Dewberry Brand Canned Peas, and Big Valley Canned Pineapples. The currently selected item is 'Canned Apricots' as indicated by the box around the item's description at the bottom of the screen. The target item, which is an 'Apple,' is not depicted on the current screen as these are all canned goods and do not include fresh produce. Therefore, the next logical step would be to navigate to the next page, which likely contains the Fresh Food section, with the hope of finding an apple there.",
     "image_introduction":[
         {
-            "introduction": "the first image is the observation from the previous two timestep",
-            "path": "./res/prompts/testing/decision_making/map_create_waypoint/screenshots/1.jpg",
+            "introduction": "Here are some examples of trading in the game.",
+            "path": "",
             "assistant": ""
         },
         {
-            "introduction": "the second image is the previous timestep",
-            "path": "./res/prompts/testing/decision_making/map_create_waypoint/screenshots/2.jpg",
+            "introduction": "This example shows that the CARROT is currently selected in the image.",
+            "path": "res/prompts/testing/decision_making/buy/14.jpg",
+            "assistant": "Yes. That is correct!"
+        },
+        {
+            "introduction": "This example shows that the Canned peaches is currently selected in the image.",
+            "path": "res/prompts/testing/decision_making/buy/7.jpg",
+            "assistant": "Yes. That is correct!"
+        },
+        {
+            "introduction": "Now, I will give you two screenshots for decision making.",
+            "path": "",
+            "assistant": ""
+        },
+        {
+            "introduction": "This screenshot is the previous step of the game",
+            "path": "res/prompts/testing/decision_making/buy/10.jpg",
+            "assistant": ""
+        },
+        {
+            "introduction": "This screenshot is the current step of the game",
+            "path": "res/prompts/testing/decision_making/buy/11.jpg",
             "assistant": ""
         }
-    ],
-    "output_format":"{\n    \"type\": \"decision_making\",\n    \"skill_steps\": [\"skill1(args1=x,args2=y)\"],\n    \"reasoning\": \"summary of the reasoning to chose the skill or sequence of skills\"\n}"
- }
+    ]
+}

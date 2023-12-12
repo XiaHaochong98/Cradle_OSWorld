@@ -67,6 +67,9 @@ def cv_navigation(total_iterations, terminal_threshold=100, debug = False):
 
             logger.debug(f"distance  {measure['distance']}")
 
+            if measure['distance'] < terminal_threshold * 1.5:
+                stop_horse()
+
             if measure['distance'] < terminal_threshold and abs(theta) < 90:
                 logger.debug('success! Reach the red marker.')
                 stop_horse()

@@ -5,8 +5,8 @@
     "decision_making_memory_description": "",
     "gathered_information_description": "",
     "number_of_execute_skills": 1,
-    "previous_action": "view_next_page",
-    "previous_reasoning": "None",
+    "previous_action": "",
+    "previous_reasoning": "",
     "image_introduction":[
         {
             "introduction": "Here are some examples of trading in the game.",

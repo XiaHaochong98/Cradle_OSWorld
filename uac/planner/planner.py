@@ -18,21 +18,19 @@ JSON_EXT = ".json"
 
 
 class ScreenClassification():
-
     def __init__(self,
                  input_example: Dict = None,
                  template: Dict = None,
                  llm_provider: LLMProvider = None,
-                ):
+                 ):
         self.input_example = input_example
         self.template = template
         self.llm_provider = llm_provider
 
-    def _pre(self, *args, input = None, screenshot_file = None, **kwargs):
+    def _pre(self, *args, input=None, screenshot_file=None, **kwargs):
         return input, screenshot_file
 
-    def __call__(self, *args, input = None, screenshot_file = None, **kwargs):
-
+    def __call__(self, *args, input=None, screenshot_file=None, **kwargs):
         raise NotImplementedError('ScreenClassification is not implemented yet')
 
         # input = self.input_example if input is None else input
@@ -74,7 +72,7 @@ class ScreenClassification():
         # data = self._post(data = data)
         # return data
 
-    def _post(self, *args, data = None, **kwargs):
+    def _post(self, *args, data=None, **kwargs):
         return data
 
 
@@ -86,7 +84,7 @@ class GatherInformation():
                  marker_matcher: Any = None,
                  object_detector: Any = None,
                  llm_provider: LLMProvider = None,
-                ):
+                 ):
 
         self.input_map = input_map
         self.template = template
@@ -97,7 +95,7 @@ class GatherInformation():
     def _pre(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return input
 
-    def __call__(self, *args, input: Dict[str, Any] = None, class_ = None, **kwargs) -> Dict[str, Any]:
+    def __call__(self, *args, input: Dict[str, Any] = None, class_=None, **kwargs) -> Dict[str, Any]:
 
         input = self.input_map if input is None else input
         input = self._pre(input=input)
@@ -126,7 +124,8 @@ class GatherInformation():
         # Gather information by object detector
         if self.object_detector is not None:
             try:
-                object_detector_gathered_information = self.object_detector(screenshot_file=image_files[0], class_=class_)
+                object_detector_gathered_information = self.object_detector(screenshot_file=image_files[0],
+                                                                            class_=class_)
 
             except Exception as e:
                 logger.error(f"Error in gather information by object detector: {e}")
@@ -175,20 +174,19 @@ class GatherInformation():
 
             # res_json = json.dumps(processed_response, indent=4)
 
-        success = self._check_success(data = processed_response)
+        success = self._check_success(data=processed_response)
 
         data = dict(
-            flag = flag,
-            success = success,
-            input = input,
-            res_dict = processed_response,
+            flag=flag,
+            success=success,
+            input=input,
+            res_dict=processed_response,
             # res_json = res_json
         )
 
-        data = self._post(data = data)
+        data = self._post(data=data)
 
         return data
-
 
     def _post(self, *args, data: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return data
@@ -206,12 +204,11 @@ class GatherInformation():
 
 
 class DecisionMaking():
-
     def __init__(self,
                  input_map: Dict = None,
                  template: Dict = None,
                  llm_provider: LLMProvider = None,
-                ):
+                 ):
 
         self.input_map = input_map
         self.template = template
@@ -250,7 +247,7 @@ class DecisionMaking():
 
             # res_json = json.dumps(processed_response, indent=4)
 
-            outcome =processed_response["skill_steps"]
+            outcome = processed_response["skill_steps"]
 
         except Exception as e:
             logger.error(f"Error in decision_making: {e}")
@@ -258,14 +255,14 @@ class DecisionMaking():
             flag = False
 
         data = dict(
-            flag = flag,
-            input = input,
-            res_dict = processed_response,
+            flag=flag,
+            input=input,
+            res_dict=processed_response,
             # res_json = res_json,
-            outcome = outcome,
+            outcome=outcome,
         )
 
-        data = self._post(data = data)
+        data = self._post(data=data)
         return data
 
     def _post(self, *args, data: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
@@ -273,12 +270,11 @@ class DecisionMaking():
 
 
 class SuccessDetection():
-
     def __init__(self,
                  input_map: Dict = None,
                  template: Dict = None,
                  llm_provider: LLMProvider = None,
-                ):
+                 ):
         self.input_map = input_map
         self.template = template
         self.llm_provider = llm_provider
@@ -333,13 +329,72 @@ class SuccessDetection():
         return data
 
 
-class InformationSummary():
-
+class SelfReflection():
     def __init__(self,
                  input_map: Dict = None,
                  template: Dict = None,
                  llm_provider: LLMProvider = None,
-                ):
+                 ):
+        self.input_map = input_map
+        self.template = template
+        self.llm_provider = llm_provider
+
+    def _pre(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
+        return input
+
+    def __call__(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
+
+        input = self.input_map if input is None else input
+        input = self._pre(input=input)
+
+        flag = True
+        processed_response = {}
+        outcome = None
+        # res_json = None
+
+        try:
+
+            # Call the LLM provider for self reflection
+            message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
+
+            logger.debug(f'>> Upstream - R: {message_prompts}')
+
+            response, info = self.llm_provider.create_completion(message_prompts)
+
+            logger.debug(f'>> Downstream - A: {response}')
+
+            # Convert the response to dict
+            processed_response = parse_semi_formatted_json(response)
+
+            outcome = processed_response["decision"]["success"]
+
+            # res_json = json.dumps(processed_response, indent=4)
+
+        except Exception as e:
+            logger.error(f"Error in self reflection: {e}")
+            flag = False
+
+        data = dict(
+            flag=flag,
+            input=input,
+            # res_json=res_json,
+            res_dict=processed_response,
+            outcome=outcome,
+        )
+
+        data = self._post(data=data)
+        return data
+
+    def _post(self, *args, data: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
+        return data
+
+
+class InformationSummary():
+    def __init__(self,
+                 input_map: Dict = None,
+                 template: Dict = None,
+                 llm_provider: LLMProvider = None,
+                 ):
 
         self.input_map = input_map
         self.template = template
@@ -393,15 +448,16 @@ class InformationSummary():
 
     def _post(self, *args, data: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return data
-    
-class Planner(BasePlanner):
 
+
+class Planner(BasePlanner):
     def __init__(self,
                  llm_provider: Any = None,
                  planner_params: Dict = None,
                  use_screen_classification: bool = False,
                  use_information_summary: bool = False,
-                 gather_information_max_steps: int = 1, # 5,
+                 use_self_reflection: bool = False,
+                 gather_information_max_steps: int = 1,  # 5,
                  marker_matcher: Any = None,
                  object_detector: Any = None,
                  ):
@@ -413,18 +469,26 @@ class Planner(BasePlanner):
             "__check_list__":[
               "screen_classification",
               "gather_information",
-              "decision_making"
+              "decision_making",
+              "information_summary",
+              "self_reflection"
             ],
             "prompt_paths": {
               "inputs": {
                 "screen_classification": "./res/prompts/inputs/screen_classification.json",
                 "gather_information": "./res/prompts/inputs/gather_information.json",
-                "decision_making": "./res/prompts/inputs/decision_making.json"
+                "decision_making": "./res/prompts/inputs/decision_making.json",
+                "success_detection": "./res/prompts/inputs/success_detection.json",
+                "information_summary": "./res/prompts/inputs/information_summary.json",
+                "self_reflection": "./res/prompts/inputs/self_reflection.json",
               },
               "templates": {
                 "screen_classification": "./res/prompts/templates/screen_classification.prompt",
                 "gather_information": "./res/prompts/templates/gather_information.prompt",
-                "decision_making": "./res/prompts/templates/decision_making.prompt"
+                "decision_making": "./res/prompts/templates/decision_making.prompt",
+                "success_detection": "./res/prompts/templates/success_detection.prompt",
+                "information_summary": "./res/prompts/templates/information_summary.prompt",
+                "self_reflection": "./res/prompts/templates/self_reflection.prompt",
               }
             }
           }
@@ -436,15 +500,21 @@ class Planner(BasePlanner):
 
         self.use_screen_classification = use_screen_classification
         self.use_information_summary = use_information_summary
+        self.use_self_reflection = use_self_reflection
         self.gather_information_max_steps = gather_information_max_steps
 
         self.marker_matcher = marker_matcher
         self.object_detector = object_detector
 
-        self.set_internal_params(planner_params, use_screen_classification, use_information_summary)
+        self.set_internal_params(planner_params=planner_params,
+                                 use_screen_classification=use_screen_classification,
+                                 use_information_summary=use_information_summary)
 
     # Allow re-configuring planner
-    def set_internal_params(self, planner_params: Dict = None, use_screen_classification: bool = False, use_information_summary: bool = False):
+    def set_internal_params(self,
+                            planner_params: Dict = None,
+                            use_screen_classification: bool = False,
+                            use_information_summary: bool = False):
 
         self.planner_params = planner_params
 
@@ -455,33 +525,39 @@ class Planner(BasePlanner):
         self.templates = self._init_templates()
 
         if use_screen_classification:
-            self.screen_classification_ = ScreenClassification(self.inputs["screen_classification"],
-                                                               self.templates["screen_classification"],
-                                                               self.llm_provider)
+            self.screen_classification_ = ScreenClassification(input_example=self.inputs["screen_classification"],
+                                                               template=self.templates["screen_classification"],
+                                                               llm_provider=self.llm_provider)
         else:
             self.screen_classification_ = None
-            
-        self.gather_information_ = GatherInformation(self.inputs["gather_information"],
-                                                     self.templates["gather_information"],
-                                                     self.marker_matcher,
-                                                     self.object_detector,
-                                                     self.llm_provider)
-        
-        self.decision_making_ = DecisionMaking(self.inputs["decision_making"],
-                                               self.templates["decision_making"],
-                                               self.llm_provider)
-        
-        self.success_detection_ = SuccessDetection(self.inputs["success_detection"],
-                                                   self.templates["success_detection"],
-                                                   self.llm_provider)
+
+        self.gather_information_ = GatherInformation(input_map=self.inputs["gather_information"],
+                                                     template=self.templates["gather_information"],
+                                                     marker_matcher=self.marker_matcher,
+                                                     object_detector=self.object_detector,
+                                                     llm_provider=self.llm_provider)
+
+        self.decision_making_ = DecisionMaking(input_map=self.inputs["decision_making"],
+                                               template=self.templates["decision_making"],
+                                               llm_provider=self.llm_provider)
+
+        self.success_detection_ = SuccessDetection(input_map=self.inputs["success_detection"],
+                                                   template=self.templates["success_detection"],
+                                                   llm_provider=self.llm_provider)
+
+        if self.use_self_reflection:
+            self.self_reflection_ = SelfReflection(input_map=self.inputs["self_reflection"],
+                                                   template=self.templates["self_reflection"],
+                                                   llm_provider=self.llm_provider)
+        else:
+            self.self_reflection_ = None
 
         if use_information_summary:
-            self.information_summary_ = InformationSummary(self.inputs["information_summary"],
-                                                    self.templates["information_summary"],
-                                                    self.llm_provider)
+            self.information_summary_ = InformationSummary(input_map=self.inputs["information_summary"],
+                                                           template=self.templates["information_summary"],
+                                                           llm_provider=self.llm_provider)
         else:
             self.information_summary_ = None
-
 
     def _init_inputs(self):
         input_examples = dict()
@@ -506,7 +582,7 @@ class Planner(BasePlanner):
             else:
                 templates[key] = load_json(path)
         return templates
-      
+
     def gather_information(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
 
         if input is None:
@@ -544,6 +620,15 @@ class Planner(BasePlanner):
             input = self.inputs["success_detection"]
 
         data = self.success_detection_(input=input)
+
+        return data
+
+    def self_reflection(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
+
+        if input is None:
+            input = self.inputs["self_reflection"]
+
+        data = self.self_reflection_(input=input)
 
         return data
 

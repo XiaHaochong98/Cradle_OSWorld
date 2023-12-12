@@ -23,7 +23,7 @@ Based on the above information, you need to think about the independent criteria
 
 "reasoning": Based on the above information, analyze whether one of the criteria is fully fulfilled for the task step by step.
 
-"success": If any criteria is fulfilled, then output true. If not, output false. Noted that the task must be completely accomplished to output a true. 
+"success": If any criteria is fulfilled, then output true. If not, output false. Noted that the task must be completely accomplished to output a true.
 
 You should only respond in the JSON format as described below:
 {

@@ -1,6 +1,6 @@
 {
     "type": "success_detection",
-    "task_description": "Your task is to buy one 'APPLE'.",
+    "task_description": "buy one apple",
     "image_introduction": [
         {
             "introduction": "This screenshot is the previous step of the game",

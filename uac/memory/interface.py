@@ -51,7 +51,7 @@ class MemoryInterface:
         if recent_history:
             self.recent_history = recent_history
         else:
-            self.recent_history = {"image": [], "skill": [], "decision_making_reasoning": [], "success_detection_reasoning": [], "reflection_reasoning": []}
+            self.recent_history = {"image": [], "action": [], "decision_making_reasoning": [], "success_detection_reasoning": [], "reflection_reasoning": [], "skill_library": [], "task_description": []}
 
 
     # def add_gathered_info(
@@ -122,7 +122,9 @@ class MemoryInterface:
         k: int = 1,
     ) -> List[Any]:
         """Query recent info (skill/image/reasoning) from memory."""
-        assert len(self.recent_history[key]) > 0, f"No {key} history found."
+        #assert len(self.recent_history[key]) > 0, f"No {key} history found."
+        if len(self.recent_history[key]) == 0:
+            return [""]
         return self.recent_history[key][-k:] if len(self.recent_history[key]) >= k else self.recent_history[key]
     
     def add_experiences(self, data: Dict[str, Union[str, Image]]) -> None:

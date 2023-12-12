@@ -27,14 +27,37 @@ def check_json(json_string):
     return True
 
 
+# def refine_json(json_string):
+#     if not check_json(json_string):
+#         json_string = json_string.replace("```json\n", "").replace("json```\n", "").replace("```", "").replace("\r\n", "").replace("\n", "").replace("\'", "")
+
+#     trailing_comma_pattern = r",(\s*)([}\]])"
+#     replacement_pattern = r"\1\2"  # Keeps the captured whitespaces group
+#     json_string = re.sub(trailing_comma_pattern, replacement_pattern, json_string)
+
+#     return json_string
+
+# def refine_json(json_string):
+#     if not check_json(json_string):
+#         pattern = r"^`+json(.*?)`+"
+#         match = re.search(pattern, json_string, re.DOTALL)
+#         if match:
+#             json_string = match.group(1)
+#     return json_string
+
 def refine_json(json_string):
-    if not check_json(json_string):
-        json_string = json_string.replace("```json\n", "").replace("json```\n", "").replace("```", "").replace("\r\n", "").replace("\n", "").replace("\'", "")
+    patterns = [
+        r"^`+json(.*?)`+", # ```json content```, ```json content``, ...
+        r"^json(.*?)", # json content
+        r"^json(.*?)\." # json content.
+    ]
 
-    trailing_comma_pattern = r",(\s*)([}\]])"
-    replacement_pattern = r"\1\2"  # Keeps the captured whitespaces group
-    json_string = re.sub(trailing_comma_pattern, replacement_pattern, json_string)
-
+    for pattern in patterns:
+        match = re.search(pattern, json_string, re.DOTALL)
+        if match:
+            json_string = match.group(1)
+            if check_json(json_string):
+                return json_string
     return json_string
 
 

@@ -19,6 +19,24 @@ def _theta_calculation(theta):
     """
     return theta * config.mouse_move_factor
 
+@register_skill("turn_and_move_forward")
+def turn_and_move_forward(theta, duration):
+    """
+    First turns the in-game character left or right based on the specified theta angle and then moves the in-game character forward for the specified duration.
+
+    Parameters:
+    - theta: The angle for the turn. Use a negative value to turn left and a positive value to turn right.
+    For example, if theta = 30, the character will turn right 30 degrees. If theta = -30, the character will turn left 30 degrees.
+    - duration: The duration in seconds for which the character should move forward.
+    """
+    theta = _theta_calculation(theta)
+
+    ahk.mouse_move(theta, 0, speed=100, relative=True)
+
+    pydirectinput.keyDown('w')
+    time.sleep(duration)
+    pydirectinput.keyUp('w')
+
 
 @register_skill("turn")
 def turn(theta):
@@ -110,6 +128,7 @@ __all__ = [
     #"turn_left",
     "move_forward",
     "mount_horse",
+    "turn_and_move_forward",
     "dismount_horse",
     "stop_horse",
 ]

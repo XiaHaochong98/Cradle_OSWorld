@@ -1,6 +1,7 @@
 import os
 import time
 
+import imageio
 import pydirectinput
 import pyautogui
 from PIL import Image, ImageDraw, ImageFont
@@ -11,6 +12,8 @@ from uac.config import Config
 from uac.log import Logger
 from uac.gameio import IOEnvironment
 from uac.utils.template_matching import match_template_image
+import multiprocessing
+from typing import Tuple
 
 config = Config()
 logger = Logger()
@@ -37,7 +40,7 @@ def unpause_game():
     time.sleep(1)
 
 
-def exit_back_to_game():
+def exit_back_to_pause():
     
     max_steps = 10
 
@@ -50,8 +53,14 @@ def exit_back_to_game():
     if back_steps >= max_steps:
         logger.warn("The environment fails to pause!")
 
+def exit_back_to_game():
+    
+    exit_back_to_pause()
+
     # Unpause the game, to keep the rest of the agent flow consistent
     unpause_game()
+
+
 
 
 def switch_to_game():

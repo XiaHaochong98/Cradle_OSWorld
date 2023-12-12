@@ -4,7 +4,7 @@ from uac.config import Config
 from uac.gameio import IOEnvironment
 from uac.log import Logger
 from uac.gameio.atomic_skills.move import move_forward, turn, stop_horse, mount_horse, dismount_horse
-from uac.gameio.lifecycle.ui_control import take_screenshot, segment_minimap, switch_to_game, pause_game, unpause_game
+from uac.gameio.lifecycle.ui_control import take_screenshot, segment_minimap, switch_to_game, pause_game, unpause_game, exit_back_to_pause
 from uac.gameio.composite_skills.navigation import navigate_path
 from uac.utils.file_utils import read_resource_file
 from uac.gameio.skill_registry import SKILL_REGISTRY, get_skill_library, convert_expression_to_skill, execute_skill
@@ -33,6 +33,10 @@ class GameManager:
 
     def switch_to_game(self):
         switch_to_game()
+
+
+    def exit_back_to_pause(self):
+        exit_back_to_pause()
 
 
     def list_bootstrap_skills(self):

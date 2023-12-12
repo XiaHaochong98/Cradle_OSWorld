@@ -27,8 +27,8 @@ When the catalogue is open, you MUST answer the following three questions in the
 
 You should think step-by-step, and output your reasoning process in the value of "reasoning". If it is not on the catalogue page, you Must choose skill 'view_next_page'. Fill the "skill_steps" with the function you choose to perform. You should only choose one function. If the function has a parameter, you should also decide the parameter for it. If it does not have a parameter just output "function_name()". You should only output a JSON file without other explanation, do not give a markdown of a JSON file, and respond with the string format. Your output should be in the following format:
 {
+    "reasoning": "answer the questions and then think step by step to provide the reasoning to choose the action according to the answers",
     "skill_steps": [
         "action1(args1=x,args2=y)"
-    ],
-    "reasoning": "answer the questions and then think step by step to provide the reasoning to choose the action according to the answers",
+    ]
 }
