@@ -223,7 +223,6 @@ class DecisionMaking():
         input = self._pre(input=input)
 
         flag = True
-        outcome = None
         processed_response = {}
         # res_json = None
 
@@ -247,8 +246,6 @@ class DecisionMaking():
 
             # res_json = json.dumps(processed_response, indent=4)
 
-            outcome = processed_response["skill_steps"]
-
         except Exception as e:
             logger.error(f"Error in decision_making: {e}")
             logger.error_ex(e)
@@ -259,7 +256,6 @@ class DecisionMaking():
             input=input,
             res_dict=processed_response,
             # res_json = res_json,
-            outcome=outcome,
         )
 
         data = self._post(data=data)
@@ -289,7 +285,6 @@ class SuccessDetection():
 
         flag = True
         processed_response = {}
-        outcome = None
         # res_json = None
 
         try:
@@ -306,8 +301,6 @@ class SuccessDetection():
             # Convert the response to dict
             processed_response = parse_semi_formatted_json(response)
 
-            outcome = processed_response["decision"]["success"]
-
             # res_json = json.dumps(processed_response, indent=4)
 
         except Exception as e:
@@ -319,7 +312,6 @@ class SuccessDetection():
             input=input,
             # res_json=res_json,
             res_dict=processed_response,
-            outcome=outcome,
         )
 
         data = self._post(data=data)
@@ -349,7 +341,6 @@ class SelfReflection():
 
         flag = True
         processed_response = {}
-        outcome = None
         # res_json = None
 
         try:
@@ -366,8 +357,6 @@ class SelfReflection():
             # Convert the response to dict
             processed_response = parse_semi_formatted_json(response)
 
-            outcome = processed_response["decision"]["success"]
-
             # res_json = json.dumps(processed_response, indent=4)
 
         except Exception as e:
@@ -379,7 +368,6 @@ class SelfReflection():
             input=input,
             # res_json=res_json,
             res_dict=processed_response,
-            outcome=outcome,
         )
 
         data = self._post(data=data)
@@ -410,7 +398,6 @@ class InformationSummary():
 
         flag = True
         processed_response = {}
-        outcome = None
         res_json = None
 
         try:
@@ -429,8 +416,6 @@ class InformationSummary():
 
             # res_json = json.dumps(processed_response, indent=4)
 
-            outcome = processed_response["info_summary"]
-
         except Exception as e:
             logger.error(f"Error in information_summary: {e}")
             flag = False
@@ -440,7 +425,6 @@ class InformationSummary():
             input=input,
             res_dict=processed_response,
             # res_json=res_json,
-            outcome=outcome,
         )
 
         data = self._post(data=data)

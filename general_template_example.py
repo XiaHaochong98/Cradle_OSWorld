@@ -77,7 +77,7 @@ def main_test_decision_making(planner_params, task_description, skill_library):
 
     data = planner.decision_making(input = input)
 
-    skill_steps = data['outcome']
+    skill_steps = data['res_dict']['actions']
     if skill_steps is None:
         skill_steps = []
 
@@ -125,7 +125,7 @@ def main_test_success_detection(planner_params, task_description):
     res_dict = data['res_dict']
     reasoning = res_dict['reasoning']
     criteria = res_dict['criteria']
-    success = data['outcome']
+    success = res_dict['success']
 
     logger.write(f'Success: {success}')
     logger.write(f'Criteria: {criteria}')
@@ -215,8 +215,9 @@ def main_pipeline(planner_params, task_description, skill_library):
         input["task_description"] = task_description
 
         data = planner.decision_making(input = input)
+        print(data['res_dict'])
 
-        skill_steps = data['outcome']
+        skill_steps = data['res_dict']['actions']
         if skill_steps is None:
             skill_steps = []
 
@@ -264,7 +265,7 @@ def main_pipeline(planner_params, task_description, skill_library):
 
         data = planner.success_detection(input = input)
 
-        success = data['outcome']
+        success = data['res_dict']['success']
         success_reasoning = data['res_dict']['reasoning']
         success_criteria = data['res_dict']['criteria']
         memory.add_recent_history("success_detection_reasoning", success_reasoning)
@@ -301,20 +302,20 @@ if __name__ == '__main__':
     }
 
     # map_create_waypoint
-    # skill_library = map_skills
-    # task_description = "Mark the \"Saloon\" on a Map as the Waypoint via the Index and close the Map to return to the gameplay.",
+    skill_library = map_skills
+    task_description = "Mark the \"Saloon\" on a Map as the Waypoint via the Index."
 
     # buy_item
-    skill_library = trade_skills + buy_skills
-    task_description = "Your task is to buy one 'APPLE'."
+    # skill_library = trade_skills + buy_skills
+    # task_description = "Your task is to buy one 'APPLE'."
 
     # enter the store
     # skill_library = move_skills
-    # task_description =  "Your task is to get close to the shopkeeper.",
+    # task_description =  "Your task is to get close to the shopkeeper."
 
     # approach the shopkeeper
     # skill_library = move_skills
-    # task_description =  "Your task is to enter the general store.",
+    # task_description =  "Your task is to enter the general store."
 
     config.set_fixed_seed()
 

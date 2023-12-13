@@ -206,7 +206,7 @@ class Agent:
             logger.write(f'> Decision making call...')
 
             data = self.planner.decision_making(input=decision_making_args(self.planner, self.memory))
-            skills_to_execute = data['outcome']
+            skills_to_execute = data['res_dict']['actions']
 
             plan_reasoning = data['res_dict']['reasoning']
 
@@ -250,7 +250,7 @@ class Agent:
                                     'the fourth image is the fourth screenshot of recent events',
                                     'the fifth image is the fifth screenshot of recent events'] #todo: adding more descriptions
                     data = self.planner.information_summary(input=args_func(self.memory.get_hidden_state(),self.memory.get_image_history(),introductions))
-                    info_summary = data['outcome']
+                    info_summary = data['res_dict']["info_summary"]
                     logger.write(f'R: Summary: {info_summary}')
                     self.memory.add_hidden_state(info_summary)
             # summarization ends
@@ -261,7 +261,7 @@ class Agent:
             data = self.planner.success_detection(input=success_detection_args(self.planner, self.memory))
 
             # Check success
-            success = data['outcome']
+            success = data['res_dict']['success']
             success_reasoning = data['res_dict']['reasoning']
             success_criteria = data['res_dict']['criteria']
 
