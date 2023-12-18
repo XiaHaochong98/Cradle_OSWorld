@@ -7,7 +7,7 @@ from uac.log import Logger
 from uac.planner.base import BasePlanner
 from uac.provider.base_llm import LLMProvider
 from uac.utils.check import check_planner_params
-from uac.utils.json_utils import load_json, parse_semi_formatted_json
+from uac.utils.json_utils import load_json, parse_semi_formatted_json, parse_semi_formatted_text
 from uac.utils.file_utils import assemble_project_path, read_resource_file
 
 config = Config()
@@ -15,7 +15,6 @@ logger = Logger()
 
 PROMPT_EXT = ".prompt"
 JSON_EXT = ".json"
-
 
 class ScreenClassification():
     def __init__(self,
@@ -144,7 +143,9 @@ class GatherInformation():
             logger.debug(f'>> Downstream - A: {response}')
 
             # Convert the response to dict
-            processed_response = parse_semi_formatted_json(response)
+            # processed_response = parse_semi_formatted_json(response)
+
+            processed_response = parse_semi_formatted_text(response)
 
             # Convert the dict to GatherInformationOutput
             logger.debug(f'GI response type was {processed_response["type"]}')
@@ -242,7 +243,9 @@ class DecisionMaking():
                 logger.debug(input)
 
             # Convert the response to dict
-            processed_response = parse_semi_formatted_json(response)
+            # processed_response = parse_semi_formatted_json(response)
+
+            processed_response = parse_semi_formatted_text(response)
 
             # res_json = json.dumps(processed_response, indent=4)
 
@@ -299,7 +302,9 @@ class SuccessDetection():
             logger.debug(f'>> Downstream - A: {response}')
 
             # Convert the response to dict
-            processed_response = parse_semi_formatted_json(response)
+            # processed_response = parse_semi_formatted_json(response)
+
+            processed_response = parse_semi_formatted_text(response)
 
             # res_json = json.dumps(processed_response, indent=4)
 
@@ -355,7 +360,9 @@ class SelfReflection():
             logger.debug(f'>> Downstream - A: {response}')
 
             # Convert the response to dict
-            processed_response = parse_semi_formatted_json(response)
+            # processed_response = parse_semi_formatted_json(response)
+
+            processed_response = parse_semi_formatted_text(response)
 
             # res_json = json.dumps(processed_response, indent=4)
 
@@ -412,7 +419,9 @@ class InformationSummary():
             logger.debug(f'>> Downstream - A: {response}')
 
             # Convert the response to dict
-            processed_response = parse_semi_formatted_json(response)
+            # processed_response = parse_semi_formatted_json(response)
+
+            processed_response = parse_semi_formatted_text(response)
 
             # res_json = json.dumps(processed_response, indent=4)
 

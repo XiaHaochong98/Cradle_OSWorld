@@ -5,9 +5,9 @@ Given the classes, please select the class that best describes the screenshot.
 
 You must follow the following criteria:
 (1) The output should only be a JSON file. You should not add any other explanation text along with the JSON.
-(2) You should choose one class for the value of "class" in JSON.
+(2) You should choose one class for the value of "class".
 (3) Do not change the "type": "screen_classification" in your output.
-Output format:
-{
-  "class": "map"
-}
+
+The output format should be as follows:
+Classes:
+map

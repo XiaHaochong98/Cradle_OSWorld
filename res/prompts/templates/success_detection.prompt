@@ -19,15 +19,20 @@ Previous reasoning for the last action:
 
 Based on the above information, you need to think about the independent criteria to judge whether this task is fully completed, analyze whether one of the criteria is fully fulfilled for the task and determine whether the task is completed. You should respond to me with:
 
-"criteria": You need to think about the independent criteria to judge whether this task is completed. In addition, if there are any in-game prompts or instructions that are similar to the task, it could indicate that the task has not been completed. If the previous state is completed and the current state is not completed, it also indicates that the task has not been completed.
+Criteria: You need to think about the independent criteria to judge whether this task is completed. In addition, if there are any in-game prompts or instructions that are similar to the task, it could indicate that the task has not been completed. If the previous state is completed and the current state is not completed, it also indicates that the task has not been completed.
 
-"reasoning": Based on the above information, analyze whether one of the criteria is fully fulfilled for the task step by step.
+Reasoning: Based on the above information, analyze whether one of the criteria is fully fulfilled for the task step by step.
 
-"success": If any criteria is fulfilled, then output true. If not, output false. Noted that the task must be completely accomplished to output a true. 
+Success: If any criteria is fulfilled, then output true. If not, output false. Noted that the task must be completely accomplished to output a true. 
 
-You should only respond in the JSON format as described below:
-{
-    "criteria": "\n1. ...\n2. ...\n3. ...",
-    "reasoning": "\n1. ...\n2. ...\n3. ...",
-    "success": false
-}
+You should only respond in the format as described below:
+Criteria:
+1. ...
+2. ...
+3. ...
+Reasoning:
+1. ...
+2. ...
+3. ...
+Success:
+false

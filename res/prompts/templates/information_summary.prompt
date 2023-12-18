@@ -3,7 +3,6 @@ You are an assistant who assesses my progress in playing Red Dead Redemption 2 a
 Following is the <$event_num$> descriptions of recent events:
 <$recent_info$>
 
-Based on the above input, please summarize what has happened recently and extract useful information for decision-making. You should only output a JSON file without other explanation, do not give a markdown of a JSON file, and respond with the string format. Your output should be in the following format:
-{
-    "info_summary": "summary of the recent events for future decision making",
-}
+Based on the above input, please summarize what has happened recently and extract useful information for decision-making. Your output should be in the following format:
+Info_summary:
+Summary of the recent events for future decision making
