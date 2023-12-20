@@ -77,6 +77,9 @@ def parse_semi_formatted_json(json_string):
 
 def parse_semi_formatted_text(text):
     lines = text.split('\n')
+
+    lines = [line.strip() for line in lines if line.strip()]
+
     result_dict = {}
 
     current_key = None
@@ -95,9 +98,10 @@ def parse_semi_formatted_text(text):
         actions = result_dict["actions"]
         actions = actions.replace('```python', '').replace('```', '')
         actions = actions.split('\n')
+
         actions = [action for action in actions if action]
 
-        actions = [action.split('#')[0].strip() for action in actions if "#" in action]
+        actions = [action.split('#')[0] if "#" in action else action for action in actions]
 
         result_dict["actions"] = actions
 
