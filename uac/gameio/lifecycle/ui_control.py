@@ -6,6 +6,9 @@ import pyautogui
 from PIL import Image, ImageDraw, ImageFont
 import cv2
 import numpy as np
+import torch
+from torchvision.ops import box_convert
+import supervision as sv
 
 from uac.config import Config
 from uac.log import Logger
@@ -115,6 +118,7 @@ def take_screenshot(tid : float = 0.0,
         font = ImageFont.truetype("arial.ttf", 30)
         offset_for_text = 30
         interval = 0.1
+
         for i in range(10):
             if i > 0:
                 draw.text((cx + interval * (i ) * width // 2, cy), str(i ), fill="blue", font = font)
@@ -124,6 +128,7 @@ def take_screenshot(tid : float = 0.0,
 
         axes_image_filename = output_dir + "/axes_screen_" + str(tid) + ".jpg"
         screen_image.save(axes_image_filename)
+
     return screen_image_filename, minimap_image_filename
 
 
@@ -197,6 +202,25 @@ def clip_minimap(minimap_image_filename):
     
     # Save the result
     cv2.imwrite(minimap_image_filename, masked_image)
+
+
+def annotate_with_coordinates(image_source, boxes, logits, phrases):
+    h, w, _ = image_source.shape
+    boxes = boxes * torch.Tensor([w, h, w, h])
+    xyxy = box_convert(boxes=boxes, in_fmt="cxcywh", out_fmt="xyxy").numpy()
+    logger.debug(f"boxes: {boxes}, xyxy: {xyxy}")
+
+    detections = sv.Detections(xyxy=xyxy)
+    labels = [
+        f"{phrase} {' '.join(map(str, ['x=', round((xyxy_s[0]+xyxy_s[2])/(2*w), 3), 'y=', round((xyxy_s[1]+xyxy_s[3])/(2*h), 3)]))}"
+        for phrase, xyxy_s
+        in zip(phrases, xyxy)
+    ]
+
+    box_annotator = sv.BoxAnnotator()
+    annotated_frame = cv2.cvtColor(image_source, cv2.COLOR_RGB2BGR)
+    annotated_frame = box_annotator.annotate(scene=annotated_frame, detections=detections, labels=labels)
+    return annotated_frame
 
 
 class CircleDetector:
@@ -289,6 +313,4 @@ class CircleDetector:
                 measure['vis'] = image
 
         return theta, measure
-
-
 

@@ -20,21 +20,28 @@ Previous reasoning for the last action:
 Valid action set in Python format to select the next action:
 <$skill_library$>
 
-Based on the above information, you should first analyze the current situation and provide the reasoning for what you should to do for the next step to complete the task. Then you should output the exact action you want to execute in the game. You should respond to me with:
+Based on the above information, you should first analyze the current situation and provide the reasoning for what you should do for the next step to complete the task. Then you should output the exact action you want to execute in the game. You should respond to me with:
 
-Reasoning: You should think step by step and provide the detailed reasoning to determine the next action executed on the current state for the task. You need to answer the following questions step by step and do not miss any questions: 
-    1. If the catalogue or menu or map or inventory is open, you should first describe each item in the screen line by line, from the top left and moving right. Is the target item in the current screen? Which item is selected currently?
-    2. If the character is visible in the current screenshot, where is the character in the current screenshot?
-    3. Where is the target in the current screenshot? Does it appear in the previous screenshots?
-    4. The previous reasoning for the last action might be wrong. Did you find anything wrong or inconsistent with the current screenshot?
-    5. According to the above information, what should the most suitable action for the next step? You should analyze the effect of the action step by step.
+Reasoning: You should think step by step and provide detailed reasoning to determine the next action executed on the current state for the task. You need to answer the following questions step by step and do not miss any questions, especially the question 10: 
+    1. If the catalogue or menu or map or inventory is open, you should first describe each item in the screen line by line, from the top left and moving right. Is the target item in the current screen? 
+    2. If the catalogue or menu or map or inventory is open, which item is selected currently?
+    3. If the character is visible in the screenshot of the current step, where is the character in the screenshot of the current step?
+    4. Where is the target in the screenshot of the current step, on the left side or on the right side? Does it appear in the previous screenshots?
+    5. Are there any bounding boxes with coordination values and object labels shown in the screenshot of the current step? The bounding boxes from screenshots of other steps do not count. If the answer is no, ignore the questions 6-8. 
+    6. Does the bounding box belong to the target? If there are multiple bounding boxes, which one belongs to the target?
+    7. What is the value x of the bounding box only in the current screenshot? The value is the central coordination (x,y) of the central point of the box.
+    8. Based on the image examples and value x, where the bounding box of the target is in the current screenshot, on the left side, on the slightly left side, on the central, on the slightly right side, or on the right side?
+    9. Ignore these questions if there are not more than three previous screenshots. Is there any change (even slightly change counts) of the orientation and position of the character based on all history screenshots, not just two screenshots? When there is not even a slight change, you MUST consider you are blocked. 
+    10. This is the most important question, what should be the most suitable action for the next step? You should analyze the effect of the action step by step.
 
 Actions: The best action, or short sequence of actions without gaps, to execute next to progress in achieving the goal. Pay attention to the names of the available skills and to the previous skills already executed, if any. You should also pay more attention to the following points:
     1. You should output actions in Python code format and specify any necessary parameters to execute that action. If the function has parameters, you should also include their names and decide their values, like "action_2(steps=3)". If it does not have a parameter just output the action, like "action_2()".
-    2. When you decide to control the character to move, you should first determine whether you need to turn a certain angle and then move forward. The 'theta' you used to turn should be less than 90 degrees and the duration you used to move forward should be exactly 1 second. You should turn frequently and positively to avoid potential obstacles and keep facing the destination. You MUST move forward every time.
-    3. In addition to moving, you should only choose the most suitable action from the action set, given the current situation and task. And you can not use actions that are not in the action set to control the character.
-    4. If you think the task is already complete, you can return an empty list of actions ("[]").
-    5. If it is not on the catalogue page, you Must choose skill 'view_next_page'.
+    2. In addition to moving, you should only choose the most suitable action from the action set, given the current situation and task. You can not use actions that are not in the action set to control the character.
+    3. If the target is not on the catalogue page, you Must choose the skill 'view_next_page'.
+    4. When you decide to control the character to move, if you are blocked, you need a BIG turn and move forward towards the target (at least 45 degrees). This is the top priority.
+    5. When you decide to control the character to move, if the bounding box of the target is on the left side in the current screenshot, you MUST turn left with a big degree. If the bounding box of the target is slightly on the left side in the current screenshot, you MUST turn slightly left. If the bounding box of the target is on the right side in the current screenshot, you MUST turn right with a big degree. If the bounding box of the target is slightly on the right side in the current screenshot, you MUST turn slightly right. If the bounding box of the target is in the middle of the current screenshot, you can choose to move forward.
+    6. When you decide to control the character to move, the 'theta' you used to turn must be more than 10 degrees and less than 60 degrees. No degree that is outside the range is allowed.
+    7. When you decide to control the character to move, the duration you use to move forward should be exactly 1 second.
 
 You should only respond in the format as described below, and you should not output comments or other information:
 Reasoning:
