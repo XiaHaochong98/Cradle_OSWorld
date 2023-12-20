@@ -1,6 +1,6 @@
 batch_size = 1
 modelname = "groundingdino"
-backbone = "swin_T_224_1k"
+backbone = "swin_B_384_22k"
 position_embedding = "sine"
 pe_temperatureH = 20
 pe_temperatureW = 20

@@ -21,7 +21,7 @@ Download its weights to the cache directory:
 ```bash
 mkdir cache
 cd cache
-curl -L -C - -O https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth
+curl -L -C - -O https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swinb_cogcoor.pth
 cd ..
 ```
 
@@ -589,15 +589,18 @@ Change both two 'Tap and Hold Speed Control' to on, so we can press w twice to r
 | ![Original interface](docs/images/move_control_previous.png) | ![Changed interface](docs/images/move_control_now.png) |  
 
 #### 1.3 Game screen
-Use Win+Tab to open two desktops. Put the code on the right desktop and open the game in the left desktop. The recommended default resolution to use is 1920x1080, but it can vary if the **16:9** aspect ratio is preserved (like 2560x1440 or 3840x2160). DO NOT change the aspect ratio. Also, remember to set the game Screen Type to **Windowed Borderless**.
+Use Win+Tab to open two desktops. Put the code on the right desktop and open the game in the left desktop. The recommended default resolution to use is 1920x1080, but it can vary if the **16:9** aspect ratio is preserved. This means your screen must be of size (1920,1080), (2560,1440) or (3840,2160). DO NOT change the aspect ratio. Also, remember to set the game Screen Type to **Windowed Borderless**.
 ![game_position](docs/images/game_position.png)
 
 #### 1.4 Mini-map
-Press Alt and press X to make the mini-map expand.
-![minimap_setting](docs/images/minimap_setting.png) 
+Remember to enlarge the icon to ensure the program is working well following: `SETTING -> DISPLAY ->  Radar Blip Size = Large` and  `SETTING -> DISPLAY ->  Map Blip Size = Large` and  `SETTING -> DISPLAY ->  Radar = Expanded` (or press Alt + X).
 
+![](docs/images/enlarge_minimap.png)
+
+![minimap_setting](docs/images/minimap_setting.png)
 
 ### 2. Three libraries for keyboard & mouse control  
+
 - pyautogui: Used to simulate mouse clicks, including long mouse presses.   
 - pydirectinput: Used to simulate the operation of the keyboard.  
 - ahk: Used to simulate mouse swiping, including moveTo and dragTo.

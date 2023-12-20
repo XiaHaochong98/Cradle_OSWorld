@@ -21,22 +21,18 @@ def go_to_horse():
     """
     Best way to go to the closest horse. Uses the minimap. Horses are useful to travel mid to long distances.
     """
-    go_to_icon("horse")
+    go_to_icon("horse", iterations=20, debug=False)
 
 
 # @register_skill("go_to_icon")
-def go_to_icon(target: str = "horse"):
+def go_to_icon(target: str = "horse", iterations=20, debug: bool = False):
     """
     Navigates to the closed icon of the target in the minimap.
 
     Parameters:
     - target: Name of the target icon type on the minimap. The default value is "horse"
     """
-
-    template_file = f'./res/icons/{target}.jpg'
-    max_iterations = 20
-
-    cv_go_to_icon(max_iterations, template_file, debug=True)
+    cv_go_to_icon(iterations, template_file=f'./res/icons/{target}.jpg', debug=debug)
 
 
 def get_theta(origin_x, origin_y, center_x, center_y):
@@ -97,7 +93,7 @@ def match_template(src_file, template_file, template_resize_scale = 1, debug=Fal
 
 
 def cv_go_to_icon(
-        total_iterations,
+        iterations,
         template_file,
         terminal_threshold=20,
         debug=False,
@@ -108,7 +104,7 @@ def cv_go_to_icon(
         
     check_success, prev_dis, prev_theta, counter, ride_attempt, ride_mod, dis_stat = False, 0, 0, 0, 0, 10, []
 
-    for step in range(total_iterations):
+    for step in range(iterations):
         
         logger.write(f'Go to icon iter #{step}')
 

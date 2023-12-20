@@ -73,13 +73,6 @@ def shoot(x, y):
     ahk.click(click_count=2, relative=False)
 
 
-def reload_gun():
-    """
-    Reload the gun in the game.
-    """
-    pydirectinput.keyDown("r")
-
-
 def call_animals():
     """
     Call animals in the game.
@@ -93,6 +86,4 @@ def call_animals():
 
 __all__ = [
     "shoot",
-    "reload_gun",
-    "call_animals",
 ]

@@ -1,7 +1,12 @@
 import argparse
+
 from uac.memory.interface import MemoryInterface
 from uac.memory.faiss import FAISS
 from uac.provider import OpenAIProvider
+from uac.log import Logger
+
+logger = Logger()
+
 
 def main(args):
 
@@ -21,13 +26,15 @@ def main(args):
                      "inventory": "This is an inventory"}}
         memory.add_experiences(data)
     sim_mem = memory.get_similar_experiences(data = 'This the number 9',top_k = 3)
-    print(sim_mem)
+    logger.write(sim_mem)
+
     '''
     [{'instruction': 'This is an instruction', 'screenshot': 'This is a screenshot', 'timestep': 9, 'description': 'This the number9', 'inventory': 'This is an inventory'}, {'instruction': 'This is an instruction', 'screenshot': 'This is a screenshot', 'timestep': 8, 'description': 'This the number8', 'inventory': 'This is an inventory'}, {'instruction': 'This is an instruction', 'screenshot': 'This is a screenshot', 'timestep': 7, 'description': 'This 
 the number7', 'inventory': 'This is an inventory'}]
     '''
     rec_mem = memory.get_recent_experiences(recent_k = 3)
-    print(rec_mem)
+    logger.write(rec_mem)
+
     '''
     [{'instruction': 'This is an instruction', 'screenshot': 'This is a screenshot', 'timestep': 7, 'description': 'This the number7', 'inventory': 'This is an inventory'}, {'instruction': 'This is an instruction', 'screenshot': 'This is a screenshot', 'timestep': 8, 'description': 'This the number8', 'inventory': 'This is an inventory'}, {'instruction': 'This is an instruction', 'screenshot': 'This is a screenshot', 'timestep': 9, 'description': 'This 
 the number9', 'inventory': 'This is an inventory'}]
