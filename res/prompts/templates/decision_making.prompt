@@ -26,7 +26,7 @@ Reasoning: You should think step by step and provide detailed reasoning to deter
     1. If the catalogue or menu or map or inventory is open, you should first describe each item in the screen line by line, from the top left and moving right. Is the target item in the current screen? 
     2. If the catalogue or menu or map or inventory is open, which item is selected currently?
     3. If the character is visible in the screenshot of the current step, where is the character in the screenshot of the current step?
-    4. Where is the target in the screenshot of the current step, on the left side or on the right side? Does it appear in the previous screenshots?
+    4. Where is the target in the screenshot of the current step, on the left side or on the right side? Does it appear in the minimap? The target is usually colored in yellow in the minimap. Does it appear in the previous screenshots?
     5. Are there any bounding boxes with coordination values and object labels shown in the screenshot of the current step? The bounding boxes from screenshots of other steps do not count. If the answer is no, ignore the questions 6-8. 
     6. Does the bounding box belong to the target? If there are multiple bounding boxes, which one belongs to the target?
     7. What is the value x of the bounding box only in the current screenshot? The value is the central coordination (x,y) of the central point of the box.
@@ -35,7 +35,7 @@ Reasoning: You should think step by step and provide detailed reasoning to deter
     10. This is the most important question, what should be the most suitable action for the next step? You should analyze the effect of the action step by step.
 
 Actions: The best action, or short sequence of actions without gaps, to execute next to progress in achieving the goal. Pay attention to the names of the available skills and to the previous skills already executed, if any. You should also pay more attention to the following points:
-    1. You should output actions in Python code format and specify any necessary parameters to execute that action. If the function has parameters, you should also include their names and decide their values, like "action_2(steps=3)". If it does not have a parameter just output the action, like "action_2()".
+    1. You should output actions in Python code format and specify any necessary parameters to execute that action. If the function has parameters, you should also include their names and decide their values, like "move(duration=1)". If it does not have a parameter just output the action, like "pick_up_object()".
     2. In addition to moving, you should only choose the most suitable action from the action set, given the current situation and task. You can not use actions that are not in the action set to control the character.
     3. If the target is not on the catalogue page, you Must choose the skill 'view_next_page'.
     4. When you decide to control the character to move, if you are blocked, you need a BIG turn and move forward towards the target (at least 45 degrees). This is the top priority.
@@ -50,5 +50,5 @@ Reasoning:
 3. ...
 Actions:
 ```python
-    action1(args1=x,args2=y)
+    action(args1=x,args2=y)
 ```
