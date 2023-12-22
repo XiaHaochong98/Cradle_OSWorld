@@ -140,9 +140,11 @@ def main_pipeline(planner_params, task_description, skill_library):
     llm_provider = OpenAIProvider()
     llm_provider.init_provider(llm_provider_config_path)
 
+    frame_extractor = VideoFrameExtractor()
+
     planner = Planner(llm_provider=llm_provider,
                       planner_params=planner_params,
-                      frame_extractor=VideoFrameExtractor())
+                      frame_extractor=frame_extractor)
     
     recent_history = {"image": [], "action": [], "decision_making_reasoning": [], "success_detection_reasoning": [], "reflection_reasoning": []}
     vectorstore = FAISS(embedding_provider = llm_provider, memory_path = './res/memory')
@@ -173,140 +175,151 @@ def main_pipeline(planner_params, task_description, skill_library):
     pre_reasoning = ""
     time.sleep(5)
     end_frame_id = videocapture.get_current_frame_id()
+
+
     while not success:
-        #for gather information
-        logger.write(f'Gather Information Start Frame ID: {start_frame_id}, End Frame ID: {end_frame_id}')
-        input = planner.gather_information_.input_map
-        get_text_input = planner.gather_information_.get_text_input_map
-        video_clip_path=videocapture.get_video(start_frame_id,end_frame_id)
-        videocapture.clear_frame_buffer()
-        image_introduction = [
-            {
-                "introduction": input["image_introduction"][-1]["introduction"],
-                "path": memory.get_recent_history("image", k=1)[0],
-                "assistant": input["image_introduction"][-1]["assistant"]
-            }
-        ]
-        input["image_introduction"] = image_introduction
-        input["video_clip_path"] = video_clip_path
-        input["get_text_input"] = get_text_input
-        data = planner.gather_information(input=input)
-        dialogue=data['res_dict']['dialogue']
-        gathered_information=data['res_dict']['gathered_information']
-        image_description=data['res_dict']['description']
 
-        logger.write(f'Dialogue: {dialogue}')
-        logger.write(f'Gathered Information: {gathered_information}')
-        logger.write(f'Image Description: {image_description}')
+        try:
+            #for gather information
+            logger.write(f'Gather Information Start Frame ID: {start_frame_id}, End Frame ID: {end_frame_id}')
+            input = planner.gather_information_.input_map
+            get_text_input = planner.gather_information_.get_text_input_map
+            video_clip_path=videocapture.get_video(start_frame_id,end_frame_id)
+            videocapture.clear_frame_buffer()
+            image_introduction = [
+                {
+                    "introduction": input["image_introduction"][-1]["introduction"],
+                    "path": memory.get_recent_history("image", k=1)[0],
+                    "assistant": input["image_introduction"][-1]["assistant"]
+                }
+            ]
+            input["image_introduction"] = image_introduction
+            input["video_clip_path"] = video_clip_path
+            input["get_text_input"] = get_text_input
+
+            data = planner.gather_information(input=input)
+
+            dialogue=data['res_dict']['dialogue']
+            gathered_information=data['res_dict']['gathered_information']
+            image_description=data['res_dict']['description']
+
+            logger.write(f'Dialogue: {dialogue}')
+            logger.write(f'Gathered Information: {gathered_information}')
+            logger.write(f'Image Description: {image_description}')
 
 
-        # for decision making
-        input = planner.decision_making_.input_map
+            # for decision making
+            input = planner.decision_making_.input_map
 
-        number_of_execute_skills = input["number_of_execute_skills"]
+            number_of_execute_skills = input["number_of_execute_skills"]
 
-        if pre_action:
+            if pre_action:
+                input["previous_action"] = memory.get_recent_history("action", k=1)[-1]
+                input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
+
+            input['skill_library'] = skill_library
+
+            image_introduction = [
+                # {
+                #     "introduction": "Here are some examples of trading in the game.",
+                #     "path": "",
+                #     "assistant": ""
+                # },
+                # {
+                #     "introduction": "This example shows that the CARROT is currently selected in the image.",
+                #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163732.2476993.jpg",
+                #     "assistant": "Yes. That is correct!"
+                # },
+                # {
+                #     "introduction": "This example shows that the Canned SALMON is currently selected in the image.",
+                #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163680.5057523.jpg",
+                #     "assistant": "Yes. That is correct!"
+                # },
+                # {
+                #     "introduction": "I will give you two images for decision making.",
+                #     "path": "",
+                #     "assistant": ""
+                # },
+                {
+                    "introduction": input["image_introduction"][-2]["introduction"],
+                    "path": memory.get_recent_history("image", k=2)[0],
+                    "assistant": input["image_introduction"][-2]["assistant"]
+                },
+                {
+                    "introduction": input["image_introduction"][-1]["introduction"],
+                    "path": memory.get_recent_history("image", k=1)[0],
+                    "assistant": input["image_introduction"][-1]["assistant"]
+                }
+            ]
+
+            input["image_introduction"] = image_introduction
+            input["task_description"] = task_description
+
+            data = planner.decision_making(input = input)
+            start_frame_id = videocapture.get_current_frame_id()
+            print(data['res_dict'])
+
+            skill_steps = data['res_dict']['actions']
+            if skill_steps is None:
+                skill_steps = []
+
+            logger.write(f'R: {skill_steps}')
+
+            skill_steps = skill_steps[:number_of_execute_skills]
+            logger.write(f'Skill Steps: {skill_steps}')
+
+            exec_info = gm.execute_actions(skill_steps)
+
+            end_frame_id = videocapture.get_current_frame_id()
+
+            pre_action = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
+
+            pre_reasoning = ''
+            if 'res_dict' in data.keys() and 'reasoning' in data['res_dict'].keys():
+                pre_reasoning = data['res_dict']['reasoning']
+
+            memory.add_recent_history("action", pre_action)
+            memory.add_recent_history("decision_making_reasoning", pre_reasoning)
+
+            # For such cases with no expected response, we should define a retry limit
+            logger.write(f'Decision reasoning: {pre_reasoning}')
+
+            cur_screen_shot_path, _ = gm.capture_screen()
+            memory.add_recent_history("image", cur_screen_shot_path)
+
+            # for success detection
+            input = planner.success_detection_.input_map
+            image_introduction = [
+                {
+                    "introduction": input["image_introduction"][-2]["introduction"],
+                    "path": memory.get_recent_history("image", k=2)[0],
+                    "assistant": input["image_introduction"][-2]["assistant"]
+                },
+                {
+                    "introduction": input["image_introduction"][-1]["introduction"],
+                    "path": memory.get_recent_history("image", k=1)[0],
+                    "assistant": input["image_introduction"][-1]["assistant"]
+                }
+            ]
+            input["image_introduction"] = image_introduction
+            input["task_description"] = task_description
             input["previous_action"] = memory.get_recent_history("action", k=1)[-1]
             input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
 
-        input['skill_library'] = skill_library
+            data = planner.success_detection(input = input)
 
-        image_introduction = [
-            # {
-            #     "introduction": "Here are some examples of trading in the game.",
-            #     "path": "",
-            #     "assistant": ""
-            # },
-            # {
-            #     "introduction": "This example shows that the CARROT is currently selected in the image.",
-            #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163732.2476993.jpg",
-            #     "assistant": "Yes. That is correct!"
-            # },
-            # {
-            #     "introduction": "This example shows that the Canned SALMON is currently selected in the image.",
-            #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163680.5057523.jpg",
-            #     "assistant": "Yes. That is correct!"
-            # },
-            # {
-            #     "introduction": "I will give you two images for decision making.",
-            #     "path": "",
-            #     "assistant": ""
-            # },
-            {
-                "introduction": input["image_introduction"][-2]["introduction"],
-                "path": memory.get_recent_history("image", k=2)[0],
-                "assistant": input["image_introduction"][-2]["assistant"]
-            },
-            {
-                "introduction": input["image_introduction"][-1]["introduction"],
-                "path": memory.get_recent_history("image", k=1)[0],
-                "assistant": input["image_introduction"][-1]["assistant"]
-            }
-        ]
+            success = data['res_dict']['success']
+            success_reasoning = data['res_dict']['reasoning']
+            success_criteria = data['res_dict']['criteria']
+            memory.add_recent_history("success_detection_reasoning", success_reasoning)
+            logger.write(f'Success: {success}')
+            logger.write(f'Success criteria: {success_criteria}')
+            logger.write(f'Success reason: {success_reasoning}')
 
-        input["image_introduction"] = image_introduction
-        input["task_description"] = task_description
+        except KeyboardInterrupt:
+            logger.write('KeyboardInterrupt Ctrl+C detected, exiting.')
+            break
 
-        data = planner.decision_making(input = input)
-        start_frame_id = videocapture.get_current_frame_id()
-        print(data['res_dict'])
-
-        skill_steps = data['res_dict']['actions']
-        if skill_steps is None:
-            skill_steps = []
-
-        logger.write(f'R: {skill_steps}')
-
-        skill_steps = skill_steps[:number_of_execute_skills]
-        logger.write(f'Skill Steps: {skill_steps}')
-
-        exec_info = gm.execute_actions(skill_steps)
-
-        end_frame_id = videocapture.get_current_frame_id()
-
-        pre_action = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
-
-        pre_reasoning = ''
-        if 'res_dict' in data.keys() and 'reasoning' in data['res_dict'].keys():
-            pre_reasoning = data['res_dict']['reasoning']
-
-        memory.add_recent_history("action", pre_action)
-        memory.add_recent_history("decision_making_reasoning", pre_reasoning)
-
-        # For such cases with no expected response, we should define a retry limit
-        logger.write(f'Decision reasoning: {pre_reasoning}')
-
-        cur_screen_shot_path, _ = gm.capture_screen()
-        memory.add_recent_history("image", cur_screen_shot_path)
-
-        # for success detection
-        input = planner.success_detection_.input_map
-        image_introduction = [
-            {
-                "introduction": input["image_introduction"][-2]["introduction"],
-                "path": memory.get_recent_history("image", k=2)[0],
-                "assistant": input["image_introduction"][-2]["assistant"]
-            },
-            {
-                "introduction": input["image_introduction"][-1]["introduction"],
-                "path": memory.get_recent_history("image", k=1)[0],
-                "assistant": input["image_introduction"][-1]["assistant"]
-            }
-        ]
-        input["image_introduction"] = image_introduction
-        input["task_description"] = task_description
-        input["previous_action"] = memory.get_recent_history("action", k=1)[-1]
-        input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
-
-        data = planner.success_detection(input = input)
-
-        success = data['res_dict']['success']
-        success_reasoning = data['res_dict']['reasoning']
-        success_criteria = data['res_dict']['criteria']
-        memory.add_recent_history("success_detection_reasoning", success_reasoning)
-        logger.write(f'Success: {success}')
-        logger.write(f'Success criteria: {success_criteria}')
-        logger.write(f'Success reason: {success_reasoning}')
     videocapture.finish_capture()
 
 if __name__ == '__main__':

@@ -118,6 +118,15 @@ To install the videosubfinder for gather information module:
 
 Download the videosubfinder from https://sourceforge.net/projects/videosubfinder/ and extract the files into the res/tool/subfinder folder.
 
+The file structure should be like this:
+- res
+  - tool
+    - subfinder
+      - RGBImages
+      - VideoSubFinderWXW.exe
+      - test.srt
+      ...
+
 ## General guidelines
 
 Always, **always**, **ALLWAYS** get the latest /main branch.

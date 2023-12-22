@@ -78,6 +78,7 @@ class VideoRecorder():
             args=(self.frame_buffer, ),
             name='Screen Capture'
         )
+        self.thread.daemon = True
 
         self.video_splits_dir = os.path.join(os.path.dirname(self.video_path), 'video_splits')
         os.makedirs(self.video_splits_dir, exist_ok=True)
@@ -120,7 +121,6 @@ class VideoRecorder():
                                        cv2.VideoWriter_fourcc(*'mp4v'),
                                        self.fps,
                                        self.frame_size)
-
         with mss.mss() as sct:
             region = self.screen_region
             region = {
@@ -131,19 +131,24 @@ class VideoRecorder():
             }
 
             while self.thread_flag:
-                frame = sct.grab(region)
-                frame = np.array(frame)
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
-                video_writer.write(frame)
+                try:
+                    frame = sct.grab(region)
+                    frame = np.array(frame)
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
+                    video_writer.write(frame)
 
-                self.current_frame = frame
-                self.current_frame_id += 1
+                    self.current_frame = frame
+                    self.current_frame_id += 1
 
-                frame_buffer.add_frame(self.current_frame_id, frame)
+                    frame_buffer.add_frame(self.current_frame_id, frame)
+                    time.sleep(0.05)
 
-                # Check the flag at regular intervals
-                if not self.thread_flag:
-                    break
+                    # Check the flag at regular intervals
+                    if not self.thread_flag:
+                        break
+                except KeyboardInterrupt:
+                    logger.write('Screen capture interrupted')
+                    self.finish_capture()
 
             video_writer.release()
 

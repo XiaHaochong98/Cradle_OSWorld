@@ -56,6 +56,8 @@ class VideoFrameExtractor():
         self.frame_output_dir = os.path.join(config.work_dir, 'frame_output_dir')
         self.extracted_frame_folder = os.path.join(self.frame_output_dir, "RGBImages")
 
+        os.makedirs(self.extracted_frame_folder, exist_ok=True)
+
         # if self.path_vsf does not exist, throw a non-exist error
         if not os.path.exists(self.path_vsf):
             raise Exception(f"VideoSubFinderWXW does not exist! Please install it according to the README.md.")
@@ -98,7 +100,17 @@ class VideoFrameExtractor():
         # Execute the command
         try:
             logger.write(f"Extracting Informative Frames from {video_path} .....")
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            # result = subprocess.run(cmd, capture_output=True, text=True)
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            try:
+                stdout, stderr = proc.communicate()
+
+            except KeyboardInterrupt:
+                logger.write(f"Frame extraction stopped")
+
+            finally:
+                if proc.poll() is None:
+                    proc.terminate()
             logger.write(f"Frame Extraction Completed! Total Frames: {len(os.listdir(self.extracted_frame_folder))}")
         except Exception as e:
             logger.write(f"Frame Extraction Failed! {e}")
