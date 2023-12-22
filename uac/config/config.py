@@ -5,11 +5,10 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from colorama import Fore, Style, init as colours_on
+import pyautogui
 
 from uac.utils import Singleton
 from uac.utils.file_utils import assemble_project_path, get_project_root
-
-import pyautogui
 
 load_dotenv(verbose=True)
 
@@ -36,14 +35,11 @@ class Config(metaclass=Singleton):
     work_dir = './runs'
     log_dir = './logs'
 
-    bootstrap_skill_library_path = './res/skills/bootstrap_library.dat'
-
     env_name = "Red Dead Redemption 2"
 
     # config for frame extraction
     VideoFrameExtractor_path = "./res/tool/subfinder/VideoSubFinderWXW.exe"
     VideoFrameExtractor_placeholderfile_path = "./res/tool/subfinder/test.srt"
-
 
 
     def __init__(self) -> None:
@@ -107,9 +103,9 @@ class Config(metaclass=Singleton):
         named_windows = pyautogui.getWindowsWithTitle(self.env_name)
 
         # Fake game window info for testing cases with no running game
-        game_window = namedtuple('A', ['top', 'left', 'width', 'height'])
-        game_window.top = 0
+        game_window = namedtuple('A', ['left', 'top', 'width', 'height'])
         game_window.left = 0
+        game_window.top = 0
         game_window.width = self.DEFAULT_GAME_RESOLUTION[0]
         game_window.height = self.DEFAULT_GAME_RESOLUTION[1]
 

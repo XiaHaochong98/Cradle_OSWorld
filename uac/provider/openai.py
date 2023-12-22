@@ -673,6 +673,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                             introduction = item.get("introduction", None)
                             path = item.get("path", None)
                             assistant = item.get("assistant", None)
+
                             if introduction is not None and introduction != "":
                                 message = {
                                     "role": "user",

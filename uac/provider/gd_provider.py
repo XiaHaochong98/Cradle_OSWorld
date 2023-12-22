@@ -1,4 +1,5 @@
 from groundingdino.util.inference import load_model, load_image, predict, annotate
+
 from uac.utils import Singleton
 
 
@@ -12,7 +13,9 @@ class GdProvider(metaclass=Singleton):
                   text_threshold=0.25,
                   device='cuda',
                   ):
+        
         image_source, image = load_image(image_path)
+
         boxes, logits, phrases = predict(
             model=self.detect_model,
             image=image,
@@ -21,4 +24,5 @@ class GdProvider(metaclass=Singleton):
             text_threshold=text_threshold,
             device=device
         )
+        
         return image_source, boxes, logits, phrases

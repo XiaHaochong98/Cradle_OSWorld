@@ -1,5 +1,6 @@
 import imageio
 import cv2
+
 def show_image(img):
     if isinstance(img, str):
         img = cv2.imread(img)

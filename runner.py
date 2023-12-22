@@ -65,20 +65,23 @@ def main(args):
             "decision_making",
             "gather_information",
             "success_detection",
-            "information_summary"
+            "information_summary",
+            "gather_text_information",
         ],
         "prompt_paths": {
             "inputs": {
                 "decision_making": "./res/prompts/inputs/decision_making.json",
                 "gather_information": "./res/prompts/inputs/gather_information.json",
                 "success_detection": "./res/prompts/inputs/success_detection.json",
-                "information_summary": "./res/prompts/inputs/information_summary.json"
+                "information_summary": "./res/prompts/inputs/information_summary.json",
+                "gather_text_information": "./res/prompts/inputs/gather_text_information.json",
             },
             "templates": {
                 "decision_making": "./res/prompts/templates/decision_making.prompt",
                 "gather_information": "./res/prompts/templates/gather_information.prompt",
                 "success_detection": "./res/prompts/templates/success_detection.prompt",
-                "information_summary": "./res/prompts/templates/information_summary.prompt"
+                "information_summary": "./res/prompts/templates/information_summary.prompt",
+                "gather_text_information": "./res/prompts/templates/gather_text_information.prompt",
             },
         }
     }

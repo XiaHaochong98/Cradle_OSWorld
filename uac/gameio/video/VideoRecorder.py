@@ -1,13 +1,18 @@
 import threading
 import os
 import time
+from typing import Tuple
+
 import numpy as np
 import cv2
-from typing import Tuple
-from uac.log import Logger
 import mss
 
+from uac.log import Logger
+from uac.config import Config
+
+config = Config()
 logger = Logger()
+
 
 class FrameBuffer():
     def __init__(self):
@@ -54,8 +59,9 @@ class FrameBuffer():
                     frames.append(frame)
         return frames
 
+
 class VideoRecorder():
-    def __init__(self, video_path: str, screen_region: Tuple[int, int, int, int] = (0, 0, 1920, 1080)):
+    def __init__(self, video_path: str, screen_region: Tuple[int, int, int, int] = config.game_region):
         self.fps = 15
         self.max_size = 10000
         self.video_path = video_path
@@ -118,15 +124,16 @@ class VideoRecorder():
         with mss.mss() as sct:
             region = self.screen_region
             region = {
-                "top": region[0],
-                "left": region[1],
+                "left": region[0],
+                "top": region[1],
                 "width": region[2],
                 "height": region[3],
             }
+
             while self.thread_flag:
                 frame = sct.grab(region)
                 frame = np.array(frame)
-                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
                 video_writer.write(frame)
 
                 self.current_frame = frame
@@ -151,6 +158,7 @@ class VideoRecorder():
             self.thread_flag = False  # Set the flag to False to signal the thread to stop
             self.thread.join()  # Now we wait for the thread to finish
             logger.write('Screen capture finished')
+
 
 if __name__ == '__main__':
     capture_video = VideoRecorder('test.mp4')

@@ -1,14 +1,17 @@
 import multiprocessing
 import os
-import time
 import numpy as np
-from uac.log import Logger
+from typing import Dict, Any, List
 import subprocess
 import shutil
+
+from uac.log import Logger
 from uac.config import Config
 
 logger = Logger()
 config = Config()
+
+
 class JSONStructure:
     def __init__(self):
         self.data_structure: Dict[int, Dict[str, list[Dict[str, any]]]] = {}
@@ -38,19 +41,25 @@ class JSONStructure:
                             results.append({"index": index, "object_id": object_id, "values":values})
         return results
 
+
 class VideoFrameExtractor():
     def __init__(self) -> None:
+
         self.path_vsf = config.VideoFrameExtractor_path
         # copy the placeholder file to the work_dir
         run_placeholderfile_path = os.path.join(config.work_dir, 'test.srt')
+
         if not os.path.exists(run_placeholderfile_path):
             shutil.copy(config.VideoFrameExtractor_placeholderfile_path, run_placeholderfile_path)
+
         self.vsf_subtitle = run_placeholderfile_path
         self.frame_output_dir = os.path.join(config.work_dir, 'frame_output_dir')
         self.extracted_frame_folder = os.path.join(self.frame_output_dir, "RGBImages")
+
         # if self.path_vsf does not exist, throw a non-exist error
         if not os.path.exists(self.path_vsf):
             raise Exception(f"VideoSubFinderWXW does not exist! Please install it according to the README.md.")
+
         # create a folder to store the extracted frames
         if not os.path.exists(self.frame_output_dir):
             os.makedirs(self.frame_output_dir)
@@ -74,6 +83,7 @@ class VideoFrameExtractor():
         # path_vsf is the path of the VideoSubFinderWXW.exe
         # vsf_subtitile is the path of the extracted sub titles (no usage), it should be ended with '.srt'
         self.delete_frame_cache(frame_output_dir)
+
         cpu_count = max(int(multiprocessing.cpu_count() * 2 / 3), 1)
         if cpu_count < 4:
             cpu_count = max(multiprocessing.cpu_count() - 1, 1)
@@ -96,8 +106,10 @@ class VideoFrameExtractor():
     def extract(self,video_path):
         video_path = os.path.normpath(video_path)
         self.run_sub_finder(self.path_vsf, video_path, self.frame_output_dir, self.vsf_subtitle)
+
         # List all files in the directory, get full paths of jpeg files, and extract the first 13 characters of each filename as timestamp
         extracted_frame_paths = [(os.path.join(self.extracted_frame_folder, file), file[:13]) for file in
                                  os.listdir(self.extracted_frame_folder) if
                                  file.endswith('.jpeg') or file.endswith('.jpg')]
+        
         return extracted_frame_paths

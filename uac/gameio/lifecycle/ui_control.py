@@ -1,5 +1,6 @@
-import os,math
+import os, math
 import time
+
 import pydirectinput
 import pyautogui
 from PIL import Image, ImageDraw, ImageFont
@@ -8,15 +9,13 @@ import numpy as np
 import torch
 from torchvision.ops import box_convert
 import supervision as sv
+import mss
+import mss.tools
+
 from uac.config import Config
 from uac.log import Logger
 from uac.gameio import IOEnvironment
 from uac.utils.template_matching import match_template_image
-import subprocess
-import shutil
-import multiprocessing
-from typing import Tuple
-import mss
 
 
 config = Config()
@@ -98,43 +97,40 @@ def take_screenshot(tid : float = 0.0,
 
     region = screen_region
     region = {
-        "top": region[0],
-        "left": region[1],
+        "left": region[0],
+        "top": region[1],
         "width": region[2],
         "height": region[3],
     }
-    
+
     output_dir = config.work_dir
 
     # save screenshots
     screen_image_filename = output_dir + "/screen_" + str(tid) + ".jpg"
-    # screen_image = pyautogui.screenshot(screen_image_filename, region = screen_region)
+
     with mss.mss() as sct:
         screen_image = sct.grab(region)
-        screen_image = np.array(screen_image)
-        screen_image = Image.fromarray(screen_image)
-
-        # Convert RGBA to RGB
-        if screen_image.mode == 'RGBA':
-            screen_image = screen_image.convert('RGB')
-
-        screen_image.save(screen_image_filename)
+        image = Image.frombytes("RGB", screen_image.size, screen_image.bgra, "raw", "BGRX")
+        image.save(screen_image_filename)
 
     minimap_image_filename = ""
 
     if include_minimap:
         minimap_image_filename = output_dir + "/minimap_" + str(tid) + ".jpg"
-        # minimap_image = pyautogui.screenshot(minimap_image_filename, region = minimap_region)
+
+        mm_region = minimap_region
+        mm_region = {
+            "left": mm_region[0],
+            "top": mm_region[1],
+            "width": mm_region[2],
+            "height": mm_region[3],
+        }
+
         with mss.mss() as sct:
-            minimap_image = sct.grab(minimap_region)
-            minimap_image = np.array(minimap_image)
-            minimap_image = Image.fromarray(minimap_image)
+            minimap_image = sct.grab(mm_region)
+            mm_image = Image.frombytes("RGB", minimap_image.size, minimap_image.bgra, "raw", "BGRX")
+            mm_image.save(minimap_image_filename)
 
-            # Convert RGBA to RGB
-            if screen_image.mode == 'RGBA':
-                screen_image = screen_image.convert('RGB')
-
-            minimap_image.save(minimap_image_filename)
         clip_minimap(minimap_image_filename)
 
     if draw_axis:

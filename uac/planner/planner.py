@@ -1,6 +1,5 @@
 import json
 from typing import Dict, Any, List
-from copy import deepcopy
 import os
 
 from uac.config import Config
