@@ -1,6 +1,7 @@
 import json
 from typing import Dict, Any, List
 from copy import deepcopy
+import os
 
 from uac.config import Config
 from uac.log import Logger
@@ -9,6 +10,7 @@ from uac.provider.base_llm import LLMProvider
 from uac.utils.check import check_planner_params
 from uac.utils.json_utils import load_json, parse_semi_formatted_json, parse_semi_formatted_text
 from uac.utils.file_utils import assemble_project_path, read_resource_file
+from uac.gameio.video.VideoFrameExtractor import JSONStructure
 
 config = Config()
 logger = Logger()
@@ -83,6 +85,9 @@ class GatherInformation():
                  marker_matcher: Any = None,
                  object_detector: Any = None,
                  llm_provider: LLMProvider = None,
+                 get_text_input_map: Dict = None,
+                 get_text_template: str = None,
+                 frame_extractor: Any = None
                  ):
 
         self.input_map = input_map
@@ -90,11 +95,64 @@ class GatherInformation():
         self.marker_matcher = marker_matcher
         self.object_detector = object_detector
         self.llm_provider = llm_provider
+        self.get_text_input_map = get_text_input_map
+        self.get_text_template = get_text_template
+        self.frame_extractor = frame_extractor
 
     def _pre(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return input
 
     def __call__(self, *args, input: Dict[str, Any] = None, class_=None, **kwargs) -> Dict[str, Any]:
+
+        flag = True
+        if self.frame_extractor is not None:
+            get_text_input=input["get_text_input"]
+            video_path = input["video_clip_path"]
+            # extract the text information of the whole video
+            # run the frame_extractor to get the key frames
+            extracted_frame_paths=self.frame_extractor.extract(video_path=video_path)
+            # for each key frame, use llm to get the text information
+            video_prefix = os.path.basename(video_path).split('.')[0].split('_')[-1] # different video should have differen prefix for avoiding the same time stamp
+            gathered_information = JSONStructure()
+            for i, (current_frame_path, time_stamp) in enumerate(extracted_frame_paths):
+                logger.write(f"Processing the {i+1}/{len(extracted_frame_paths)} frame")
+                get_text_input = self.get_text_input_map if get_text_input is None else get_text_input
+
+                image_introduction = [
+                    {
+                        "introduction": get_text_input["image_introduction"][-1]["introduction"],
+                        "path": f"{current_frame_path}",
+                        "assistant": get_text_input["image_introduction"][-1]["assistant"]
+                    }
+                ]
+                get_text_input["image_introduction"] = image_introduction
+
+                try:
+                    # Call the LLM provider for gather information json
+                    message_prompts = self.llm_provider.assemble_prompt(template_str=self.get_text_template, params=get_text_input)
+
+                    logger.debug(f'>> Upstream - R: {message_prompts}')
+                    response, info = self.llm_provider.create_completion(message_prompts)
+
+                    logger.debug(f'>> Downstream - A: {response}')
+
+                    # Convert the response to dict
+                    processed_response = parse_semi_formatted_json(response)
+
+                except Exception as e:
+                    logger.error(f"Error in gather text information: {e}")
+                    flag = False
+                objects = processed_response
+                objects_index = str(video_prefix) + '_' + time_stamp
+                gathered_information.add_instance(objects_index, objects)
+
+            all_dialogues = gathered_information.search_type_across_all_indices('Dialogue')
+            gathered_information=gathered_information.data_structure
+
+
+        else:
+            gathered_information=None
+            all_dialogues=None
 
         input = self.input_map if input is None else input
         input = self._pre(input=input)
@@ -103,7 +161,6 @@ class GatherInformation():
         if "image_introduction" in input.keys():
             for image_info in input["image_introduction"]:
                 image_files.append(image_info["path"])
-        flag = True
 
         marker_matcher_gathered_information = None
         object_detector_gathered_information = None
@@ -137,23 +194,16 @@ class GatherInformation():
             message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
 
             logger.debug(f'>> Upstream - R: {message_prompts}')
-
             response, info = self.llm_provider.create_completion(message_prompts)
 
             logger.debug(f'>> Downstream - A: {response}')
-
             # Convert the response to dict
-            # processed_response = parse_semi_formatted_json(response)
-
             processed_response = parse_semi_formatted_text(response)
-
-            # Convert the dict to GatherInformationOutput
-            logger.debug(f'GI response type was {processed_response["type"]}')
 
             llm_provider_gather_information = processed_response
 
         except Exception as e:
-            logger.error(f"Error in gather_information: {e}")
+            logger.error(f"Error in gather image description information: {e}")
             flag = False
 
         if flag:
@@ -170,6 +220,10 @@ class GatherInformation():
 
             llm_provider_gather_information["objects"] = objects
             processed_response["objects"] = objects
+
+            # merge the gathered information from text and dialogue to the processed_response
+            processed_response["dialogue"]=all_dialogues
+            processed_response["gathered_information"]=gathered_information
 
             res_dict = processed_response
 
@@ -225,12 +279,10 @@ class DecisionMaking():
 
         flag = True
         processed_response = {}
-        # res_json = None
 
         try:
             message_prompts = self.llm_provider.assemble_prompt(template_str=self.template,
                                                                 params=input)
-
             logger.debug(f'>> Upstream - R: {message_prompts}')
 
             # Call the LLM provider for decision making
@@ -266,7 +318,6 @@ class DecisionMaking():
 
     def _post(self, *args, data: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return data
-
 
 class SuccessDetection():
     def __init__(self,
@@ -453,6 +504,7 @@ class Planner(BasePlanner):
                  gather_information_max_steps: int = 1,  # 5,
                  marker_matcher: Any = None,
                  object_detector: Any = None,
+                 frame_extractor: Any = None,
                  ):
         """
         inputs: input key-value pairs
@@ -498,7 +550,7 @@ class Planner(BasePlanner):
 
         self.marker_matcher = marker_matcher
         self.object_detector = object_detector
-
+        self.frame_extractor = frame_extractor
         self.set_internal_params(planner_params=planner_params,
                                  use_screen_classification=use_screen_classification,
                                  use_information_summary=use_information_summary)
@@ -510,7 +562,6 @@ class Planner(BasePlanner):
                             use_information_summary: bool = False):
 
         self.planner_params = planner_params
-
         if not check_planner_params(self.planner_params):
             raise ValueError(f"Error in planner_params: {self.planner_params}")
 
@@ -526,6 +577,9 @@ class Planner(BasePlanner):
 
         self.gather_information_ = GatherInformation(input_map=self.inputs["gather_information"],
                                                      template=self.templates["gather_information"],
+                                                     get_text_input_map=self.inputs["gather_text_information"],
+                                                     get_text_template=self.templates["gather_text_information"],
+                                                     frame_extractor=self.frame_extractor,
                                                      marker_matcher=self.marker_matcher,
                                                      object_detector=self.object_detector,
                                                      llm_provider=self.llm_provider)

@@ -40,6 +40,12 @@ class Config(metaclass=Singleton):
 
     env_name = "Red Dead Redemption 2"
 
+    # config for frame extraction
+    VideoFrameExtractor_path = "./res/tool/subfinder/VideoSubFinderWXW.exe"
+    VideoFrameExtractor_placeholderfile_path = "./res/tool/subfinder/test.srt"
+
+
+
     def __init__(self) -> None:
         """Initialize the Config class"""
 

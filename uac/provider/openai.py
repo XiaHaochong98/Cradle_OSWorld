@@ -315,7 +315,6 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         ) -> Tuple[str, Dict[str, int]]:
             
             """Send a request to the OpenAI API."""
-
             if self.provider_cfg[PROVIDER_SETTING_IS_AZURE]:
                 response = self.client.chat.completions.create(deployment_id=self.get_azure_deployment_id_for_model(model),
                 model=model,
@@ -674,7 +673,6 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                             introduction = item.get("introduction", None)
                             path = item.get("path", None)
                             assistant = item.get("assistant", None)
-
                             if introduction is not None and introduction != "":
                                 message = {
                                     "role": "user",

@@ -1,9 +1,11 @@
 {
+    "type": "gather_information",
     "image_introduction": [
         {
             "introduction": "This is a screenshot of the current moment in the game",
             "path": "./res/samples/game_screenshot.png",
             "assistant": ""
         }
-    ]
+    ],
+    "information_type": ["Context-Sensitive Information", "Dynamic Information", "Environment Information", "Context-Sensitive Prompts", "Task Guidance","Dialogue", "Others"]
 }

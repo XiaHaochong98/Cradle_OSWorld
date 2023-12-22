@@ -10,6 +10,8 @@ from uac.memory.interface import MemoryInterface
 from uac.memory.faiss import FAISS
 from uac.provider.openai import OpenAIProvider
 from uac.gameio.lifecycle.ui_control import switch_to_game
+from uac.gameio.video.VideoRecorder import VideoRecorder
+from uac.gameio.video.VideoFrameExtractor import VideoFrameExtractor
 from uac.gameio.atomic_skills.trade_utils import __all__ as trade_skills
 from uac.gameio.atomic_skills.buy import __all__ as buy_skills
 from uac.gameio.atomic_skills.map import __all__ as map_skills
@@ -139,7 +141,8 @@ def main_pipeline(planner_params, task_description, skill_library):
     llm_provider.init_provider(llm_provider_config_path)
 
     planner = Planner(llm_provider=llm_provider,
-                      planner_params=planner_params)
+                      planner_params=planner_params,
+                      frame_extractor=VideoFrameExtractor())
     
     recent_history = {"image": [], "action": [], "decision_making_reasoning": [], "success_detection_reasoning": [], "reflection_reasoning": []}
     vectorstore = FAISS(embedding_provider = llm_provider, memory_path = './res/memory')
@@ -158,6 +161,9 @@ def main_pipeline(planner_params, task_description, skill_library):
     skill_library = gm.get_filtered_skills(skill_library)
 
     switch_to_game()
+    videocapture=VideoRecorder(os.path.join(config.work_dir, 'video.mp4'))
+    videocapture.start_capture()
+    start_frame_id = videocapture.get_current_frame_id()
 
     cur_screen_shot_path, _ = gm.capture_screen()
     memory.add_recent_history("image", cur_screen_shot_path)
@@ -165,8 +171,35 @@ def main_pipeline(planner_params, task_description, skill_library):
     success = False
     pre_action = ""
     pre_reasoning = ""
-
+    time.sleep(5)
+    end_frame_id = videocapture.get_current_frame_id()
     while not success:
+        #for gather information
+        logger.write(f'Gather Information Start Frame ID: {start_frame_id}, End Frame ID: {end_frame_id}')
+        input = planner.gather_information_.input_map
+        get_text_input = planner.gather_information_.get_text_input_map
+        video_clip_path=videocapture.get_video(start_frame_id,end_frame_id)
+        videocapture.clear_frame_buffer()
+        image_introduction = [
+            {
+                "introduction": input["image_introduction"][-1]["introduction"],
+                "path": memory.get_recent_history("image", k=1)[0],
+                "assistant": input["image_introduction"][-1]["assistant"]
+            }
+        ]
+        input["image_introduction"] = image_introduction
+        input["video_clip_path"] = video_clip_path
+        input["get_text_input"] = get_text_input
+        data = planner.gather_information(input=input)
+        dialogue=data['res_dict']['dialogue']
+        gathered_information=data['res_dict']['gathered_information']
+        image_description=data['res_dict']['description']
+
+        logger.write(f'Dialogue: {dialogue}')
+        logger.write(f'Gathered Information: {gathered_information}')
+        logger.write(f'Image Description: {image_description}')
+
+
         # for decision making
         input = planner.decision_making_.input_map
 
@@ -215,6 +248,7 @@ def main_pipeline(planner_params, task_description, skill_library):
         input["task_description"] = task_description
 
         data = planner.decision_making(input = input)
+        start_frame_id = videocapture.get_current_frame_id()
         print(data['res_dict'])
 
         skill_steps = data['res_dict']['actions']
@@ -228,6 +262,8 @@ def main_pipeline(planner_params, task_description, skill_library):
 
         exec_info = gm.execute_actions(skill_steps)
 
+        end_frame_id = videocapture.get_current_frame_id()
+
         pre_action = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
 
         pre_reasoning = ''
@@ -238,7 +274,6 @@ def main_pipeline(planner_params, task_description, skill_library):
         memory.add_recent_history("decision_making_reasoning", pre_reasoning)
 
         # For such cases with no expected response, we should define a retry limit
-
         logger.write(f'Decision reasoning: {pre_reasoning}')
 
         cur_screen_shot_path, _ = gm.capture_screen()
@@ -272,6 +307,7 @@ def main_pipeline(planner_params, task_description, skill_library):
         logger.write(f'Success: {success}')
         logger.write(f'Success criteria: {success_criteria}')
         logger.write(f'Success reason: {success_reasoning}')
+    videocapture.finish_capture()
 
 if __name__ == '__main__':
 
@@ -283,20 +319,23 @@ if __name__ == '__main__':
             "decision_making",
             "gather_information",
             "success_detection",
-            "information_summary"
+            "information_summary",
+            "gather_text_information"
         ],
         "prompt_paths": {
             "inputs": {
                 "decision_making": "./res/prompts/inputs/decision_making.json",
                 "gather_information": "./res/prompts/inputs/gather_information.json",
                 "success_detection": "./res/prompts/inputs/success_detection.json",
-                "information_summary": "./res/prompts/inputs/information_summary.json"
+                "information_summary": "./res/prompts/inputs/information_summary.json",
+                "gather_text_information": "./res/prompts/inputs/gather_text_information.json"
             },
             "templates": {
                 "decision_making": "./res/prompts/templates/decision_making.prompt",
                 "gather_information": "./res/prompts/templates/gather_information.prompt",
                 "success_detection": "./res/prompts/templates/success_detection.prompt",
-                "information_summary": "./res/prompts/templates/information_summary.prompt"
+                "information_summary": "./res/prompts/templates/information_summary.prompt",
+                "gather_text_information": "./res/prompts/templates/gather_text_information.prompt"
             },
         }
     }

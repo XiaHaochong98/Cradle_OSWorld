@@ -165,3 +165,4 @@ runs/
 
 /cache/*.pth
 /cache/hf
+/res/tool/subfinder/

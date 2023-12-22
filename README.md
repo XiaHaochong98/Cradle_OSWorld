@@ -114,6 +114,9 @@ Keep the UAC requirements.txt file updated in your branch, but only add dependen
 
 runner.py is the entry point to run an agent. Currently not working code, just an introductory sample.
 
+To install the videosubfinder for gather information module:
+
+Download the videosubfinder from https://sourceforge.net/projects/videosubfinder/ and extract the files into the res/tool/subfinder folder.
 
 ## General guidelines
 
