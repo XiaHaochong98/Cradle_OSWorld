@@ -127,6 +127,13 @@ The file structure should be like this:
       - test.srt
       ...
 
+#### Tunning the videosubfinder
+To get the best extraction results, you can tune the subfinder by changing the parameters in the settings/general.cfg file.
+Change the following keys to the corresponding values:
+vedges_points_line_error = 0.9  
+ila_points_line_error = 0.9  
+sub_frame_length = 8   
+
 ## General guidelines
 
 Always, **always**, **ALLWAYS** get the latest /main branch.

@@ -138,10 +138,10 @@ class VideoRecorder():
                     video_writer.write(frame)
 
                     self.current_frame = frame
-                    self.current_frame_id += 1
-
-                    frame_buffer.add_frame(self.current_frame_id, frame)
-                    time.sleep(0.05)
+                    for i in range(4):
+                        self.current_frame_id += 1
+                        frame_buffer.add_frame(self.current_frame_id, frame)
+                    time.sleep(0.2)
 
                     # Check the flag at regular intervals
                     if not self.thread_flag:

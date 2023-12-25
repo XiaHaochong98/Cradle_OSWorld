@@ -100,6 +100,9 @@ def keep_shooting_target(
                 shoot(int(shoot_x), int(shoot_y))
                 break
 
-if __name__ == "__main__":
-    pass    
+__all__ = [
+    "shoot_people",
+    "shoot_wolves"
+]
+
 

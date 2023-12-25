@@ -9,13 +9,14 @@ from uac.planner.planner import Planner
 from uac.memory.interface import MemoryInterface
 from uac.memory.faiss import FAISS
 from uac.provider.openai import OpenAIProvider
-from uac.gameio.lifecycle.ui_control import switch_to_game
+from uac.gameio.lifecycle.ui_control import switch_to_game, pause_game, unpause_game
 from uac.gameio.video.VideoRecorder import VideoRecorder
 from uac.gameio.video.VideoFrameExtractor import VideoFrameExtractor
 from uac.gameio.atomic_skills.trade_utils import __all__ as trade_skills
 from uac.gameio.atomic_skills.buy import __all__ as buy_skills
 from uac.gameio.atomic_skills.map import __all__ as map_skills
 from uac.gameio.atomic_skills.move import __all__ as move_skills
+from uac.gameio.composite_skills.follow import __all__ as follow_skills
 from uac.utils.file_utils import read_resource_file
 
 config = Config()
@@ -158,8 +159,6 @@ def main_pipeline(planner_params, task_description, skill_library):
 
     gm = GameManager(config.env_name)
 
-    #skill_library = gm.get_filtered_skills(trade_skills + buy_skills)
-
     skill_library = gm.get_filtered_skills(skill_library)
 
     switch_to_game()
@@ -173,9 +172,10 @@ def main_pipeline(planner_params, task_description, skill_library):
     success = False
     pre_action = ""
     pre_reasoning = ""
-    time.sleep(5)
     end_frame_id = videocapture.get_current_frame_id()
 
+    time.sleep(1)
+    pause_game()
 
     while not success:
 
@@ -257,7 +257,7 @@ def main_pipeline(planner_params, task_description, skill_library):
 
             data = planner.decision_making(input = input)
             start_frame_id = videocapture.get_current_frame_id()
-            print(data['res_dict'])
+            # print(data['res_dict'])
 
             skill_steps = data['res_dict']['actions']
             if skill_steps is None:
@@ -268,6 +268,7 @@ def main_pipeline(planner_params, task_description, skill_library):
             skill_steps = skill_steps[:number_of_execute_skills]
             logger.write(f'Skill Steps: {skill_steps}')
 
+            unpause_game()
             exec_info = gm.execute_actions(skill_steps)
 
             end_frame_id = videocapture.get_current_frame_id()
@@ -286,6 +287,8 @@ def main_pipeline(planner_params, task_description, skill_library):
 
             cur_screen_shot_path, _ = gm.capture_screen()
             memory.add_recent_history("image", cur_screen_shot_path)
+
+            pause_game()
 
             # for success detection
             input = planner.success_detection_.input_map
@@ -318,6 +321,7 @@ def main_pipeline(planner_params, task_description, skill_library):
 
         except KeyboardInterrupt:
             logger.write('KeyboardInterrupt Ctrl+C detected, exiting.')
+            videocapture.finish_capture()
             break
 
     videocapture.finish_capture()
@@ -352,10 +356,13 @@ if __name__ == '__main__':
             },
         }
     }
+    config.set_fixed_seed()
 
+    skill_library = move_skills + follow_skills
+    task_description =  "Follow Dutch."
     # map_create_waypoint
-    skill_library = map_skills
-    task_description = "Mark the \"Saloon\" on a Map as the Waypoint via the Index."
+    # skill_library = map_skills
+    # task_description = "Mark the \"Saloon\" on a Map as the Waypoint via the Index."
 
     # buy_item
     # skill_library = trade_skills + buy_skills
@@ -369,7 +376,6 @@ if __name__ == '__main__':
     # skill_library = move_skills
     # task_description =  "Your task is to approach the shopkeeper."
 
-    config.set_fixed_seed()
 
     #main_test_decision_making(planner_params, task_description, skill_library)
 
