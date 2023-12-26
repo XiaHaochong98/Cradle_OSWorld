@@ -256,7 +256,6 @@ def main_pipeline(planner_params, task_description, skill_library):
             input["task_description"] = task_description
 
             data = planner.decision_making(input = input)
-            start_frame_id = videocapture.get_current_frame_id()
             # print(data['res_dict'])
 
             skill_steps = data['res_dict']['actions']
@@ -269,8 +268,8 @@ def main_pipeline(planner_params, task_description, skill_library):
             logger.write(f'Skill Steps: {skill_steps}')
 
             unpause_game()
+            start_frame_id = videocapture.get_current_frame_id()
             exec_info = gm.execute_actions(skill_steps)
-
             end_frame_id = videocapture.get_current_frame_id()
 
             pre_action = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.

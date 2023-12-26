@@ -33,7 +33,7 @@ def cv_follow_circles(
     is_move = False
     circle_detector = CircleDetector(config.resolution_ratio)
 
-    move_forward(2)
+    move_forward(3)
 
     for step in range(iterations):
         if debug:

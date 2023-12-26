@@ -62,7 +62,7 @@ class FrameBuffer():
 
 class VideoRecorder():
     def __init__(self, video_path: str, screen_region: Tuple[int, int, int, int] = config.game_region):
-        self.fps = 15
+        self.fps = 4
         self.max_size = 10000
         self.video_path = video_path
         self.screen_region = screen_region
@@ -138,10 +138,10 @@ class VideoRecorder():
                     video_writer.write(frame)
 
                     self.current_frame = frame
-                    for i in range(4):
+                    for i in range(2):
                         self.current_frame_id += 1
                         frame_buffer.add_frame(self.current_frame_id, frame)
-                    time.sleep(0.2)
+                    time.sleep(0.5)
 
                     # Check the flag at regular intervals
                     if not self.thread_flag:
