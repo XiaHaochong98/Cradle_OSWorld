@@ -1,6 +1,7 @@
 {
-    "recent_info": "",
-    "hidden_state": "",
+    "task_description": "Your task is to follow the guy in front of you.",
+    "previous_summarization": "This is the character in Red Dead Redemption 2.",
+    "event_count": "5",
     "image_introduction":[
         {
             "introduction": "the first image is the first screenshot of recent events",
@@ -27,6 +28,5 @@
             "path": "./res/prompts/testing/decision_making/map_create_waypoint/screenshots/5.jpg",
             "assistant": ""
         }
-    ],
-    "output_format":"{\n    \"info_summary\": \"What happened recentlly is that ...\"\n\n}"
+    ]
 }

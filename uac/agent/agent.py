@@ -240,19 +240,25 @@ class Agent:
 
             # summarization starts
             if use_information_summary:
-                #self.memory.add_recent_history('image', current_state_image)
-                if len(self.memory.get_recent_history("image", self.memory.max_recent_steps)) == 5:
-                    args_func = sub_task_args["information_summary"]
+                if len(self.memory.get_recent_history("decision_making_reasoning", self.memory.max_recent_steps)) == self.memory.max_recent_steps:
+                    event_count = min(config.max_recent_steps,config.event_count)
+                    input = self.planner.information_summary_.input_map
                     logger.write(f'> Information summary call...')
-                    introductions = ['the first image is the first screenshot of recent events',
-                                    'the second image is the second screenshot of recent events',
-                                    'the third image is the third screenshot of recent events',
-                                    'the fourth image is the fourth screenshot of recent events',
-                                    'the fifth image is the fifth screenshot of recent events'] #todo: adding more descriptions
-                    data = self.planner.information_summary(input=args_func(self.memory.get_hidden_state(),self.memory.get_image_history(),introductions))
-                    info_summary = data['res_dict']["info_summary"]
+                    images = self.memory.get_recent_history('image', event_count)
+                    reasonings = self.memory.get_recent_history('decision_making_reasoning', event_count)
+                    image_introduction = [{"path": images[event_i],"assistant": "","introduction": 'This is the {} screenshot of recent events. The description of this image: {}'.format(['first','second','third','fourth','fifth'][event_i], reasonings[event_i])} for event_i in range(event_count)]
+                    
+                    input["image_introduction"] = image_introduction
+                    input["previous_summarization"] = self.memory.get_summarization()
+                    input["task_description"] = self.task_description
+                    input["event_count"] = str(event_count)
+
+                    data = self.planner.information_summary(input = input)
+                    info_summary = data['res_dict']['info_summary']
+                    entities_and_behaviors = data['res_dict']['entities_and_behaviors']
                     logger.write(f'R: Summary: {info_summary}')
-                    self.memory.add_hidden_state(info_summary)
+                    logger.write(f'R: entities_and_behaviors: {entities_and_behaviors}')
+                    self.memory.add_summarization(info_summary)
             # summarization ends
 
             # Prepare success detection

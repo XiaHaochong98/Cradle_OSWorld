@@ -1,8 +1,24 @@
-You are an assistant who assesses my progress in playing Red Dead Redemption 2 and provides expert guidance. I will sequentially give you <$event_num$> descriptions of recent events. Assist me in summarizing the recent events for future decision-making.
+You are an assistant who assesses my progress in playing Red Dead Redemption 2 and provides expert guidance. I will sequentially give you <$event_count$> screenshots and corresponding descriptions of recent events. I will also give the summary of history happened before the last screenshot. Assist me in summarizing the events for future decision-making.
 
-Following is the <$event_num$> descriptions of recent events:
-<$recent_info$>
+Following is <$event_count$> successive screenshots and corresponding descriptions:
 
-Based on the above input, please summarize what has happened recently and extract useful information for decision-making. Your output should be in the following format:
+<$image_introduction$>
+
+Following is the summary of history happened before the last screenshot:
+
+<$previous_summarization$>
+
+Currently, the task is to <$task_description$>.
+
+Based on the above input, please make a summarization from the screenshots with descriptions and the history in no less than 8 sentences, following the instructions below.
+
+(1) Summarize the entities and behaviors mentioned in the successive descriptions.
+(2) If entities and behaviors in the history and screenshots are missed in the descriptions, please add them into the summarization.  
+(3) Organize the summarization as a story in order of time, including the past entities and behaviors.
+(4) Just give descriptions, do not provide suggestion.
+
+Your output should be in the following format:
 Info_summary:
 Summary of the recent events for future decision making
+Entities_and_behaviors:
+Entities and behaviors which are summarized, e.g., The entities include the player's character, the target character, and horses for both the player and the target. The behaviors consist of the player character riding horseback, following the target character also on horseback, and moving forward to maintain a distance behind the target.

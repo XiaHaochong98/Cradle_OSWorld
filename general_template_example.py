@@ -134,6 +134,120 @@ def main_test_success_detection(planner_params, task_description):
     logger.write(f'Criteria: {criteria}')
     logger.write(f'Reasoning: {reasoning}')
 
+def main_test_information_summary(planner_params, task_description, skill_library):
+    llm_provider_config_path = './conf/openai_config.json'
+
+    llm_provider = OpenAIProvider()
+    llm_provider.init_provider(llm_provider_config_path)
+
+    planner = Planner(llm_provider=llm_provider,
+                      planner_params=planner_params,
+                      use_information_summary = True)
+    
+    recent_history = {"image": [], "action": [], "decision_making_reasoning": [], "success_detection_reasoning": [], "reflection_reasoning": []}
+    vectorstore = FAISS(embedding_provider = llm_provider, memory_path = './res/memory')
+    memory = MemoryInterface(
+        memory_path='./res/memory',
+        vectorstores = {"basic_memory":{"description":vectorstore},'decision_making':{},'success_detection':{}}, 
+        embedding_provider=llm_provider,
+        recent_history=recent_history,
+        max_recent_steps=config.max_recent_steps
+    )
+
+    gm = GameManager(config.env_name)
+
+    #skill_library = gm.get_filtered_skills(trade_skills + buy_skills)
+
+    skill_library = gm.get_filtered_skills(skill_library)
+
+    switch_to_game()
+
+    cur_screen_shot_path, _ = gm.capture_screen()
+    memory.add_recent_history("image", cur_screen_shot_path)
+
+    success = False
+    pre_action = ""
+    pre_reasoning = ""
+    event_count = min(config.event_count, config.max_recent_steps)
+
+    while not success:
+        # for decision making
+        input = planner.decision_making_.input_map
+
+        number_of_execute_skills = input["number_of_execute_skills"]
+
+        if pre_action:
+            input["previous_action"] = memory.get_recent_history("action", k=1)[-1]
+            input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
+
+        input['skill_library'] = skill_library
+
+        image_introduction = [
+            {
+                "introduction": input["image_introduction"][-2]["introduction"],
+                "path": memory.get_recent_history("image", k=2)[0],
+                "assistant": input["image_introduction"][-2]["assistant"]
+            },
+            {
+                "introduction": input["image_introduction"][-1]["introduction"],
+                "path": memory.get_recent_history("image", k=1)[0],
+                "assistant": input["image_introduction"][-1]["assistant"]
+            }
+        ]
+
+        input["image_introduction"] = image_introduction
+        input["task_description"] = task_description
+        
+        data = planner.decision_making(input = input)
+        print(data['res_dict'])
+
+        skill_steps = data['res_dict']['actions']
+        if skill_steps is None:
+            skill_steps = []
+
+        logger.write(f'R: {skill_steps}')
+
+        skill_steps = skill_steps[:number_of_execute_skills]
+        logger.write(f'Skill Steps: {skill_steps}')
+
+        exec_info = gm.execute_actions(skill_steps)
+
+        pre_action = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
+
+        pre_reasoning = ''
+        if 'res_dict' in data.keys() and 'reasoning' in data['res_dict'].keys():
+            pre_reasoning = data['res_dict']['reasoning']
+
+        memory.add_recent_history("action", pre_action)
+        memory.add_recent_history("decision_making_reasoning", pre_reasoning)
+
+        # For such cases with no expected response, we should define a retry limit
+
+        logger.write(f'Decision reasoning: {pre_reasoning}')
+
+        cur_screen_shot_path, _ = gm.capture_screen()
+        memory.add_recent_history("image", cur_screen_shot_path)
+
+        ## summary begins
+        if len(memory.get_recent_history("decision_making_reasoning", memory.max_recent_steps)) == memory.max_recent_steps:
+            input = planner.information_summary_.input_map
+            logger.write(f'> Information summary call...')
+            images = memory.get_recent_history('image', event_count)
+            reasonings = memory.get_recent_history('decision_making_reasoning', event_count)
+            image_introduction = [{"path": images[event_i],"assistant": "","introduction": 'This is the {} screenshot of recent events. The description of this image: {}'.format(['first','second','third','fourth','fifth'][event_i], reasonings[event_i])} for event_i in range(event_count)]
+                    
+            input["image_introduction"] = image_introduction
+            input["previous_summarization"] = memory.get_summarization()
+            input["task_description"] = task_description
+            input["event_count"] = str(event_count)
+
+            data = planner.information_summary(input = input)
+            info_summary = data['res_dict']['info_summary']
+            entities_and_behaviors = data['res_dict']['entities_and_behaviors']
+            logger.write(f'R: Summary: {info_summary}')
+            logger.write(f'R: entities_and_behaviors: {entities_and_behaviors}')
+            memory.add_summarization(info_summary)
+        ## summary ends
 
 def main_pipeline(planner_params, task_description, skill_library):
     llm_provider_config_path = './conf/openai_config.json'
@@ -379,5 +493,7 @@ if __name__ == '__main__':
     #main_test_decision_making(planner_params, task_description, skill_library)
 
     #main_test_success_detection(planner_params, task_description)
+
+    #main_test_information_summary(planner_params, task_description, skill_library)
 
     main_pipeline(planner_params, task_description, skill_library)

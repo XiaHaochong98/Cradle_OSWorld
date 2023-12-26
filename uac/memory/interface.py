@@ -139,11 +139,11 @@ class MemoryInterface:
         """Query the recent k experiences."""
         return self.memory.recent_search(recent_k = recent_k)
     
-    def add_hidden_state(self, hidden_state: str) -> None:
+    def add_summarization(self, hidden_state: str) -> None:
         """Update the hidden_state."""
         self.hidden_state = hidden_state
     
-    def get_hidden_state(self) -> str:
+    def get_summarization(self) -> str:
         """Query the hidden_state."""
         return self.hidden_state
 
