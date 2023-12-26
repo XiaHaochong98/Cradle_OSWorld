@@ -24,6 +24,17 @@ class LLMProvider(abc.ABC):
         pass
 
     @abc.abstractmethod
+    async def create_completion_async(
+        self,
+        messages: List[Dict[str, str]],
+        model: str,
+        temperature: float,
+        stop_tokens: Optional[List[str]] = None,
+    ) -> Tuple[str, Dict[str, int]]:
+        """Create a completion from messages in text (and potentially also encoded images)."""
+        pass
+
+    @abc.abstractmethod
     def init_provider(self, provider_cfg) -> None:
         """Initialize a provider via a json config."""
         pass

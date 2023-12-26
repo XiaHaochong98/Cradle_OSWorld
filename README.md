@@ -108,13 +108,7 @@ Make sure to select "Desktop Environment with C++" and include the 1st 3 optiona
 - Windows SDK for your OS version
 - CMake tools
 
-### Other dependencies
-
-Keep the UAC requirements.txt file updated in your branch, but only add dependencies that are really required by the system.
-
-runner.py is the entry point to run an agent. Currently not working code, just an introductory sample.
-
-To install the videosubfinder for gather information module:
+### To install the videosubfinder for gather information module
 
 Download the videosubfinder from https://sourceforge.net/projects/videosubfinder/ and extract the files into the res/tool/subfinder folder.
 
@@ -122,10 +116,20 @@ The file structure should be like this:
 - res
   - tool
     - subfinder
-      - RGBImages
       - VideoSubFinderWXW.exe
       - test.srt
-      ...
+      - ...
+
+#### Tunning the videosubfinder
+To get the best extraction results, you can tune the subfinder by changing the parameters in the settings/general.cfg file. You may follow the readme me in Docs folder to get more information about the parameters.
+Only modify it if absolutely necessary. Values have already been tuned to game scenario and environment setup.
+
+### Other dependencies
+
+Keep the UAC requirements.txt file updated in your branch, but only add dependencies that are really required by the system.
+
+runner.py is the entry point to run an agent. Currently not working code, just an introductory sample.
+
 
 #### Tunning the videosubfinder
 Use res/tool/general.clg to overwrite res/tool/subfinder/settings/general.cfg file.

@@ -13,3 +13,4 @@ pillow==10.0.1
 Multi-Template-Matching==1.6.6
 imageio[ffmpeg]
 mss==9.0.1
+aiohttp

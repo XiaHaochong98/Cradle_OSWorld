@@ -25,6 +25,8 @@ from uac.planner.util import get_attr
 from uac.utils.json_utils import load_json
 from uac.utils.file_utils import assemble_project_path
 
+import asyncio
+
 config = Config()
 logger = Logger()
 
@@ -347,6 +349,114 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             return message, info
 
         return _generate_response_with_retry(
+            messages,
+            model,
+            temperature,
+            seed,
+            max_tokens,
+        )
+
+    async def create_completion_async(
+            self,
+            messages: List[Dict[str, str]],
+            model: str | None = None,
+            temperature: float = config.temperature,
+            seed: int = config.seed,
+            max_tokens: int = config.max_tokens,
+    ) -> Tuple[str, Dict[str, int]]:
+        """Create a chat completion using the OpenAI API
+
+        Supports both GPT-4 and GPT-4V).
+
+        Example Usage:
+        image_path = "path_to_your_image.jpg"
+        base64_image = encode_image(image_path)
+        response, info = self.create_completion(
+            model="gpt-4-vision-preview",
+            messages=[
+              {
+                "role": "user",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "What’s in this image?"
+                  },
+                  {
+                    "type": "image_url",
+                    "image_url": {
+                      "url": f"data:image/jpeg;base64,{base64_image}"
+                    }
+                  }
+                ]
+              }
+            ],
+        )
+        """
+
+        if model is None:
+            model = self.llm_model
+
+        if config.debug_mode:
+            logger.debug(
+                f"Creating chat completion with model {model}, temperature {temperature}, max_tokens {max_tokens}")
+        else:
+            logger.write(f"Requesting {model} completion...")
+
+        @backoff.on_exception(
+            backoff.constant,
+            (
+                    APIError,
+                    RateLimitError,
+                    APITimeoutError),
+            max_tries=self.retries,
+            interval=10,
+        )
+        async def _generate_response_with_retry_async(
+                messages: List[Dict[str, str]],
+                model: str,
+                temperature: float,
+                seed: int = None,
+                max_tokens: int = 512,
+        ) -> Tuple[str, Dict[str, int]]:
+
+            """Send a request to the OpenAI API."""
+            if self.provider_cfg[PROVIDER_SETTING_IS_AZURE]:
+                response = await asyncio.to_thread(
+                    self.client.chat.completions.create,
+                    model=model,
+                    messages=messages,
+                    temperature=temperature,
+                    seed=seed,
+                    max_tokens=max_tokens,
+                )
+            else:
+                response = await asyncio.to_thread(
+                    self.client.chat.completions.create,
+                    model=model,
+                    messages=messages,
+                    temperature=temperature,
+                    seed=seed,
+                    max_tokens=max_tokens,
+                )
+
+            if response is None:
+                logger.error("Failed to get a response from OpenAI. Try again.")
+                logger.double_check()
+
+            message = response.choices[0].message.content
+
+            info = {
+                "prompt_tokens": response.usage.prompt_tokens,
+                "completion_tokens": response.usage.completion_tokens,
+                "total_tokens": response.usage.total_tokens,
+                "system_fingerprint": response.system_fingerprint,
+            }
+
+            logger.write(f'Response received from {model}.')
+
+            return message, info
+
+        return await _generate_response_with_retry_async(
             messages,
             model,
             temperature,

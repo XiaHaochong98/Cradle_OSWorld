@@ -33,11 +33,12 @@ class JSONStructure:
 
     def search_type_across_all_indices(self, search_type: str) -> list[dict[str, any]]:
         results = []
-        for index, index_data in self.data_structure.items():
+        # sort the keys in ascending order
+        for index, index_data in sorted(self.data_structure.items()):
             for object_id, instances in index_data.items():
                 for instance in instances:
                     for type, values in instance.items():
-                        if type == search_type:
+                        if type == search_type and values != []:
                             results.append({"index": index, "object_id": object_id, "values":values})
         return results
 
