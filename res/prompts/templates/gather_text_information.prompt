@@ -25,7 +25,9 @@ The value of "value" should be the on-screen text;
 
 <$image_introduction$>
 
-Given the screenshot, what are the text objects on the screen? You should identify each kind of information from (1) to (7) one by one. You must pay attention to the location of the text to decide its type. For example, a text on the upper left should not be a 'Task Guidance'. You should neglect the minimap that is on the lower left. You should only output a JSON file without other explanation, do not give a markdown of a JSON file, and respond with the string format. Your output should be in the following format:
+Given the screenshot, what are the text objects on the screen? You should identify each kind of information from (1) to (7) one by one. You must pay attention to the location of the text to decide its type. For example, a text on the upper left should not be a 'Task Guidance'. You should neglect the minimap that is on the lower left.
+
+Your output should be in the following format, you should only output the following content without adding any other explanation or information:
 
 Context-Sensitive Information:
 Information 1

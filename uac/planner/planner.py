@@ -104,7 +104,7 @@ class GatherInformation():
         return input
 
     def __call__(self, *args, input: Dict[str, Any] = None, class_=None, **kwargs) -> Dict[str, Any]:
-        async def gather_information_get_completion(current_frame_path,time_stamp,get_text_input,i):
+        async def gather_information_get_completion_parallel(current_frame_path,time_stamp,get_text_input,i):
             logger.write(f"Start gathering text information from the {i + 1}/{len(extracted_frame_paths)} frame")
             get_text_input = self.get_text_input_map if get_text_input is None else get_text_input
 
@@ -117,24 +117,64 @@ class GatherInformation():
             ]
             get_text_input["image_introduction"] = image_introduction
 
+            message_prompts = self.llm_provider.assemble_prompt(template_str=self.get_text_template,
+                                                                params=get_text_input)
+
+            logger.debug(f'>> Upstream - R: {message_prompts}')
+
+            response, info = await self.llm_provider.create_completion_async(message_prompts)
+
+            logger.debug(f'>> Downstream - A: {response}')
             try:
-                # Call the LLM provider for gather information json
-                message_prompts = self.llm_provider.assemble_prompt(template_str=self.get_text_template,
-                                                                    params=get_text_input)
-
-                logger.debug(f'>> Upstream - R: {message_prompts}')
-                response, info = await self.llm_provider.create_completion_async(message_prompts)
-
-                logger.debug(f'>> Downstream - A: {response}')
-
                 # Convert the response to dict
-                processed_response = parse_semi_formatted_json(response)
-
-            except KeyboardInterrupt:
-                raise
-
+                processed_response = parse_semi_formatted_text(response)
             except Exception as e:
-                logger.error(f"Error in gather text information: {e}")
+                logger.error(f"Response is not in the correct format: {e}")
+                logger.error(f"Response is: {response}")
+                processed_response = None
+            # Convert the response to dict
+            if processed_response is None or len(response) == 0:
+                logger.warn('Empty response in gather text information call')
+                logger.debug("response",response,"processed_response",processed_response)
+            objects = processed_response
+            objects_index = str(video_prefix) + '_' + time_stamp
+            gathered_information.add_instance(objects_index, objects)
+            logger.write(f"Finish gathering text information from the {i + 1}/{len(extracted_frame_paths)} frame")
+
+            return True
+
+        def gather_information_get_completion_sequence(current_frame_path,time_stamp,get_text_input,i):
+            logger.write(f"Start gathering text information from the {i + 1}/{len(extracted_frame_paths)} frame")
+            get_text_input = self.get_text_input_map if get_text_input is None else get_text_input
+
+            image_introduction = [
+                {
+                    "introduction": get_text_input["image_introduction"][-1]["introduction"],
+                    "path": f"{current_frame_path}",
+                    "assistant": get_text_input["image_introduction"][-1]["assistant"]
+                }
+            ]
+            get_text_input["image_introduction"] = image_introduction
+
+            message_prompts = self.llm_provider.assemble_prompt(template_str=self.get_text_template,
+                                                                params=get_text_input)
+
+            logger.debug(f'>> Upstream - R: {message_prompts}')
+
+            response, info = self.llm_provider.create_completion(message_prompts)
+
+            logger.debug(f'>> Downstream - A: {response}')
+            try:
+                # Convert the response to dict
+                processed_response = parse_semi_formatted_text(response)
+            except Exception as e:
+                logger.error(f"Response is not in the correct format: {e}")
+                logger.error(f"Response is: {response}")
+                processed_response = None
+            # Convert the response to dict
+            if processed_response is None or len(response) == 0:
+                logger.warn('Empty response in gather text information call')
+                logger.debug("response",response,"processed_response",processed_response)
             objects = processed_response
             objects_index = str(video_prefix) + '_' + time_stamp
             gathered_information.add_instance(objects_index, objects)
@@ -143,9 +183,13 @@ class GatherInformation():
             return True
 
         async def get_completion_in_parallel(extracted_frame_paths,get_text_input):
-            tasks = [gather_information_get_completion(current_frame_path, time_stamp,get_text_input,i) for i, (current_frame_path, time_stamp) in enumerate(extracted_frame_paths)]
-
+            tasks = [gather_information_get_completion_parallel(current_frame_path, time_stamp,get_text_input,i) for i, (current_frame_path, time_stamp) in enumerate(extracted_frame_paths)]
             return await asyncio.gather(*tasks)
+
+        def get_completion_in_sequence(extracted_frame_paths,get_text_input):
+            for i, (current_frame_path, time_stamp) in enumerate(extracted_frame_paths):
+                gather_information_get_completion_sequence(current_frame_path, time_stamp, get_text_input, i)
+            return True
 
 
         flag = True
@@ -158,22 +202,28 @@ class GatherInformation():
             # for each key frame, use llm to get the text information
             video_prefix = os.path.basename(video_path).split('.')[0].split('_')[-1] # different video should have differen prefix for avoiding the same time stamp
             gathered_information = JSONStructure()
-            # create completion in parallel
-            logger.write(f"Start gathering text information from the whole video")
-            loop = asyncio.get_event_loop()
-            try:
-                loop.run_until_complete(get_completion_in_parallel(extracted_frame_paths, get_text_input))
-            except KeyboardInterrupt:
-                tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-                for task in tasks:
-                    task.cancel()
-                loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
-            finally:
-                loop.close()
+            print("config.parallel_request_gather_information",config.parallel_request_gather_information)
+            if config.parallel_request_gather_information:
+                # create completion in parallel
+                logger.write(f"Start gathering text information from the whole video in parallel")
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    loop.run_until_complete(get_completion_in_parallel(extracted_frame_paths, get_text_input))
+                except KeyboardInterrupt:
+                    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+                    for task in tasks:
+                        task.cancel()
+                    loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
+                finally:
+                    loop.close()
+            else:
+                logger.write(f"Start gathering text information from the whole video in sequence")
+                get_completion_in_sequence(extracted_frame_paths, get_text_input)
             logger.write(f"Finish gathering text information from the whole video")
-            all_dialogues = gathered_information.search_type_across_all_indices('Dialogue')
+            all_dialogues = gathered_information.search_type_across_all_indices('dialogue')
             gathered_information=gathered_information.data_structure
-            # sort the gathered_information by the time stamp ascendingly
+            # sort the gathered_information by the time stamp
             gathered_information = dict(sorted(gathered_information.items(), key=lambda item: item[0]))
 
 

@@ -71,6 +71,9 @@ class Config(metaclass=Singleton):
         # Sample framework parameters
         self.memory_backend = os.getenv("MEMORY_BACKEND", "local")
 
+        # Parallel request to LLM parameters
+        self.parallel_request_gather_information = True
+
         # Memory length
         self.max_recent_steps = 5
         self.event_count = 5
