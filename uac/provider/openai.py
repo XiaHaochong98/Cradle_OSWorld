@@ -623,20 +623,18 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                         ]
                     }
                     if path is not None and path != "":
-                        encoded_image = encode_image(assemble_project_path(path))
+                        encoded_images = encode_path_to_base64(path)
 
-                        # image type. e.g., "jpeg", "png" or "jpg"
-                        image_type = os.path.splitext(path)[1]
-
-                        message["content"].append(
-                            {
-                                "type": "image_url",
-                                "image_url":
-                                    {
-                                        "url": f"data:image/{image_type};base64,{encoded_image}"
-                                    }
-                            }
-                        )
+                        for encoded_image in encoded_images:
+                            message["content"].append(
+                                {
+                                    "type": "image_url",
+                                    "image_url":
+                                        {
+                                            "url": f"{encoded_image}"
+                                        }
+                                }
+                            )
                     image_introduction_messages.append(message)
 
                 if assistant is not None and assistant != "":
@@ -795,20 +793,18 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                                     ]
                                 }
                                 if path is not None and path != "":
-                                    encoded_image = encode_image(assemble_project_path(path))
+                                    encoded_images = encode_path_to_base64(path)
 
-                                    # image type. e.g., "jpeg", "png" or "jpg"
-                                    image_type = os.path.splitext(path)[1]
-
-                                    message["content"].append(
-                                        {
-                                            "type": "image_url",
-                                            "image_url":
-                                                {
-                                                    "url": f"data:image/{image_type};base64,{encoded_image}"
-                                                }
-                                        }
-                                    )
+                                    for encoded_image in encoded_images:
+                                        message["content"].append(
+                                            {
+                                                "type": "image_url",
+                                                "image_url":
+                                                    {
+                                                        "url": f"{encoded_image}"
+                                                    }
+                                            }
+                                        )
                                 user_messages.append(message)
 
                             if assistant is not None and assistant != "":
@@ -838,3 +834,46 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
+
+def encode_path_to_base64(data: Any) -> List[str]:
+    encoded_images = []
+
+    if (isinstance(data, str) or
+            isinstance(data, np.ndarray) or
+            isinstance(data, Image) or
+            isinstance(data, bytes)):
+        data = [data]
+
+    for item in data:
+        if isinstance(item, str):
+            if os.path.exists(assemble_project_path(item)):
+                path = assemble_project_path(item)
+                encoded_image = encode_image(path)
+                image_type = os.path.splitext(path)[1]
+                encoded_image = f"data:image/{image_type};base64,{encoded_image}"
+                encoded_images.append(encoded_image)
+            else:
+                encoded_images.append(item)
+        elif isinstance(item, bytes):  # mss grab bytes
+            image = Image.frombytes('RGB', frame.size, frame.bgra, 'raw', 'BGRX')
+            buffered = io.BytesIO()
+            image.save(buffered, format="JPEG")
+            encoded_image = base64.b64encode(buffered.getvalue()).decode('utf-8')
+            encoded_image = f"data:image/jpeg;base64,{encoded_image}"
+            encoded_images.append(encoded_image)
+        elif isinstance(item, Image):  # PIL image
+            buffered = io.BytesIO()
+            item.save(buffered, format="JPEG")
+            encoded_image = base64.b64encode(buffered.getvalue()).decode('utf-8')
+            encoded_image = f"data:image/jpeg;base64,{encoded_image}"
+            encoded_images.append(encoded_image)
+        elif isinstance(item, np.ndarray):  # cv2 image array
+            item = cv2.cvtColor(item, cv2.COLOR_BGR2RGB)  # convert to RGB
+            image = Image.fromarray(item)
+            buffered = io.BytesIO()
+            image.save(buffered, format="JPEG")
+            encoded_image = base64.b64encode(buffered.getvalue()).decode('utf-8')
+            encoded_image = f"data:image/jpeg;base64,{encoded_image}"
+            encoded_images.append(encoded_image)
+
+    return encoded_images
