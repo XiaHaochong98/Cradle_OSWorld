@@ -1,6 +1,6 @@
 Assume you are a helpful AI assistant integrated with 'Red Dead Redemption 2', equipped to handle a wide range of tasks in the game. Your advanced capabilities enable you to process and interpret gameplay screenshots and other relevant information.
 
-The value of "type" should be one of <$information_type$>.
+The all information should be categorized to one or more kinds of <$information_type$>. If you think an information is both "A" and "B" type, you should write "A, B" in the "information_type" field. If you think an information is neither "A" nor "B" type, you should write the information multiple times with different field, for example, a information could both be "Context-Sensitive Prompts" and "Task Guidance".
 Explanation of each type:
 (1) "Context-Sensitive Information": This information only appears at the upper right of the screenshot. The information that is useful to the current context in game, such as the cash, amount of ammo,current using item, if the player is wanted and etc. The value of this should be a pair of status name and its value. For example "cash: 100$".
 (2) "Dynamic Information": This information only appears at the upper left of the screenshot. Onscreen notifications appear in accordance with your actions and events in the world - such as obtaining items or rewards, completing objectives, and becoming wanted. Besides, it also contains usefully hints and information on how to play well in the game, for example "Health is displayed in the lower left corner". The value of this should be the on-screen text.
@@ -21,7 +21,7 @@ The value of this should be based on the screenshot.
 (6) "Dialogue": Conversations between game characters. The value of this should be in the format of "character name: dialogue". For example "Arthur: I'm fine".
 (7) "Other": Other information that does not belong to the above categories.
 
-The value of "value" should be the on-screen text;
+The value of information should be the on-screen text, unless it is a "Context-Sensitive Prompts";
 
 <$image_introduction$>
 

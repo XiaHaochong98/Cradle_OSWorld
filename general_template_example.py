@@ -313,12 +313,20 @@ def main_pipeline(planner_params, task_description, skill_library):
 
             data = planner.gather_information(input=input)
 
-            dialogue=data['res_dict']['dialogue']
-            gathered_information=data['res_dict']['gathered_information']
             image_description=data['res_dict']['description']
 
-            logger.write(f'Dialogue: {dialogue}')
+            # you can extract any information from the gathered_information_JSON
+            gathered_information_JSON=data['res_dict']['gathered_information_JSON']
+            gathered_information=gathered_information_JSON.data_structure
+            # sort the gathered_information by the time stamp
+            gathered_information = dict(sorted(gathered_information.items(), key=lambda item: item[0]))
+            all_dialogue = gathered_information_JSON.search_type_across_all_indices('dialogue')
+            all_task_guidance = gathered_information_JSON.search_type_across_all_indices('task guidance')
+            last_task_guidance = max(all_task_guidance, key=lambda x: x['index'])
+
+            logger.write(f'Dialogue: {all_dialogue}')
             logger.write(f'Gathered Information: {gathered_information}')
+            logger.write(f'Last Task Guidance: {last_task_guidance}')
             logger.write(f'Image Description: {image_description}')
 
 

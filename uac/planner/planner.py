@@ -125,20 +125,22 @@ class GatherInformation():
             response, info = await self.llm_provider.create_completion_async(message_prompts)
 
             logger.debug(f'>> Downstream - A: {response}')
-            try:
-                # Convert the response to dict
-                processed_response = parse_semi_formatted_text(response)
-            except Exception as e:
-                logger.error(f"Response is not in the correct format: {e}")
-                logger.error(f"Response is: {response}")
-                processed_response = None
+            success_flag = False
+            while not success_flag:
+                try:
+                    # Convert the response to dict
+                    processed_response = parse_semi_formatted_text(response)
+                    success_flag = True
+                except Exception as e:
+                    logger.error(f"Response is not in the correct format: {e}, retrying...")
+                    success_flag = False
             # Convert the response to dict
             if processed_response is None or len(response) == 0:
                 logger.warn('Empty response in gather text information call')
                 logger.debug("response",response,"processed_response",processed_response)
             objects = processed_response
             objects_index = str(video_prefix) + '_' + time_stamp
-            gathered_information.add_instance(objects_index, objects)
+            gathered_information_JSON.add_instance(objects_index, objects)
             logger.write(f"Finish gathering text information from the {i + 1}/{len(extracted_frame_paths)} frame")
 
             return True
@@ -164,20 +166,22 @@ class GatherInformation():
             response, info = self.llm_provider.create_completion(message_prompts)
 
             logger.debug(f'>> Downstream - A: {response}')
-            try:
+            success_flag = False
+            while not success_flag:
+                try:
+                    # Convert the response to dict
+                    processed_response = parse_semi_formatted_text(response)
+                    success_flag = True
+                except Exception as e:
+                    logger.error(f"Response is not in the correct format: {e}, retrying...")
+                    success_flag = False
                 # Convert the response to dict
-                processed_response = parse_semi_formatted_text(response)
-            except Exception as e:
-                logger.error(f"Response is not in the correct format: {e}")
-                logger.error(f"Response is: {response}")
-                processed_response = None
-            # Convert the response to dict
             if processed_response is None or len(response) == 0:
                 logger.warn('Empty response in gather text information call')
                 logger.debug("response",response,"processed_response",processed_response)
             objects = processed_response
             objects_index = str(video_prefix) + '_' + time_stamp
-            gathered_information.add_instance(objects_index, objects)
+            gathered_information_JSON.add_instance(objects_index, objects)
             logger.write(f"Finish gathering text information from the {i + 1}/{len(extracted_frame_paths)} frame")
 
             return True
@@ -201,8 +205,7 @@ class GatherInformation():
             extracted_frame_paths=self.frame_extractor.extract(video_path=video_path)
             # for each key frame, use llm to get the text information
             video_prefix = os.path.basename(video_path).split('.')[0].split('_')[-1] # different video should have differen prefix for avoiding the same time stamp
-            gathered_information = JSONStructure()
-            print("config.parallel_request_gather_information",config.parallel_request_gather_information)
+            gathered_information_JSON = JSONStructure()
             if config.parallel_request_gather_information:
                 # create completion in parallel
                 logger.write(f"Start gathering text information from the whole video in parallel")
@@ -221,15 +224,9 @@ class GatherInformation():
                 logger.write(f"Start gathering text information from the whole video in sequence")
                 get_completion_in_sequence(extracted_frame_paths, get_text_input)
             logger.write(f"Finish gathering text information from the whole video")
-            all_dialogues = gathered_information.search_type_across_all_indices('dialogue')
-            gathered_information=gathered_information.data_structure
-            # sort the gathered_information by the time stamp
-            gathered_information = dict(sorted(gathered_information.items(), key=lambda item: item[0]))
-
 
         else:
-            gathered_information=None
-            all_dialogues=None
+            gathered_information_JSON=None
 
         input = self.input_map if input is None else input
         input = self._pre(input=input)
@@ -297,9 +294,8 @@ class GatherInformation():
             llm_provider_gather_information["objects"] = objects
             processed_response["objects"] = objects
 
-            # merge the gathered information from text and dialogue to the processed_response
-            processed_response["dialogue"]=all_dialogues
-            processed_response["gathered_information"]=gathered_information
+            # merge the gathered_information_JSON to the processed_response
+            processed_response["gathered_information_JSON"]=gathered_information_JSON
 
             res_dict = processed_response
 
