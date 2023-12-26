@@ -16,6 +16,9 @@ import re
 import backoff
 import tiktoken
 import numpy as np
+import cv2
+import io
+from PIL import Image
 from openai import OpenAI, AzureOpenAI, APIError, RateLimitError, BadRequestError, APITimeoutError
 
 from uac.provider import LLMProvider, EmbeddingProvider
@@ -838,10 +841,7 @@ def encode_image(image_path):
 def encode_path_to_base64(data: Any) -> List[str]:
     encoded_images = []
 
-    if (isinstance(data, str) or
-            isinstance(data, np.ndarray) or
-            isinstance(data, Image) or
-            isinstance(data, bytes)):
+    if isinstance(data, (str, Image.Image, np.ndarray, bytes)):
         data = [data]
 
     for item in data:
@@ -849,19 +849,19 @@ def encode_path_to_base64(data: Any) -> List[str]:
             if os.path.exists(assemble_project_path(item)):
                 path = assemble_project_path(item)
                 encoded_image = encode_image(path)
-                image_type = os.path.splitext(path)[1]
+                image_type = path.split(".")[-1].lower()
                 encoded_image = f"data:image/{image_type};base64,{encoded_image}"
                 encoded_images.append(encoded_image)
             else:
                 encoded_images.append(item)
         elif isinstance(item, bytes):  # mss grab bytes
-            image = Image.frombytes('RGB', frame.size, frame.bgra, 'raw', 'BGRX')
+            image = Image.frombytes('RGB', item.size, item.bgra, 'raw', 'BGRX')
             buffered = io.BytesIO()
             image.save(buffered, format="JPEG")
             encoded_image = base64.b64encode(buffered.getvalue()).decode('utf-8')
             encoded_image = f"data:image/jpeg;base64,{encoded_image}"
             encoded_images.append(encoded_image)
-        elif isinstance(item, Image):  # PIL image
+        elif isinstance(item, Image.Image):  # PIL image
             buffered = io.BytesIO()
             item.save(buffered, format="JPEG")
             encoded_image = base64.b64encode(buffered.getvalue()).decode('utf-8')
