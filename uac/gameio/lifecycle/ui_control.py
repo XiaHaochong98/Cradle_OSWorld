@@ -340,4 +340,3 @@ class CircleDetector:
                 measure['vis'] = image
 
         return theta, measure
-
