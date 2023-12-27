@@ -13,7 +13,10 @@ from uac.planner.planner import Planner
 from uac.memory.interface import MemoryInterface
 from uac.memory.faiss import FAISS
 from uac.provider.openai import OpenAIProvider
-from uac.gameio.lifecycle.ui_control import switch_to_game, annotate_with_coordinates
+from uac.provider import GdProvider
+from uac.gameio.lifecycle.ui_control import switch_to_game, annotate_with_coordinates, pause_game, unpause_game
+from uac.gameio.video.VideoRecorder import VideoRecorder
+from uac.gameio.video.VideoFrameExtractor import VideoFrameExtractor
 from uac.gameio.atomic_skills.trade_utils import __all__ as trade_skills
 from uac.gameio.atomic_skills.buy import __all__ as buy_skills
 from uac.gameio.atomic_skills.map import __all__ as map_skills
@@ -22,14 +25,6 @@ from uac.utils.file_utils import read_resource_file
 
 config = Config()
 logger = Logger()
-
-
-# @TODO this should be changed to use the GdProvider
-model = load_model("./cache/GroundingDINO_SwinB_cfg.py", "./cache/groundingdino_swinb_cogcoor.pth")
-
-TEXT_PROMPT = "person."
-BOX_TRESHOLD = 0.4
-TEXT_TRESHOLD = 0.25
 
 def main_test_decision_making(planner_params, task_description, skill_library):
     llm_provider_config_path = './conf/openai_config.json'
@@ -150,8 +145,13 @@ def main_pipeline(planner_params, task_description, skill_library):
     llm_provider = OpenAIProvider()
     llm_provider.init_provider(llm_provider_config_path)
 
+    frame_extractor = VideoFrameExtractor()
+
+    gd_detector = GdProvider()
+
     planner = Planner(llm_provider=llm_provider,
-                      planner_params=planner_params)
+                      planner_params=planner_params,
+                      frame_extractor=frame_extractor)
     
     recent_history = {"image": [], "action": [], "decision_making_reasoning": [], "success_detection_reasoning": [], "reflection_reasoning": []}
     vectorstore = FAISS(embedding_provider = llm_provider, memory_path = './res/memory')
@@ -165,65 +165,15 @@ def main_pipeline(planner_params, task_description, skill_library):
 
     gm = GameManager(config.env_name)
 
-    #skill_library = gm.get_filtered_skills(trade_skills + buy_skills)
-
     skill_library = gm.get_filtered_skills(skill_library)
 
     switch_to_game()
+    videocapture=VideoRecorder(os.path.join(config.work_dir, 'video.mp4'))
+    videocapture.start_capture()
+    start_frame_id = videocapture.get_current_frame_id()
 
     cur_screen_shot_path, _ = gm.capture_screen()
     memory.add_recent_history("image", cur_screen_shot_path)
-    
-    if task_description in ["Your task is to approach the shopkeeper.", "Your task is to enter the store."]:
-        image_source, image = load_image(cur_screen_shot_path)
-        boxes, logits, phrases = predict(
-            model=model,
-            image=image,
-            caption=TEXT_PROMPT,
-            box_threshold=BOX_TRESHOLD,
-            text_threshold=TEXT_TRESHOLD,
-            device = 'cpu'
-        )
-        # logger.write(f'boxes: {boxes}')
-        # logger.write(f'logits: {logits}')
-        
-        if "person" in TEXT_PROMPT:
-            if len(boxes) > 1:
-                index = 0
-                dis = 1.5
-
-                for i in range(len(boxes)):
-
-                    down_mid = (boxes[i, 0], boxes[i, 1] + boxes[i, 3] / 2)
-                    distance = torch.sum(torch.abs(torch.tensor(down_mid) - torch.tensor((0.5, 1.0))))
-
-                    if distance < dis:
-                        dis = distance
-                        index = i
-                
-                boxes_ = torch.cat([boxes[:index], boxes[index + 1:]])
-                logits_ = torch.cat([logits[:index], logits[index + 1:]])
-
-                phrases.pop(index)
-                
-                annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes_, logits=logits_, phrases=phrases)
-                cv2.imwrite(cur_screen_shot_path, annotated_frame)
-            elif len(boxes)==1:
-
-                boxes_ = torch.tensor(boxes[1:])
-                logits_ = torch.tensor(logits[1:])
-                phrases.pop(0)
-                
-                annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes_, logits=logits_, phrases=phrases)
-                cv2.imwrite(cur_screen_shot_path, annotated_frame)
-            else:
-                annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes[:,:], logits=logits[:], phrases=phrases)
-                cv2.imwrite(cur_screen_shot_path, annotated_frame)
-            
-        else:
-            annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes[:,:], logits=logits[:], phrases=phrases)
-            cv2.imwrite(cur_screen_shot_path, annotated_frame)
-    
 
     success = False
     pre_action = ""
@@ -286,147 +236,152 @@ def main_pipeline(planner_params, task_description, skill_library):
             "assistant": ""
         }
     ]
+    end_frame_id = videocapture.get_current_frame_id()
+
+    pause_game()
     
     while not success:
-        # for decision making
-        input = planner.decision_making_.input_map
-
-        number_of_execute_skills = input["number_of_execute_skills"]
-
-        if pre_action:
-            input["previous_action"] = memory.get_recent_history("action", k=1)[-1]
-            input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
-
-        input['skill_library'] = skill_library
-        
-        image_memory = memory.get_recent_history("image", k=5)
-        image_introduction = []
-        for i in range(len(image_memory)):
-            image_introduction.insert(0,            
+            
+        try:
+            #for gather information
+            logger.write(f'Gather Information Start Frame ID: {start_frame_id}, End Frame ID: {end_frame_id}')
+            input = planner.gather_information_.input_map
+            get_text_input = planner.gather_information_.get_text_input_map
+            video_clip_path=videocapture.get_video(start_frame_id,end_frame_id)
+            videocapture.clear_frame_buffer()
+            image_introduction = [
                 {
-                    "introduction": image_template_copy[-1-i]["introduction"],
-                    "path":image_memory[-1-i],
-                    "assistant": ""
-                })
-        # loading few shots
-        if task_description in ["Your task is to approach the shopkeeper.", "Your task is to enter the store."]:
-            for i in range(5):
+                    "introduction": input["image_introduction"][-1]["introduction"],
+                    "path": memory.get_recent_history("image", k=1)[0],
+                    "assistant": input["image_introduction"][-1]["assistant"]
+                }
+            ]
+            input["image_introduction"] = image_introduction
+            input["video_clip_path"] = video_clip_path
+            input["get_text_input"] = get_text_input
+            input["task_description"] = task_description
+
+            data = planner.gather_information(input=input)
+
+            #gathered_information=data['res_dict']['gathered_information']
+            image_description=data['res_dict']['description']
+            target_object_name=data['res_dict']['target_object_name']
+            object_name_reasoning=data['res_dict']['reasoning']
+            
+            #logger.write(f'Gathered Information: {gathered_information}')
+            logger.write(f'Image Description: {image_description}')
+            logger.write(f'Object Name: {target_object_name}')
+            logger.write(f'Reasoning: {object_name_reasoning}')
+            
+            # grounding dino
+            image_source, boxes, logits, phrases = gd_detector.detect(cur_screen_shot_path, target_object_name.title(), box_threshold=0.4, device='cpu')
+            gd_detector.save_annotate_frame(image_source, boxes, logits, phrases, target_object_name.title(), cur_screen_shot_path)
+
+            # for decision making
+            input = planner.decision_making_.input_map
+
+            number_of_execute_skills = input["number_of_execute_skills"]
+
+            if pre_action:
+                input["previous_action"] = memory.get_recent_history("action", k=1)[-1]
+                input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
+
+            input['skill_library'] = skill_library
+            
+            image_memory = memory.get_recent_history("image", k=5)
+            image_introduction = []
+            for i in range(len(image_memory)):
                 image_introduction.insert(0,            
                     {
-                        "introduction": image_template_copy[i]["introduction"],
-                        "path":image_template_copy[i]["path"],
-                        "assistant": image_template_copy[i]["assistant"]
+                        "introduction": image_template_copy[-1-i]["introduction"],
+                        "path":image_memory[-1-i],
+                        "assistant": ""
                     })
+            # loading few shots if there exist bounding boxes
+            if len(boxes) > 0:
+                for i in range(5):
+                    image_introduction.insert(0,            
+                        {
+                            "introduction": image_template_copy[i]["introduction"],
+                            "path":image_template_copy[i]["path"],
+                            "assistant": image_template_copy[i]["assistant"]
+                        })
 
-        # logger.write(f'image_introduction: {image_introduction}')
-        
-        input["image_introduction"] = image_introduction
-        input["task_description"] = task_description
-
-        data = planner.decision_making(input = input)
-
-        skill_steps = data['res_dict']['actions']
-        if skill_steps is None:
-            skill_steps = []
-
-        logger.write(f'R: {skill_steps}')
-
-        skill_steps = skill_steps[:number_of_execute_skills]
-        logger.write(f'Skill Steps: {skill_steps}')
-
-        exec_info = gm.execute_actions(skill_steps)
-
-        pre_action = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
-
-        pre_reasoning = ''
-        if 'res_dict' in data.keys() and 'reasoning' in data['res_dict'].keys():
-            pre_reasoning = data['res_dict']['reasoning']
-
-        memory.add_recent_history("action", pre_action)
-        memory.add_recent_history("decision_making_reasoning", pre_reasoning)
-
-        # For such cases with no expected response, we should define a retry limit
-
-        logger.write(f'Decision reasoning: {pre_reasoning}')
-
-        cur_screen_shot_path, _ = gm.capture_screen()
-        memory.add_recent_history("image", cur_screen_shot_path)
-        
-        if task_description in ["Your task is to approach the shopkeeper.", "Your task is to enter the store."]:
-            image_source, image = load_image(cur_screen_shot_path)
-            boxes, logits, phrases = predict(
-                model=model,
-                image=image,
-                caption=TEXT_PROMPT,
-                box_threshold=BOX_TRESHOLD,
-                text_threshold=TEXT_TRESHOLD,
-                device = 'cpu'
-            )
+            # logger.write(f'image_introduction: {image_introduction}')
             
-            if "person" in TEXT_PROMPT:
-                if len(boxes) > 1:
-                    index = 0
-                    dis = 1.5
+            input["image_introduction"] = image_introduction
+            input["task_description"] = task_description
 
-                    for i in range(len(boxes)):
-                        down_mid = (boxes[i, 0], boxes[i, 1] + boxes[i, 3] / 2)
-                        distance = torch.sum(torch.abs(torch.tensor(down_mid) - torch.tensor((0.5, 1.0))))
+            data = planner.decision_making(input = input)
 
-                        if distance < dis:
-                            dis = distance
-                            index = i
-                    
-                    boxes_ = torch.cat([boxes[:index], boxes[index + 1:]])
-                    logits_ = torch.cat([logits[:index], logits[index + 1:]])
+            skill_steps = data['res_dict']['actions']
+            if skill_steps is None:
+                skill_steps = []
 
-                    phrases.pop(index)
-                    
-                    annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes_[:,:], logits=logits_[:], phrases=phrases)
-                    cv2.imwrite(cur_screen_shot_path, annotated_frame)
-                elif len(boxes)==1:
+            logger.write(f'R: {skill_steps}')
 
-                    phrases.pop(0)
-                    boxes_ = torch.tensor(boxes[1:])
-                    logits_ = torch.tensor(logits[1:])
+            skill_steps = skill_steps[:number_of_execute_skills]
+            logger.write(f'Skill Steps: {skill_steps}')
 
-                    annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes_[:,:], logits=logits_[:], phrases=phrases)
-                    cv2.imwrite(cur_screen_shot_path, annotated_frame)
-                else:
-                    annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes[:,:], logits=logits[:], phrases=phrases)
-                    cv2.imwrite(cur_screen_shot_path, annotated_frame)
-                
-            else:
-                annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes[:,:], logits=logits[:], phrases=phrases)
-                cv2.imwrite(cur_screen_shot_path, annotated_frame)
+            unpause_game()
+            start_frame_id = videocapture.get_current_frame_id()
 
-        # for success detection
-        input = planner.success_detection_.input_map
-        image_introduction = [
-            {
-                "introduction": input["image_introduction"][-2]["introduction"],
-                "path": memory.get_recent_history("image", k=2)[0],
-                "assistant": input["image_introduction"][-2]["assistant"]
-            },
-            {
-                "introduction": input["image_introduction"][-1]["introduction"],
-                "path": memory.get_recent_history("image", k=1)[0],
-                "assistant": input["image_introduction"][-1]["assistant"]
-            }
-        ]
-        input["image_introduction"] = image_introduction
-        input["task_description"] = task_description
-        input["previous_action"] = memory.get_recent_history("action", k=1)[-1]
-        input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
+            exec_info = gm.execute_actions(skill_steps)
 
-        data = planner.success_detection(input = input)
+            cur_screen_shot_path, _ = gm.capture_screen()
+            memory.add_recent_history("image", cur_screen_shot_path)
 
-        success = data['res_dict']['success']
-        success_reasoning = data['res_dict']['reasoning']
-        success_criteria = data['res_dict']['criteria']
-        memory.add_recent_history("success_detection_reasoning", success_reasoning)
-        logger.write(f'Success: {success}')
-        logger.write(f'Success criteria: {success_criteria}')
-        logger.write(f'Success reason: {success_reasoning}')
+            end_frame_id = videocapture.get_current_frame_id()
+            pause_game()
+
+            pre_action = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
+
+            pre_reasoning = ''
+            if 'res_dict' in data.keys() and 'reasoning' in data['res_dict'].keys():
+                pre_reasoning = data['res_dict']['reasoning']
+
+            memory.add_recent_history("action", pre_action)
+            memory.add_recent_history("decision_making_reasoning", pre_reasoning)
+
+            # For such cases with no expected response, we should define a retry limit
+
+            logger.write(f'Decision reasoning: {pre_reasoning}')
+
+            # for success detection
+            # input = planner.success_detection_.input_map
+            # image_introduction = [
+            #     {
+            #         "introduction": input["image_introduction"][-2]["introduction"],
+            #         "path": memory.get_recent_history("image", k=2)[0],
+            #         "assistant": input["image_introduction"][-2]["assistant"]
+            #     },
+            #     {
+            #         "introduction": input["image_introduction"][-1]["introduction"],
+            #         "path": memory.get_recent_history("image", k=1)[0],
+            #         "assistant": input["image_introduction"][-1]["assistant"]
+            #     }
+            # ]
+            # input["image_introduction"] = image_introduction
+            # input["task_description"] = task_description
+            # input["previous_action"] = memory.get_recent_history("action", k=1)[-1]
+            # input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
+
+            # data = planner.success_detection(input = input)
+
+            # success = data['res_dict']['success']
+            # success_reasoning = data['res_dict']['reasoning']
+            # success_criteria = data['res_dict']['criteria']
+            # memory.add_recent_history("success_detection_reasoning", success_reasoning)
+            # logger.write(f'Success: {success}')
+            # logger.write(f'Success criteria: {success_criteria}')
+            # logger.write(f'Success reason: {success_reasoning}')
+
+        except KeyboardInterrupt:
+            logger.write('KeyboardInterrupt Ctrl+C detected, exiting.')
+            videocapture.finish_capture()
+            break
+    videocapture.finish_capture()
+
 
 if __name__ == '__main__':
 
@@ -438,20 +393,23 @@ if __name__ == '__main__':
             "decision_making",
             "gather_information",
             "success_detection",
-            "information_summary"
+            "information_summary",
+            "gather_text_information"
         ],
         "prompt_paths": {
             "inputs": {
                 "decision_making": "./res/prompts/inputs/decision_making.json",
                 "gather_information": "./res/prompts/inputs/gather_information.json",
                 "success_detection": "./res/prompts/inputs/success_detection.json",
-                "information_summary": "./res/prompts/inputs/information_summary.json"
+                "information_summary": "./res/prompts/inputs/information_summary.json",
+                "gather_text_information": "./res/prompts/inputs/gather_text_information.json"
             },
             "templates": {
                 "decision_making": "./res/prompts/templates/decision_making.prompt",
                 "gather_information": "./res/prompts/templates/gather_information.prompt",
                 "success_detection": "./res/prompts/templates/success_detection.prompt",
-                "information_summary": "./res/prompts/templates/information_summary.prompt"
+                "information_summary": "./res/prompts/templates/information_summary.prompt",
+                "gather_text_information": "./res/prompts/templates/gather_text_information.prompt"
             },
         }
     }
@@ -470,7 +428,8 @@ if __name__ == '__main__':
 
     # approach the shopkeeper
     skill_library = move_skills
-    task_description =  "Your task is to approach the shopkeeper."
+    task_description =  "Your task is to pick up items while searching the house."
+    #task_description =  "Your task is to join Dutch outside."
 
     config.set_fixed_seed()
 

@@ -57,7 +57,7 @@ def keep_shooting_target(
 
         screen, boxes, logits, phrases = gd_detector.detect(screen_image_filename, detect_target, box_threshold=0.4)
 
-        if "person" in detect_target:
+        if "Person" in detect_target:
             if len(boxes) > 1:
                 index = 0
                 dis = 1.5
