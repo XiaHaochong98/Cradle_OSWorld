@@ -121,6 +121,7 @@ The file structure should be like this:
       - ...
 
 #### Tunning the videosubfinder
+Use res/tool/general.clg to overwrite res/tool/subfinder/settings/general.cfg file.   
 To get the best extraction results, you can tune the subfinder by changing the parameters in the settings/general.cfg file. You may follow the readme me in Docs folder to get more information about the parameters.
 Only modify it if absolutely necessary. Values have already been tuned to game scenario and environment setup.
 
@@ -130,9 +131,6 @@ Keep the UAC requirements.txt file updated in your branch, but only add dependen
 
 runner.py is the entry point to run an agent. Currently not working code, just an introductory sample.
 
-
-#### Tunning the videosubfinder
-Use res/tool/general.clg to overwrite res/tool/subfinder/settings/general.cfg file.
 
 ## General guidelines
 

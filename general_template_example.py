@@ -1,5 +1,6 @@
 import os
 import time
+import cv2
 
 from uac.config import Config
 from uac.gameio.game_manager import GameManager
@@ -99,7 +100,6 @@ def main_test_success_detection(planner_params, task_description):
     llm_provider.init_provider(llm_provider_config_path)
     planner = Planner(llm_provider=llm_provider,
                       planner_params=planner_params)
-
 
     input = planner.success_detection_.input_map
     image_introduction = [
@@ -249,7 +249,60 @@ def main_test_information_summary(planner_params, task_description, skill_librar
             memory.add_summarization(info_summary)
         ## summary ends
 
-def main_pipeline(planner_params, task_description, skill_library):
+def main_test_self_reflection(planner_params, task_description, skill_library, video_path):
+    llm_provider_config_path = './conf/openai_config.json'
+
+    llm_provider = OpenAIProvider()
+    llm_provider.init_provider(llm_provider_config_path)
+    planner = Planner(llm_provider=llm_provider,
+                      planner_params=planner_params,
+                      use_self_reflection=True)
+
+    input = planner.self_reflection_.input_map
+
+    image_introduction = []
+    video = cv2.VideoCapture(video_path)
+    step = 0
+    image_path = []
+    while True:
+        ret, frame = video.read()
+        if not ret:
+            break
+        step += 1
+        if step % 4 != 1:
+            continue
+        
+        if step // 4 > 2:
+            #path = 'test/' + str(step) + ".jpg"
+            #cv2.imwrite(path, frame)
+            #image_path.append(path)
+            image_path.append(frame)
+    video.release()
+
+    image_introduction.append(        
+        {
+            "introduction": "Here are the sequential frames of the character executing an action called, move_forward(duration=1). Is this action executed successfully? Does this action takes any effect?",
+            "path": image_path,
+            "assistant": ""
+    })
+
+    input["image_introduction"] = image_introduction
+    input["task_description"] = task_description
+
+    pre_action = 'move_forward(duration=1)'
+    pre_reasoning = ""
+
+    input["previous_action"] = pre_action
+    input["previous_reasoning"] = pre_reasoning
+
+    data = planner.self_reflection(input = input)
+
+    res_dict = data['res_dict']
+    reasoning = res_dict['reasoning']
+
+    logger.write(f'Reasoning: {reasoning}')
+
+def main_pipeline(planner_params, task_description, skill_library, use_success_detection):
     llm_provider_config_path = './conf/openai_config.json'
 
     llm_provider = OpenAIProvider()
@@ -288,7 +341,6 @@ def main_pipeline(planner_params, task_description, skill_library):
     pre_reasoning = ""
     end_frame_id = videocapture.get_current_frame_id()
 
-    time.sleep(1)
     pause_game()
 
     while not success:
@@ -322,13 +374,18 @@ def main_pipeline(planner_params, task_description, skill_library):
             gathered_information = dict(sorted(gathered_information.items(), key=lambda item: item[0]))
             all_dialogue = gathered_information_JSON.search_type_across_all_indices('dialogue')
             all_task_guidance = gathered_information_JSON.search_type_across_all_indices('task guidance')
-            last_task_guidance = max(all_task_guidance, key=lambda x: x['index'])
+            if len(all_task_guidance) == 0:
+                last_task_guidance = ""
+            else:
+                last_task_guidance = max(all_task_guidance, key=lambda x: x['index'])
 
             logger.write(f'Dialogue: {all_dialogue}')
             logger.write(f'Gathered Information: {gathered_information}')
             logger.write(f'Last Task Guidance: {last_task_guidance}')
             logger.write(f'Image Description: {image_description}')
 
+            if last_task_guidance:
+                task_description = last_task_guidance
 
             # for decision making
             input = planner.decision_making_.input_map
@@ -378,7 +435,6 @@ def main_pipeline(planner_params, task_description, skill_library):
             input["task_description"] = task_description
 
             data = planner.decision_making(input = input)
-            # print(data['res_dict'])
 
             skill_steps = data['res_dict']['actions']
             if skill_steps is None:
@@ -391,8 +447,14 @@ def main_pipeline(planner_params, task_description, skill_library):
 
             unpause_game()
             start_frame_id = videocapture.get_current_frame_id()
+
             exec_info = gm.execute_actions(skill_steps)
+
+            cur_screen_shot_path, _ = gm.capture_screen()
+            memory.add_recent_history("image", cur_screen_shot_path)
+
             end_frame_id = videocapture.get_current_frame_id()
+            pause_game()
 
             pre_action = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
 
@@ -406,39 +468,35 @@ def main_pipeline(planner_params, task_description, skill_library):
             # For such cases with no expected response, we should define a retry limit
             logger.write(f'Decision reasoning: {pre_reasoning}')
 
-            cur_screen_shot_path, _ = gm.capture_screen()
-            memory.add_recent_history("image", cur_screen_shot_path)
-
-            pause_game()
-
             # for success detection
-            input = planner.success_detection_.input_map
-            image_introduction = [
-                {
-                    "introduction": input["image_introduction"][-2]["introduction"],
-                    "path": memory.get_recent_history("image", k=2)[0],
-                    "assistant": input["image_introduction"][-2]["assistant"]
-                },
-                {
-                    "introduction": input["image_introduction"][-1]["introduction"],
-                    "path": memory.get_recent_history("image", k=1)[0],
-                    "assistant": input["image_introduction"][-1]["assistant"]
-                }
-            ]
-            input["image_introduction"] = image_introduction
-            input["task_description"] = task_description
-            input["previous_action"] = memory.get_recent_history("action", k=1)[-1]
-            input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
+            if use_success_detection:
+                input = planner.success_detection_.input_map
+                image_introduction = [
+                    {
+                        "introduction": input["image_introduction"][-2]["introduction"],
+                        "path": memory.get_recent_history("image", k=2)[0],
+                        "assistant": input["image_introduction"][-2]["assistant"]
+                    },
+                    {
+                        "introduction": input["image_introduction"][-1]["introduction"],
+                        "path": memory.get_recent_history("image", k=1)[0],
+                        "assistant": input["image_introduction"][-1]["assistant"]
+                    }
+                ]
+                input["image_introduction"] = image_introduction
+                input["task_description"] = task_description
+                input["previous_action"] = memory.get_recent_history("action", k=1)[-1]
+                input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
 
-            data = planner.success_detection(input = input)
+                data = planner.success_detection(input = input)
 
-            success = data['res_dict']['success']
-            success_reasoning = data['res_dict']['reasoning']
-            success_criteria = data['res_dict']['criteria']
-            memory.add_recent_history("success_detection_reasoning", success_reasoning)
-            logger.write(f'Success: {success}')
-            logger.write(f'Success criteria: {success_criteria}')
-            logger.write(f'Success reason: {success_reasoning}')
+                success = data['res_dict']['success']
+                success_reasoning = data['res_dict']['reasoning']
+                success_criteria = data['res_dict']['criteria']
+                memory.add_recent_history("success_detection_reasoning", success_reasoning)
+                logger.write(f'Success: {success}')
+                logger.write(f'Success criteria: {success_criteria}')
+                logger.write(f'Success reason: {success_reasoning}')
 
         except KeyboardInterrupt:
             logger.write('KeyboardInterrupt Ctrl+C detected, exiting.')
@@ -449,6 +507,8 @@ def main_pipeline(planner_params, task_description, skill_library):
 
 if __name__ == '__main__':
 
+    config.set_fixed_seed()
+    
     # only change the input for different 
     # the tempaltes are now fixed
 
@@ -465,6 +525,7 @@ if __name__ == '__main__':
                 "decision_making": "./res/prompts/inputs/decision_making.json",
                 "gather_information": "./res/prompts/inputs/gather_information.json",
                 "success_detection": "./res/prompts/inputs/success_detection.json",
+                "self_reflection": "./res/prompts/inputs/self_reflection.json",
                 "information_summary": "./res/prompts/inputs/information_summary.json",
                 "gather_text_information": "./res/prompts/inputs/gather_text_information.json"
             },
@@ -472,15 +533,18 @@ if __name__ == '__main__':
                 "decision_making": "./res/prompts/templates/decision_making.prompt",
                 "gather_information": "./res/prompts/templates/gather_information.prompt",
                 "success_detection": "./res/prompts/templates/success_detection.prompt",
+                "self_reflection": "./res/prompts/templates/self_reflection.prompt",
                 "information_summary": "./res/prompts/templates/information_summary.prompt",
                 "gather_text_information": "./res/prompts/templates/gather_text_information.prompt"
             },
         }
     }
-    config.set_fixed_seed()
 
     skill_library = move_skills + follow_skills
-    task_description =  "Follow Dutch."
+    #task_description =  "Follow Dutch."
+    #task_description =  "Hitch your horse."
+    task_description =  "Go the the shed and press Q to take over"
+
     # map_create_waypoint
     # skill_library = map_skills
     # task_description = "Mark the \"Saloon\" on a Map as the Waypoint via the Index."
@@ -497,11 +561,13 @@ if __name__ == '__main__':
     # skill_library = move_skills
     # task_description =  "Your task is to approach the shopkeeper."
 
-
     #main_test_decision_making(planner_params, task_description, skill_library)
 
     #main_test_success_detection(planner_params, task_description)
 
     #main_test_information_summary(planner_params, task_description, skill_library)
+    
+    main_pipeline(planner_params, task_description, skill_library, use_success_detection = False)
 
-    main_pipeline(planner_params, task_description, skill_library)
+    # video_path = ""
+    # main_test_self_reflection(planner_params, task_description, skill_library, video_path)

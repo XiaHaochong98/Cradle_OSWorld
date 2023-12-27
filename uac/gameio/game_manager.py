@@ -78,7 +78,7 @@ class GameManager:
             return exec_info
 
         try: 
-            switch_to_game()
+            #switch_to_game()
             for skill in actions:
                 
                 skill_name, skill_params = convert_expression_to_skill(skill)
@@ -110,7 +110,7 @@ class GameManager:
 
 
     def capture_screen(self, include_minimap = False):
-        switch_to_game()
+        #switch_to_game()
         tid = time.time()
         return take_screenshot(tid, include_minimap=include_minimap)
     
