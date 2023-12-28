@@ -13,7 +13,8 @@ import os
 from uac.config import Config
 from uac.log import Logger
 from uac.provider.base_embedding import EmbeddingProvider
-from uac.memory.base import VectorStore, BaseMemory, Image
+from uac.memory.base import BaseMemory, Image
+from uac.memory import VectorStore
 
 cfg = Config()
 logger = Logger()
@@ -142,8 +143,8 @@ class ConversationMemory(BaseMemory):
 
         return [self.memory[k] for k, score in key_and_score]
 
-    @classmethod
-    def load_local(
+
+    def load(
         cls,
         memory_path: str,
         vectorstores: Dict[str, VectorStore],
@@ -160,9 +161,10 @@ class ConversationMemory(BaseMemory):
             memory=memory,
         )
 
-    def save_local(self) -> None:
+
+    def save(self) -> None:
         """Save the memory to the local file."""
         with open(os.path.join(self.memory_path, "memory.json"), "w") as f:
             json.dump(self.memory, f, indent=2)
         for k, v in self.vectorstores.items():
-            v.save_local(name=k)
+            v.save(name=k)

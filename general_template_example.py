@@ -1,5 +1,4 @@
 import os
-import time
 import cv2
 
 from uac.config import Config
@@ -7,8 +6,7 @@ from uac.gameio.game_manager import GameManager
 from uac.log import Logger
 from uac.agent import Agent
 from uac.planner.planner import Planner
-from uac.memory.interface import MemoryInterface
-from uac.memory.faiss import FAISS
+from uac.memory import LocalMemory
 from uac.provider.openai import OpenAIProvider
 from uac.gameio.lifecycle.ui_control import switch_to_game, pause_game, unpause_game
 from uac.gameio.video.VideoRecorder import VideoRecorder
@@ -18,10 +16,10 @@ from uac.gameio.atomic_skills.buy import __all__ as buy_skills
 from uac.gameio.atomic_skills.map import __all__ as map_skills
 from uac.gameio.atomic_skills.move import __all__ as move_skills
 from uac.gameio.composite_skills.follow import __all__ as follow_skills
-from uac.utils.file_utils import read_resource_file
 
 config = Config()
 logger = Logger()
+
 
 def main_test_decision_making(planner_params, task_description, skill_library):
     llm_provider_config_path = './conf/openai_config.json'
@@ -32,8 +30,11 @@ def main_test_decision_making(planner_params, task_description, skill_library):
                       planner_params=planner_params)
     input = planner.decision_making_.input_map
 
-    gm = GameManager(config.env_name)
+    gm = GameManager(env_name = config.env_name,
+                     embedding_provider = llm_provider)
 
+    if config.skill_retrieval:
+        skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
     skill_library = gm.get_filtered_skills(skill_library)
 
     image_introduction = [
@@ -70,7 +71,7 @@ def main_test_decision_making(planner_params, task_description, skill_library):
     ]
     input["image_introduction"] = image_introduction
     input["task_description"] = task_description
-    
+
 
     input['skill_library'] = skill_library
     input["previous_action"] = "view_next_page()"
@@ -92,6 +93,7 @@ def main_test_decision_making(planner_params, task_description, skill_library):
 
     # For such cases with no expected response, we should define a retry limit
     logger.write(f'Decision reasoning: {pre_reasoning}')
+
 
 def main_test_success_detection(planner_params, task_description):
     llm_provider_config_path = './conf/openai_config.json'
@@ -134,6 +136,7 @@ def main_test_success_detection(planner_params, task_description):
     logger.write(f'Criteria: {criteria}')
     logger.write(f'Reasoning: {reasoning}')
 
+
 def main_test_information_summary(planner_params, task_description, skill_library):
     llm_provider_config_path = './conf/openai_config.json'
 
@@ -143,21 +146,15 @@ def main_test_information_summary(planner_params, task_description, skill_librar
     planner = Planner(llm_provider=llm_provider,
                       planner_params=planner_params,
                       use_information_summary = True)
-    
-    recent_history = {"image": [], "action": [], "decision_making_reasoning": [], "success_detection_reasoning": [], "reflection_reasoning": []}
-    vectorstore = FAISS(embedding_provider = llm_provider, memory_path = './res/memory')
-    memory = MemoryInterface(
-        memory_path='./res/memory',
-        vectorstores = {"basic_memory":{"description":vectorstore},'decision_making':{},'success_detection':{}}, 
-        embedding_provider=llm_provider,
-        recent_history=recent_history,
-        max_recent_steps=config.max_recent_steps
-    )
 
-    gm = GameManager(config.env_name)
+    memory = LocalMemory(memory_path=config.work_dir,
+                         max_recent_steps=config.max_recent_steps)
 
-    #skill_library = gm.get_filtered_skills(trade_skills + buy_skills)
+    gm = GameManager(env_name = config.env_name,
+                     embedding_provider = llm_provider)
 
+    if config.skill_retrieval:
+        skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
     skill_library = gm.get_filtered_skills(skill_library)
 
     switch_to_game()
@@ -197,7 +194,7 @@ def main_test_information_summary(planner_params, task_description, skill_librar
 
         input["image_introduction"] = image_introduction
         input["task_description"] = task_description
-        
+
         data = planner.decision_making(input = input)
         print(data['res_dict'])
 
@@ -235,7 +232,7 @@ def main_test_information_summary(planner_params, task_description, skill_librar
             images = memory.get_recent_history('image', event_count)
             reasonings = memory.get_recent_history('decision_making_reasoning', event_count)
             image_introduction = [{"path": images[event_i],"assistant": "","introduction": 'This is the {} screenshot of recent events. The description of this image: {}'.format(['first','second','third','fourth','fifth'][event_i], reasonings[event_i])} for event_i in range(event_count)]
-                    
+
             input["image_introduction"] = image_introduction
             input["previous_summarization"] = memory.get_summarization()
             input["task_description"] = task_description
@@ -247,7 +244,13 @@ def main_test_information_summary(planner_params, task_description, skill_librar
             logger.write(f'R: Summary: {info_summary}')
             logger.write(f'R: entities_and_behaviors: {entities_and_behaviors}')
             memory.add_summarization(info_summary)
+        summarization = memory.get_summarization()
         ## summary ends
+
+        #store memory
+        gm.store_skills()
+        memory.save()
+
 
 def main_test_self_reflection(planner_params, task_description, skill_library, video_path):
     llm_provider_config_path = './conf/openai_config.json'
@@ -271,7 +274,7 @@ def main_test_self_reflection(planner_params, task_description, skill_library, v
         step += 1
         if step % 4 != 1:
             continue
-        
+
         if step // 4 > 2:
             #path = 'test/' + str(step) + ".jpg"
             #cv2.imwrite(path, frame)
@@ -279,7 +282,7 @@ def main_test_self_reflection(planner_params, task_description, skill_library, v
             image_path.append(frame)
     video.release()
 
-    image_introduction.append(        
+    image_introduction.append(
         {
             "introduction": "Here are the sequential frames of the character executing an action called, move_forward(duration=1). Is this action executed successfully? Does this action takes any effect?",
             "path": image_path,
@@ -302,7 +305,9 @@ def main_test_self_reflection(planner_params, task_description, skill_library, v
 
     logger.write(f'Reasoning: {reasoning}')
 
+
 def main_pipeline(planner_params, task_description, skill_library, use_success_detection):
+
     llm_provider_config_path = './conf/openai_config.json'
 
     llm_provider = OpenAIProvider()
@@ -313,19 +318,15 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
     planner = Planner(llm_provider=llm_provider,
                       planner_params=planner_params,
                       frame_extractor=frame_extractor)
-    
-    recent_history = {"image": [], "action": [], "decision_making_reasoning": [], "success_detection_reasoning": [], "reflection_reasoning": []}
-    vectorstore = FAISS(embedding_provider = llm_provider, memory_path = './res/memory')
-    memory = MemoryInterface(
-        memory_path='./res/memory',
-        vectorstores = {"basic_memory":{"description":vectorstore},'decision_making':{},'success_detection':{}}, 
-        embedding_provider=llm_provider,
-        recent_history=recent_history,
-        max_recent_steps=5
-    )
 
-    gm = GameManager(config.env_name)
+    memory = LocalMemory(memory_path=config.work_dir,
+                         max_recent_steps=config.max_recent_steps)
 
+    gm = GameManager(env_name = config.env_name,
+                     embedding_provider = llm_provider)
+
+    if config.skill_retrieval:
+        skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
     skill_library = gm.get_filtered_skills(skill_library)
 
     switch_to_game()
@@ -370,6 +371,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             # you can extract any information from the gathered_information_JSON
             gathered_information_JSON=data['res_dict']['gathered_information_JSON']
             gathered_information=gathered_information_JSON.data_structure
+
             # sort the gathered_information by the time stamp
             gathered_information = dict(sorted(gathered_information.items(), key=lambda item: item[0]))
             all_dialogue = gathered_information_JSON.search_type_across_all_indices('dialogue')
@@ -498,6 +500,10 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 logger.write(f'Success criteria: {success_criteria}')
                 logger.write(f'Success reason: {success_reasoning}')
 
+            #store memory
+            gm.store_skills()
+            memory.save()
+
         except KeyboardInterrupt:
             logger.write('KeyboardInterrupt Ctrl+C detected, exiting.')
             videocapture.finish_capture()
@@ -505,11 +511,43 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
     videocapture.finish_capture()
 
+
+def skill_library_test():
+
+    provider_config_path = './conf/openai_config.json'
+    provider = OpenAIProvider()
+    provider.init_provider(provider_config_path)
+
+    gm = GameManager(env_name = config.env_name, embedding_provider=provider)
+
+    extracted_skills = [
+        {
+            "code": "def pick_up_item_t():\n    pydirectinput.press('e')",
+            "description" : "Presses the R key to pick up nearby items."
+        },
+        {
+            "code":"def go_ahead_t(duration):\n    pydirectinput.keyDown('w')\n    time.sleep(duration)\n    pydirectinput.keyUp('w')\n",
+            "description":"Moves the in-game character forward for the specified duration.\n\nParameters:\n- duration: The duration in seconds for which the character should move forward."
+        }
+    ]
+
+    for extracted_skill in extracted_skills:
+        gm.add_new_skill(skill_code=extracted_skill['code'], skill_doc=extracted_skill['description'])
+
+    exec_info = gm.execute_actions(['go_ahead_t(duration = 1)'])
+    logger.write(str(exec_info))
+
+    exec_info = gm.execute_actions(['pick_up_item_t()'])
+    logger.write(str(exec_info))
+
+    gm.store_skills()
+
+
 if __name__ == '__main__':
 
     config.set_fixed_seed()
-    
-    # only change the input for different 
+
+    # only change the input for different
     # the tempaltes are now fixed
 
     planner_params = {
@@ -543,7 +581,7 @@ if __name__ == '__main__':
     skill_library = move_skills + follow_skills
     #task_description =  "Follow Dutch."
     #task_description =  "Hitch your horse."
-    task_description =  "Go the the shed and press Q to take over"
+    task_description =  "Go to the shed and press Q to take cover"
 
     # map_create_waypoint
     # skill_library = map_skills
@@ -566,8 +604,10 @@ if __name__ == '__main__':
     #main_test_success_detection(planner_params, task_description)
 
     #main_test_information_summary(planner_params, task_description, skill_library)
-    
+
     main_pipeline(planner_params, task_description, skill_library, use_success_detection = False)
+
+    # skill_library_test()
 
     # video_path = ""
     # main_test_self_reflection(planner_params, task_description, skill_library, video_path)

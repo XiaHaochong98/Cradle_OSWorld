@@ -11,8 +11,8 @@ from uac.planner.planner import Planner
 from uac.log import Logger
 from uac.provider.openai import OpenAIProvider, encode_image
 from uac.utils.file_utils import assemble_project_path, read_resource_file
-from uac.memory.interface import MemoryInterface
-from uac.memory.faiss import FAISS
+from uac.memory import LocalMemory
+from uac.gameio.skill_registry import SkillRegistry
 
 
 def main(args):
@@ -23,7 +23,7 @@ def main(args):
     # Create provider and make simple calls
     provider = OpenAIProvider()
     provider.init_provider(args.providerConfig) # config passed in from command line argument
-                                                # in vscode, there is already an example ready to run, no need to pass parameters here   
+                                                # in vscode, there is already an example ready to run, no need to pass parameters here
 
     # sample call to get an embedding
     # res_emb = provider.embed_query("Hello world")
@@ -48,15 +48,12 @@ def main(args):
     # response = res_comp[0]
 
     # Creating game manager to interact with game
-    gm = GameManager(config.env_name)
+    gm = GameManager(env_name = config.env_name,
+                     embedding_provider = provider)
 
-    # Creating MemoryInterface to store recent historical information
-    vectorstore = FAISS(embedding_provider = provider, memory_path = './res/memory')
-    memory = MemoryInterface(
-        memory_path='./res/memory',
-        vectorstores = {"basic_memory":{"description":vectorstore},'decision_making':{},'success_detection':{}}, 
-        embedding_provider=provider
-    )
+    # Creating memory to store recent historical information
+    memory = LocalMemory(memory_path=config.work_dir,
+                         max_recent_steps=config.max_recent_steps)
 
     # Creating planner, which encapsulates model use
 
@@ -109,7 +106,7 @@ if __name__ == "__main__":
     )
 
     # parser.add_argument(
-    #     '--no_continuous', 
+    #     '--no_continuous',
     #     action=argparse.BooleanOptionalAction
     # )
 

@@ -10,7 +10,7 @@ import numpy as np
 import pickle
 from pathlib import Path
 
-from uac.memory.base import VectorStore
+from uac.memory import VectorStore
 from uac.provider.base_embedding import EmbeddingProvider
 from uac.config import Config
 from uac.log import Logger
@@ -171,8 +171,8 @@ class FAISS(VectorStore):
 
         return key_and_score
 
-    @classmethod
-    def load_local(
+
+    def load(
         cls,
         embedding_provider: EmbeddingProvider,
         memory_path: str,
@@ -203,7 +203,8 @@ class FAISS(VectorStore):
             index_to_key=index_to_key,
         )
 
-    def save_local(self, name: str) -> None:
+
+    def save(self, name: str) -> None:
         """Save FAISS index and index_to_key to disk."""
         path = Path(self.memory_path)
         path.mkdir(exist_ok=True, parents=True)

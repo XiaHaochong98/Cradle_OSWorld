@@ -4,20 +4,23 @@ from typing import (
     Union,
     Optional,
 )
-
-import json
 import os
 
 from uac.config import Config
 from uac.log import Logger
 from uac.provider.base_embedding import EmbeddingProvider
-from uac.memory.base import VectorStore, BaseMemory, Image
+from uac.memory.base import BaseMemory, Image
+from uac.memory.vector_store import VectorStore
+from uac.utils.json_utils import load_json, save_json
 
 config = Config()
 logger = Logger()
 
 
-class BasicMemory(BaseMemory):
+class BasicVectorMemory(BaseMemory):
+
+    storage_filename = "vector_memory.json"
+
     def __init__(
         self,
         memory_path: str,
@@ -33,6 +36,7 @@ class BasicMemory(BaseMemory):
         self.vectorstores = vectorstores
         self.embedding_provider = embedding_provider
 
+
     def add(
         self,
         data: Dict[str, Union[str, Image]],
@@ -45,7 +49,7 @@ class BasicMemory(BaseMemory):
 
         keys: List[str] = list(data.keys())
         embeddings = []
-    
+
         for k in keys:
             embeddings.append(self.embedding_provider.embed_query(data[k]["description"]))
             instruction = data[k]["instruction"]
@@ -60,9 +64,10 @@ class BasicMemory(BaseMemory):
                 "timestep": timestep,
                 "description": description,
                 "inventory": inventory,
-            }   
+            }
 
         self.vectorstores['description'].add_embeddings(keys, embeddings)
+
 
     def similarity_search(
         self,
@@ -85,6 +90,7 @@ class BasicMemory(BaseMemory):
 
         return [self.memory[k] for k, score in key_and_score]
 
+
     def recent_search(
         self,
         recent_k: int = 3,
@@ -105,16 +111,18 @@ class BasicMemory(BaseMemory):
         return [self.memory[k] for k in keys[len(keys) - recent_k : len(keys)]]
 
 
-    @classmethod
-    def load_local(
+    def load(self):
+        self.load()
+
+    def load(
         cls,
         memory_path: str,
         vectorstore: VectorStore,
         embedding_provider: EmbeddingProvider,
-    ) -> "BasicMemory":
+    ) -> "BasicVectorMemory":
         """Load the memory from the local file."""
-        with open(os.path.join(memory_path, "memory.json"), "r") as rf:
-            memory = json.load(rf)
+
+        memory = load_json(os.path.join(cls.memory_path, cls.storage_filename))
 
         return cls(
             memory_path=memory_path,
@@ -123,8 +131,8 @@ class BasicMemory(BaseMemory):
             memory=memory,
         )
 
-    def save_local(self) -> None:
+
+    def save(self) -> None:
         """Save the memory to the local file."""
-        with open(os.path.join(self.memory_path, "memory.json"), "w") as f:
-            json.dump(self.memory, f, indent=2)
-        self.vectorstore.save_local()
+        save_json(file_path = os.path.join(self.memory_path, self.storage_filename), json_dict = self.memory, indent = 4)
+        self.vectorstores.save()

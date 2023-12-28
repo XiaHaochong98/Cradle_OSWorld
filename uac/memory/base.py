@@ -10,56 +10,10 @@ from typing import (
 )
 
 from uac.config.config import Config
-from uac.provider.base_embedding import EmbeddingProvider
-
-config = Config()
 
 Image = Any
 
-
-class VectorStore(abc.ABC):
-    """Interface for vector store."""
-
-    @abc.abstractmethod
-    def add_embeddings(
-        self,
-        keys: List[str],
-        embeddings: Iterable[List[float]],
-        **kwargs: Any,
-    ) -> None:
-        """Add embeddings to the vectorstore.
-
-        Args:
-            keys: list of metadatas associated with the embedding.
-            embeddings: Iterable of embeddings to add to the vectorstore.
-            kwargs: vectorstore specific parameters
-        """
-
-    @abc.abstractmethod
-    def delete(self, keys: List[str] = None, **kwargs: Any) -> bool:
-        """Delete by keys.
-
-        Args:
-            keys: List of keys to delete.
-            **kwargs: Other keyword arguments that subclasses might use.
-
-        Returns:
-            bool: True if deletion is successful,
-            False otherwise, None if not implemented.
-        """
-
-    @abc.abstractmethod
-    def similarity_search(
-        self,
-        embedding: List[float],
-        top_k: int,
-        **kwargs: Any,
-    ) -> List[Tuple[str, float]]:
-        """Return keys most similar to query."""
-
-    @abc.abstractmethod
-    def save_local(self, name: str) -> None:
-        """Save FAISS index and index_to_key to disk."""
+config = Config()
 
 
 class BaseMemory:
@@ -77,6 +31,7 @@ class BaseMemory:
         """
         pass
 
+
     @abc.abstractmethod
     def similarity_search(
         self,
@@ -84,7 +39,7 @@ class BaseMemory:
         top_k: int,
         **kwargs: Any,
     ) -> List[Union[str, Image]]:
-        """Retrieve the keys from the vectorstores.
+        """Retrieve the keys from the store.
 
         Args:
             data: the query data.
@@ -94,3 +49,42 @@ class BaseMemory:
         Returns:
             the corresponding values from the memory.
         """
+        pass
+
+
+    @abc.abstractmethod
+    def add_recent_history(
+        self,
+        key: str,
+        info: Any,
+    ) -> None:
+        pass
+
+
+    @abc.abstractmethod
+    def get_recent_history(
+        self,
+        key: str,
+        k: int = 1,
+    ) -> List[Any]:
+        pass
+
+
+    @abc.abstractmethod
+    def add_summarization(self, hidden_state: str) -> None:
+        pass
+
+
+    @abc.abstractmethod
+    def get_summarization(self) -> str:
+        pass
+
+
+    @abc.abstractmethod
+    def load(self) -> None:
+        """Load the memory from persistence."""
+
+
+    @abc.abstractmethod
+    def save(self) -> None:
+        """Save the memory to persistence."""

@@ -84,7 +84,7 @@ def select_next_down_product():
 
 
 @register_skill("select_leftside_product")
-def select_next_left_product():
+def select_leftside_product():
     """
     This function simulates the action of selecting the product on the next leftside of the current selected product.
     It uses the pydirectinput library to press the "left" key.
@@ -93,7 +93,7 @@ def select_next_left_product():
 
 
 @register_skill("select_rightside_product")
-def select_next_left_product():
+def select_rightside_product():
     """
     This function simulates the action of selecting the product on the next rightside of the current selected product.
     It uses the pydirectinput library to press the "right" key.

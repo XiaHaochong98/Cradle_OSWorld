@@ -1,4 +1,4 @@
-import imageio
+import numpy as np
 import cv2
 
 from uac.config import Config

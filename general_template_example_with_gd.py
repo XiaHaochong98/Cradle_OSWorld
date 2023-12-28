@@ -1,30 +1,24 @@
 import os
-import time
-
-from groundingdino.util.inference import load_model, load_image, predict
-import cv2
-import torch
 
 from uac.config import Config
 from uac.gameio.game_manager import GameManager
 from uac.log import Logger
 from uac.agent import Agent
 from uac.planner.planner import Planner
-from uac.memory.interface import MemoryInterface
-from uac.memory.faiss import FAISS
+from uac.memory import LocalMemory
 from uac.provider.openai import OpenAIProvider
 from uac.provider import GdProvider
-from uac.gameio.lifecycle.ui_control import switch_to_game, annotate_with_coordinates, pause_game, unpause_game
+from uac.gameio.lifecycle.ui_control import switch_to_game, pause_game, unpause_game
 from uac.gameio.video.VideoRecorder import VideoRecorder
 from uac.gameio.video.VideoFrameExtractor import VideoFrameExtractor
 from uac.gameio.atomic_skills.trade_utils import __all__ as trade_skills
 from uac.gameio.atomic_skills.buy import __all__ as buy_skills
 from uac.gameio.atomic_skills.map import __all__ as map_skills
 from uac.gameio.atomic_skills.move import __all__ as move_skills
-from uac.utils.file_utils import read_resource_file
 
 config = Config()
 logger = Logger()
+
 
 def main_test_decision_making(planner_params, task_description, skill_library):
     llm_provider_config_path = './conf/openai_config.json'
@@ -35,7 +29,8 @@ def main_test_decision_making(planner_params, task_description, skill_library):
                       planner_params=planner_params)
     input = planner.decision_making_.input_map
 
-    gm = GameManager(config.env_name)
+    gm = GameManager(env_name = config.env_name,
+                     embedding_provider = llm_provider)
 
     skill_library = gm.get_filtered_skills(skill_library)
 
@@ -73,7 +68,7 @@ def main_test_decision_making(planner_params, task_description, skill_library):
     ]
     input["image_introduction"] = image_introduction
     input["task_description"] = task_description
-    
+
 
     input['skill_library'] = skill_library
     input["previous_action"] = "view_next_page()"
@@ -95,6 +90,7 @@ def main_test_decision_making(planner_params, task_description, skill_library):
 
     # For such cases with no expected response, we should define a retry limit
     logger.write(f'Decision reasoning: {pre_reasoning}')
+
 
 def main_test_success_detection(planner_params, task_description):
     llm_provider_config_path = './conf/openai_config.json'
@@ -152,18 +148,12 @@ def main_pipeline(planner_params, task_description, skill_library):
     planner = Planner(llm_provider=llm_provider,
                       planner_params=planner_params,
                       frame_extractor=frame_extractor)
-    
-    recent_history = {"image": [], "action": [], "decision_making_reasoning": [], "success_detection_reasoning": [], "reflection_reasoning": []}
-    vectorstore = FAISS(embedding_provider = llm_provider, memory_path = './res/memory')
-    memory = MemoryInterface(
-        memory_path='./res/memory',
-        vectorstores = {"basic_memory":{"description":vectorstore},'decision_making':{},'success_detection':{}}, 
-        embedding_provider=llm_provider,
-        recent_history=recent_history,
-        max_recent_steps=5
-    )
 
-    gm = GameManager(config.env_name)
+    memory = LocalMemory(memory_path=config.work_dir,
+                         max_recent_steps=config.max_recent_steps)
+
+    gm = GameManager(env_name = config.env_name,
+                     embedding_provider = llm_provider)
 
     skill_library = gm.get_filtered_skills(skill_library)
 
@@ -239,9 +229,9 @@ def main_pipeline(planner_params, task_description, skill_library):
     end_frame_id = videocapture.get_current_frame_id()
 
     pause_game()
-    
+
     while not success:
-            
+
         try:
             #for gather information
             logger.write(f'Gather Information Start Frame ID: {start_frame_id}, End Frame ID: {end_frame_id}')
@@ -267,12 +257,12 @@ def main_pipeline(planner_params, task_description, skill_library):
             image_description=data['res_dict']['description']
             target_object_name=data['res_dict']['target_object_name']
             object_name_reasoning=data['res_dict']['reasoning']
-            
+
             #logger.write(f'Gathered Information: {gathered_information}')
             logger.write(f'Image Description: {image_description}')
             logger.write(f'Object Name: {target_object_name}')
             logger.write(f'Reasoning: {object_name_reasoning}')
-            
+
             # grounding dino
             image_source, boxes, logits, phrases = gd_detector.detect(cur_screen_shot_path, target_object_name.title(), box_threshold=0.4, device='cpu')
             gd_detector.save_annotate_frame(image_source, boxes, logits, phrases, target_object_name.title(), cur_screen_shot_path)
@@ -287,11 +277,11 @@ def main_pipeline(planner_params, task_description, skill_library):
                 input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
 
             input['skill_library'] = skill_library
-            
+
             image_memory = memory.get_recent_history("image", k=5)
             image_introduction = []
             for i in range(len(image_memory)):
-                image_introduction.insert(0,            
+                image_introduction.insert(0,
                     {
                         "introduction": image_template_copy[-1-i]["introduction"],
                         "path":image_memory[-1-i],
@@ -300,7 +290,7 @@ def main_pipeline(planner_params, task_description, skill_library):
             # loading few shots if there exist bounding boxes
             if len(boxes) > 0:
                 for i in range(5):
-                    image_introduction.insert(0,            
+                    image_introduction.insert(0,
                         {
                             "introduction": image_template_copy[i]["introduction"],
                             "path":image_template_copy[i]["path"],
@@ -308,7 +298,7 @@ def main_pipeline(planner_params, task_description, skill_library):
                         })
 
             # logger.write(f'image_introduction: {image_introduction}')
-            
+
             input["image_introduction"] = image_introduction
             input["task_description"] = task_description
 
@@ -385,7 +375,7 @@ def main_pipeline(planner_params, task_description, skill_library):
 
 if __name__ == '__main__':
 
-    # only change the input for different 
+    # only change the input for different
     # the tempaltes are now fixed
 
     planner_params = {

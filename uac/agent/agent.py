@@ -8,7 +8,7 @@ from uac.utils.file_utils import assemble_project_path, read_resource_file
 from uac.utils.json_utils import load_json
 from uac.gameio import GameManager
 from uac.planner.planner import Planner
-from uac.memory.interface import MemoryInterface
+from uac.memory import BaseMemory
 from uac.gameio.atomic_skills.map import __all__ as map_skills
 from uac.gameio.atomic_skills.buy import __all__ as buy_skills
 from uac.gameio.atomic_skills.trade_utils import __all__ as trade_skills
@@ -24,10 +24,10 @@ logger = Logger()
 # This is an incomplete example with not complete quality code, just to bootstrap the repo.
 
 def decision_making_args(planner, memory):
-        
+
     input = planner.decision_making_.input_map
     input["task_description"] = memory.get_recent_history("task_description", k=1)[0]
-    
+
     image_introduction = [
         {
             "introduction": input["image_introduction"][-2]["introduction"],
@@ -46,11 +46,12 @@ def decision_making_args(planner, memory):
     input['skill_library'] = memory.get_recent_history("skill_library", k=1)[-1]
     return input
 
+
 def success_detection_args(planner, memory):
-        
+
     input = planner.success_detection_.input_map
     input["task_description"] = memory.get_recent_history("task_description", k=1)[0]
-    
+
     image_introduction = [
         {
             "introduction": input["image_introduction"][-2]["introduction"],
@@ -68,12 +69,13 @@ def success_detection_args(planner, memory):
     input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
     return input
 
+
 class Agent:
 
     def __init__(
         self,
         name,
-        memory : MemoryInterface,
+        memory : BaseMemory,
         gm : GameManager,
         planner : Planner
     ):
@@ -84,36 +86,36 @@ class Agent:
 
 
     def loop(self):
-        
+
         config.continuous_limit = 10
 
         # Interaction Loop
         loop_count = 0
 
         last_executed_skill = None
-        
+
         current_sub_task = None
         sub_task_args = None
-        
+
         sub_task_index = 0
 
-        # @TODO HACK 
-        decomposed_task_steps          = ["Go to the horse and mount it", 
-                                          "Create waypoint to the saloon", 
-                                          "Follow the red line to the saloon", 
-                                          "Create waypoint to the store", 
-                                          "Follow the red line to the store", 
-                                          "Enter the store",  
-                                          "Approach shopkeeper",      
+        # @TODO HACK
+        decomposed_task_steps          = ["Go to the horse and mount it",
+                                          "Create waypoint to the saloon",
+                                          "Follow the red line to the saloon",
+                                          "Create waypoint to the store",
+                                          "Follow the red line to the store",
+                                          "Enter the store",
+                                          "Approach shopkeeper",
                                           "Buy apple"]
-        
-        decomposed_task_description = ["Your task is to go mount the horse.",  
-                                       "Mark the \"Saloon\" on a Map as the Waypoint via the Index.", 
+
+        decomposed_task_description = ["Your task is to go mount the horse.",
+                                       "Mark the \"Saloon\" on a Map as the Waypoint via the Index.",
                                        "Go to the \"Saloon\"",
-                                       "Mark the \"General Store\" on a Map as the Waypoint via the Index.", 
+                                       "Mark the \"General Store\" on a Map as the Waypoint via the Index.",
                                        "Go to the \"General Store\"",
                                        "Your task is to enter the general store.",
-                                       "Your task is to get close to the shopkeeper.", 
+                                       "Your task is to get close to the shopkeeper.",
                                        "Your task is to buy one 'APPLE'."]
         decomposed_task_skills =    [   go_skills,
                                         map_skills,
@@ -170,7 +172,7 @@ class Agent:
 
             # Stop if limit is reached
             loop_count += 1
-            if (config.continuous_mode and 
+            if (config.continuous_mode and
                 config.continuous_limit > 0 and
                 loop_count > config.continuous_limit
             ):
@@ -190,7 +192,7 @@ class Agent:
 
             # Prepare info gathering, not all steps use it
             if use_gathering_info:
-                # Gets the appropriate gathering information prompt inputs for the current sub-task    
+                # Gets the appropriate gathering information prompt inputs for the current sub-task
                 args_func = sub_task_args["gathering_info"]
 
                 logger.write(f'> Gathering information call...')
@@ -220,14 +222,14 @@ class Agent:
             # skill_steps = ['turn(theta=30)', 'move_forward(duration=1)', 'turn(theta=90)', 'move_forward(duration=3)']
 
             skill_steps = skills_to_execute[:1] # Max steps to execute at once
-                
+
             logger.write(f'> Executing actions in game...')
             logger.write(f'E: Skill Steps: {skill_steps}')
             exec_info = self.gm.execute_actions(skill_steps)
 
             tmp = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
             if tmp is not None and len(tmp) > 0:
-                last_executed_skill = tmp 
+                last_executed_skill = tmp
 
             logger.write(f"> Capturing screen - post actions. Last: {last_executed_skill}")
 
@@ -247,17 +249,17 @@ class Agent:
                     images = self.memory.get_recent_history('image', event_count)
                     reasonings = self.memory.get_recent_history('decision_making_reasoning', event_count)
                     image_introduction = [{"path": images[event_i],"assistant": "","introduction": 'This is the {} screenshot of recent events. The description of this image: {}'.format(['first','second','third','fourth','fifth'][event_i], reasonings[event_i])} for event_i in range(event_count)]
-                    
+
                     input["image_introduction"] = image_introduction
                     input["previous_summarization"] = self.memory.get_summarization()
-                    input["task_description"] = self.task_description
+                    input["task_description"] = sub_task_description
                     input["event_count"] = str(event_count)
 
                     data = self.planner.information_summary(input = input)
                     info_summary = data['res_dict']['info_summary']
                     entities_and_behaviors = data['res_dict']['entities_and_behaviors']
                     logger.write(f'R: Summary: {info_summary}')
-                    logger.write(f'R: entities_and_behaviors: {entities_and_behaviors}')
+                    logger.write(f'R: Entities and behaviors: {entities_and_behaviors}')
                     self.memory.add_summarization(info_summary)
             # summarization ends
 
@@ -297,7 +299,7 @@ class Agent:
 
 
     def pause_if_needed(self, last_executed_skill: str):
-        paused_skills = trade_skills + buy_skills + map_skills 
+        paused_skills = trade_skills + buy_skills + map_skills
         to_remove = ["close_map", "cancel_shopkeeper_interaction"]
         for e in to_remove:
             paused_skills.remove(e)

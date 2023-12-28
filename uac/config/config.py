@@ -79,6 +79,12 @@ class Config(metaclass=Singleton):
         self.max_recent_steps = 5
         self.event_count = 5
 
+        #Skill retrieval
+        self.skill_from_local = True
+        self.skill_local_path = './res/skills/'
+        self.skill_retrieval = False
+        self.skill_num = 10
+
         self._set_dirs()
         self._set_game_window_info()
 
