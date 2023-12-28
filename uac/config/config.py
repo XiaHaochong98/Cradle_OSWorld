@@ -30,6 +30,7 @@ class Config(metaclass=Singleton):
     DEFAULT_POST_ACTION_WAIT_TIME = 3
 
     DEFAULT_MESSAGE_CONSTRUCTION_MODE = "tripartite"
+    DEFAULT_OCR_CROP_REGION = (380, 720, 1920, 1080) # x1, y1, x2, y2, from top left to bottom right
 
     root_dir = '.'
     work_dir = './runs'

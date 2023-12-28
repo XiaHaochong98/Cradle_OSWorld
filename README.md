@@ -131,7 +131,6 @@ Keep the UAC requirements.txt file updated in your branch, but only add dependen
 
 runner.py is the entry point to run an agent. Currently not working code, just an introductory sample.
 
-
 ## General guidelines
 
 Always, **always**, **ALLWAYS** get the latest /main branch.
