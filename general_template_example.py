@@ -424,8 +424,10 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 task_description = last_task_guidance
 
             if config.skill_retrieval:
-                for extracted_skill in all_generated_actions:
-                    gm.add_new_skill(skill_code=extracted_skill['code'], skill_doc=extracted_skill['description'])
+                for extracted_skills in all_generated_actions:
+                    extracted_skills=extracted_skills['values']
+                    for extracted_skill in extracted_skills:
+                        gm.add_new_skill(skill_code=extracted_skill['code'], skill_doc=extracted_skill['description'])
                 gm.store_skills()
                 skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
                 skill_library = gm.get_filtered_skills(skill_library)

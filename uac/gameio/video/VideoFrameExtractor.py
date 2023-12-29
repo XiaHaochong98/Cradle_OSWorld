@@ -38,7 +38,7 @@ class JSONStructure:
             for object_id, instances in index_data.items():
                 for instance in instances:
                     for type, values in instance.items():
-                        if type == search_type and values != "":
+                        if type == search_type and values != "" and values != []:
                             results.append({"index": index, "object_id": object_id, "values":values})
         return results
 
