@@ -1,5 +1,6 @@
 import os
 import cv2
+import time
 
 from uac.config import Config
 from uac.gameio.game_manager import GameManager
@@ -305,6 +306,35 @@ def main_test_self_reflection(planner_params, task_description, skill_library, v
 
     logger.write(f'Reasoning: {reasoning}')
 
+def skill_library_test():
+
+    provider_config_path = './conf/openai_config.json'
+    provider = OpenAIProvider()
+    provider.init_provider(provider_config_path)
+
+    gm = GameManager(env_name = config.env_name, embedding_provider=provider)
+
+    extracted_skills = [
+        {
+            "code": "def pick_up_item_t():\n    pydirectinput.press('e')",
+            "description" : "Presses the R key to pick up nearby items."
+        },
+        {
+            "code":"def go_ahead_t(duration):\n    pydirectinput.keyDown('w')\n    time.sleep(duration)\n    pydirectinput.keyUp('w')\n",
+            "description":"Moves the in-game character forward for the specified duration.\n\nParameters:\n- duration: The duration in seconds for which the character should move forward."
+        }
+    ]
+
+    for extracted_skill in extracted_skills:
+        gm.add_new_skill(skill_code=extracted_skill['code'], skill_doc=extracted_skill['description'])
+
+    exec_info = gm.execute_actions(['go_ahead_t(duration = 1)'])
+    logger.write(str(exec_info))
+
+    exec_info = gm.execute_actions(['pick_up_item_t()'])
+    logger.write(str(exec_info))
+
+    gm.store_skills()
 
 def main_pipeline(planner_params, task_description, skill_library, use_success_detection):
 
@@ -340,8 +370,9 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
     success = False
     pre_action = ""
     pre_reasoning = ""
-    end_frame_id = videocapture.get_current_frame_id()
 
+    time.sleep(2)
+    end_frame_id = videocapture.get_current_frame_id()
     pause_game()
 
     while not success:
@@ -376,18 +407,28 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             gathered_information = dict(sorted(gathered_information.items(), key=lambda item: item[0]))
             all_dialogue = gathered_information_JSON.search_type_across_all_indices('dialogue')
             all_task_guidance = gathered_information_JSON.search_type_across_all_indices('task guidance')
+            all_generated_actions = gathered_information_JSON.search_type_across_all_indices('context-sensitive prompts')
+
             if len(all_task_guidance) == 0:
                 last_task_guidance = ""
             else:
-                last_task_guidance = max(all_task_guidance, key=lambda x: x['index'])
+                last_task_guidance = max(all_task_guidance, key=lambda x: x['index'])['values']
 
             logger.write(f'Dialogue: {all_dialogue}')
             logger.write(f'Gathered Information: {gathered_information}')
             logger.write(f'Last Task Guidance: {last_task_guidance}')
             logger.write(f'Image Description: {image_description}')
+            logger.write(f'Generated Actions: {all_generated_actions}')
 
             if last_task_guidance:
                 task_description = last_task_guidance
+
+            if config.skill_retrieval:
+                for extracted_skill in all_generated_actions:
+                    gm.add_new_skill(skill_code=extracted_skill['code'], skill_doc=extracted_skill['description'])
+                gm.store_skills()
+                skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
+                skill_library = gm.get_filtered_skills(skill_library)
 
             # for decision making
             input = planner.decision_making_.input_map
@@ -501,7 +542,6 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 logger.write(f'Success reason: {success_reasoning}')
 
             #store memory
-            gm.store_skills()
             memory.save()
 
         except KeyboardInterrupt:
@@ -510,38 +550,6 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             break
 
     videocapture.finish_capture()
-
-
-def skill_library_test():
-
-    provider_config_path = './conf/openai_config.json'
-    provider = OpenAIProvider()
-    provider.init_provider(provider_config_path)
-
-    gm = GameManager(env_name = config.env_name, embedding_provider=provider)
-
-    extracted_skills = [
-        {
-            "code": "def pick_up_item_t():\n    pydirectinput.press('e')",
-            "description" : "Presses the R key to pick up nearby items."
-        },
-        {
-            "code":"def go_ahead_t(duration):\n    pydirectinput.keyDown('w')\n    time.sleep(duration)\n    pydirectinput.keyUp('w')\n",
-            "description":"Moves the in-game character forward for the specified duration.\n\nParameters:\n- duration: The duration in seconds for which the character should move forward."
-        }
-    ]
-
-    for extracted_skill in extracted_skills:
-        gm.add_new_skill(skill_code=extracted_skill['code'], skill_doc=extracted_skill['description'])
-
-    exec_info = gm.execute_actions(['go_ahead_t(duration = 1)'])
-    logger.write(str(exec_info))
-
-    exec_info = gm.execute_actions(['pick_up_item_t()'])
-    logger.write(str(exec_info))
-
-    gm.store_skills()
-
 
 if __name__ == '__main__':
 
@@ -581,7 +589,8 @@ if __name__ == '__main__':
     skill_library = move_skills + follow_skills
     #task_description =  "Follow Dutch."
     #task_description =  "Hitch your horse."
-    task_description =  "Go to the shed and press Q to take cover"
+    #task_description =  "Go to the shed and press Q to take cover"
+    task_description =  ""
 
     # map_create_waypoint
     # skill_library = map_skills
@@ -605,6 +614,7 @@ if __name__ == '__main__':
 
     #main_test_information_summary(planner_params, task_description, skill_library)
 
+    config.skill_retrieval = True
     main_pipeline(planner_params, task_description, skill_library, use_success_detection = False)
 
     # skill_library_test()
