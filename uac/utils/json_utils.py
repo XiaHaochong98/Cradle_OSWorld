@@ -78,8 +78,7 @@ def parse_semi_formatted_json(json_string):
 def parse_semi_formatted_text(text):
     lines = text.split('\n')
 
-    lines = [line.strip() for line in lines if line.strip()]
-
+    lines = [line.rstrip() for line in lines if line.rstrip()]
     result_dict = {}
     current_key = None
     current_value = []
@@ -101,19 +100,20 @@ def parse_semi_formatted_text(text):
             if current_key.lower() == "context-sensitive prompts":
                 if line.strip() == '```python':
                     if current_value:  # Process previous code block and description
-                        entry = {"code": '\n'.join(current_value[:-1]).strip(),
+                        entry = {"code": '\n'.join(current_value[:-2]),
                                  "description": current_value[-1].strip()}
                         parsed_data.append(entry)
                         current_value = []
                 else:
                     current_value.append(line)
             else:
+                line = line.strip()
                 current_value.append(line)
 
     # Process the last key
     if current_key.lower() == "context-sensitive prompts":
         if current_value:  # Process the last code block and description
-            entry = {"code": '\n'.join(current_value[:-1]).strip(), "description": current_value[-1].strip()}
+            entry = {"code": '\n'.join(current_value[:-2]).strip(), "description": current_value[-1].strip()}
             parsed_data.append(entry)
         result_dict[current_key.lower()] = parsed_data
     else:

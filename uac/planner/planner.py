@@ -223,6 +223,7 @@ class GatherInformation():
             else:
                 logger.write(f"Start gathering text information from the whole video in sequence")
                 get_completion_in_sequence(extracted_frame_paths, get_text_input)
+            gathered_information_JSON.sort_index_by_timestamp()
             logger.write(f"Finish gathering text information from the whole video")
 
         else:

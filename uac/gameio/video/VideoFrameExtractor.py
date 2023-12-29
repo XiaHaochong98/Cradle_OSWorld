@@ -31,6 +31,12 @@ class JSONStructure:
             self.end_index += 1
             self.data_structure.setdefault(self.end_index, {}).setdefault(time_stamp, []).append(instance)
 
+    def sort_index_by_timestamp(self) -> None:
+        extracted_data = [(key, value) for entry in self.data_structure.values() for key, value in entry.items()]
+        sorted_data = sorted(extracted_data, key=lambda x: x[0])
+        # Reconstructing the JSON structure with sorted data
+        self.data_structure = {index: {key: value} for index, (key, value) in enumerate(sorted_data)}
+
     def search_type_across_all_indices(self, search_type: str) -> list[dict[str, any]]:
         results = []
         # sort the keys in ascending order
@@ -120,8 +126,8 @@ class VideoFrameExtractor():
         video_path = os.path.normpath(video_path)
         self.run_sub_finder(self.path_vsf, video_path, self.frame_output_dir, self.vsf_subtitle)
 
-        # List all files in the directory, get full paths of jpeg files, and extract the first 13 characters of each filename as timestamp
-        extracted_frame_paths = [(os.path.join(self.extracted_frame_folder, file), file[:13]) for file in
+        # List all files in the directory, get full paths of jpeg files, and extract the first 11 characters of each filename as timestamp
+        extracted_frame_paths = [(os.path.join(self.extracted_frame_folder, file), file[:11]) for file in
                                  os.listdir(self.extracted_frame_folder) if
                                  file.endswith('.jpeg') or file.endswith('.jpg')]
         
