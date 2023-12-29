@@ -10,6 +10,8 @@ import base64
 
 from uac.config import Config
 from uac.utils.json_utils import load_json, save_json
+import pydirectinput
+import pyautogui
 
 config = Config()
 SKILL_REGISTRY = {}
@@ -53,7 +55,9 @@ class SkillRegistry:
         self.local_path = local_path
         self.store_path = store_path
         self.embedding_provider = embedding_provider
-
+        self.recent_skills = []
+        self.necessary_skills = []
+        
         if self.from_local:
             # @TODO validate the local skill registry exists
             self.load_skill_library()
@@ -159,13 +163,21 @@ class SkillRegistry:
                                  SKILL_DOCUMENTATION_KEY: skill_doc,
                                  SKILL_EMBEDDING_KEY:     self.get_embedding(skill_name, skill_doc),
                                  SKILL_CODE_KEY:          skill_code})
+        self.recent_skills.append(skill_name)
 
 
     def retrieve_skills(self, query_task: str, skill_num: int) -> List[str]:
         skill_num = min(skill_num, len(self.skill_index))
+        target_skills = [skill for skill in self.recent_skills] + [skill for skill in self.necessary_skills]
         task_emb = np.array(self.embedding_provider.embed_query(query_task))
         self.skill_index.sort(key = lambda x: -np.dot(x[SKILL_EMBEDDING_KEY],task_emb))
-        return [self.skill_index[i][SKILL_NAME_KEY] for i in range(skill_num)]
+        i = 0
+        while len(target_skills)<skill_num:
+            if self.skill_index[i][SKILL_NAME_KEY] not in target_skills:
+                target_skills.append(self.skill_index[i][SKILL_NAME_KEY])
+            i += 1
+        self.recent_skills = []
+        return target_skills
 
 
     def get_all_skills(self) -> List[str]:
