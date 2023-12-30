@@ -153,17 +153,21 @@ class SkillRegistry:
 
         def get_func_name(skill_code):
             return skill_code.split('def ')[-1].split('(')[0]
-
-        exec(skill_code)
+        
         skill_name = get_func_name(skill_code)
-        skill = eval(skill_name)
-        skill.__doc__ = skill_doc
-        self.skill_registry[skill_name] = skill
-        self.skill_index.append({SKILL_NAME_KEY:          skill_name,
-                                 SKILL_DOCUMENTATION_KEY: skill_doc,
-                                 SKILL_EMBEDDING_KEY:     self.get_embedding(skill_name, skill_doc),
-                                 SKILL_CODE_KEY:          skill_code})
-        self.recent_skills.append(skill_name)
+        if skill_name not in self.skill_registry:
+            exec(skill_code)
+            skill = eval(skill_name)
+            skill.__doc__ = skill_doc
+            self.skill_registry[skill_name] = skill
+            self.skill_index.append({SKILL_NAME_KEY:          skill_name,
+                                    SKILL_DOCUMENTATION_KEY: skill_doc,
+                                    SKILL_EMBEDDING_KEY:     self.get_embedding(skill_name, skill_doc),
+                                    SKILL_CODE_KEY:          skill_code})
+            self.recent_skills.append(skill_name)
+        else:
+            if skill_name not in self.recent_skills:
+                self.recent_skills.append(skill_name)
 
 
     def retrieve_skills(self, query_task: str, skill_num: int) -> List[str]:
@@ -171,11 +175,12 @@ class SkillRegistry:
         target_skills = [skill for skill in self.recent_skills] + [skill for skill in self.necessary_skills]
         task_emb = np.array(self.embedding_provider.embed_query(query_task))
         self.skill_index.sort(key = lambda x: -np.dot(x[SKILL_EMBEDDING_KEY],task_emb))
-        i = 0
-        while len(target_skills)<skill_num:
-            if self.skill_index[i][SKILL_NAME_KEY] not in target_skills:
-                target_skills.append(self.skill_index[i][SKILL_NAME_KEY])
-            i += 1
+        for skill in self.skill_index:
+            if len(target_skills)>=skill_num:
+                break
+            else:
+                if skill[SKILL_NAME_KEY] not in target_skills:
+                    target_skills.append(skill[SKILL_NAME_KEY])
         self.recent_skills = []
         return target_skills
     
