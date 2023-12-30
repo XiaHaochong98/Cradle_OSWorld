@@ -178,6 +178,17 @@ class SkillRegistry:
             i += 1
         self.recent_skills = []
         return target_skills
+    
+    def register_available_skills(self, candidates:List[str]) -> None:
+        for skill_key in list(self.skill_registry.keys()):
+            if skill_key not in candidates:
+                del self.skill_registry[skill_key]
+        self.skill_index_t = []
+        for skill in self.skill_index:
+            if skill[SKILL_NAME_KEY] in candidates:
+                self.skill_index_t.append(skill)
+        self.skill_index = copy.deepcopy(self.skill_index_t)
+        del self.skill_index_t
 
 
     def get_all_skills(self) -> List[str]:

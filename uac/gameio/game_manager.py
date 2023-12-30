@@ -67,6 +67,8 @@ class GameManager:
     def retrieve_skills(self, query_task, skill_num):
         return self.skill_registry.retrieve_skills(query_task, skill_num)
 
+    def register_available_skills(self, candidates):
+        self.skill_registry.register_available_skills(candidates)
 
     def execute_navigation(self, action):
 

@@ -314,6 +314,8 @@ def skill_library_test():
 
     gm = GameManager(env_name = config.env_name, embedding_provider=provider)
 
+    task_description = "Mark the \"Saloon\" on a Map as the Waypoint via the Index."
+
     extracted_skills = [
         {
             "code": "def pick_up_item_t():\n    pydirectinput.press('e')",
@@ -333,6 +335,15 @@ def skill_library_test():
 
     exec_info = gm.execute_actions(['pick_up_item_t()'])
     logger.write(str(exec_info))
+
+    returns_skills = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
+    logger.write(str(returns_skills))
+
+    skill_library = move_skills + follow_skills
+    gm.register_available_skills(skill_library)
+
+    returns_skills = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
+    logger.write(str(returns_skills))
 
     gm.store_skills()
 
