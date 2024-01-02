@@ -6,6 +6,7 @@ from uac.log import Logger
 from uac.gameio.lifecycle.ui_control import take_screenshot, segment_minimap, switch_to_game, pause_game, unpause_game, exit_back_to_pause
 from uac.gameio.composite_skills.navigation import navigate_path
 from uac.gameio.skill_registry import SkillRegistry
+from typing import Tuple
 
 
 config = Config()
@@ -68,11 +69,21 @@ class GameManager:
         self.skill_registry.delete_skill(skill_name)
 
 
+    def delete_skill(self, skill_name):
+        self.skill_registry.delete_skill(skill_name)
+
+
     def retrieve_skills(self, query_task, skill_num):
         return self.skill_registry.retrieve_skills(query_task, skill_num)
 
+
     def register_available_skills(self, candidates):
         self.skill_registry.register_available_skills(candidates)
+
+
+    def get_skill_library_in_code(self, skill) -> Tuple[str, str]:
+        return self.skill_registry.get_skill_library_in_code(skill)
+
 
     def execute_navigation(self, action):
 
@@ -90,11 +101,14 @@ class GameManager:
         exec_info = {
             "executed_skills" : [],
             "last_skill" : '',
-            "errors" : False
+            "errors" : False,
+            "errors_info": ""
         }
 
         if len(actions) == 0:
             logger.warn(f"No actions to execute!")
+            exec_info["errors"] = True
+            exec_info["errors_info"] = "No actions to execute!"
             return exec_info
 
         try: 
@@ -119,6 +133,7 @@ class GameManager:
         except Exception as e:
             logger.error(f"Error executing skill: {e}")
             exec_info["errors"] = True
+            exec_info["errors_info"] = f"Error executing skill: {e}"
 
         return exec_info
 
@@ -126,7 +141,8 @@ class GameManager:
     # Currently all actions have wait in them, if needed
     def post_action_wait(self):
     #    time.sleep(config.POST_ACTION_WAIT_TIME)
-        time.sleep(0.5)
+    #    time.sleep(0.5)
+        time.sleep(1)
 
 
     def capture_screen(self, include_minimap = False):

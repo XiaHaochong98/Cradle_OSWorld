@@ -181,7 +181,7 @@ class SkillRegistry:
             return 'The skill code is invalid.'
         
         if skill_name not in self.skill_registry:
-           
+
             self.skill_registry[skill_name] = skill
             self.skill_index.append({SKILL_NAME_KEY:          skill_name,
                                     SKILL_EMBEDDING_KEY:     self.get_embedding(skill_name, inspect.getdoc(skill)),
@@ -195,11 +195,11 @@ class SkillRegistry:
 
         if skill_name not in self.recent_skills:
             self.recent_skills.append(skill_name)
-        
+
         return "{} has been registered".format(skill_name)
 
     def delete_skill(self, skill_name: str) -> None:
-    
+
         try:
             skill_name, _ = self.extract_function_info(skill_name)
         except:

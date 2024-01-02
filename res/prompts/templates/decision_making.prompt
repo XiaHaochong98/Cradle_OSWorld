@@ -17,6 +17,9 @@ Last executed action:
 Previous reasoning for the last action:
 <$previous_reasoning$>
 
+Self-reflection for the last executd actoin:
+<$previous_self_reflection_reasoning$>
+
 Valid action set in Python format to select the next action:
 <$skill_library$>
 

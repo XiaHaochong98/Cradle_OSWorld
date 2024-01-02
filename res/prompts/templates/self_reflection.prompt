@@ -6,8 +6,14 @@ Current task:
 Last executed action:
 <$previous_action$>
 
+Error report for the last executed action:
+<$executing_action_error$>
+
 Previous reasoning for the last action:
 <$previous_reasoning$>
+
+Valid action set in Python format to select the next action:
+<$skill_library$>
 
 <$image_introduction$>
 

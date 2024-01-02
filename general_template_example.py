@@ -88,12 +88,12 @@ def main_test_decision_making(planner_params, task_description, skill_library):
         skill_steps = []
 
     logger.write(f'Skill Steps: {skill_steps}')
-    pre_reasoning = ''
+    pre_decision_making_reasoning = ''
     if 'res_dict' in data.keys() and 'reasoning' in data['res_dict'].keys():
-        pre_reasoning = data['res_dict']['reasoning']
+        pre_decision_making_reasoning = data['res_dict']['reasoning']
 
     # For such cases with no expected response, we should define a retry limit
-    logger.write(f'Decision reasoning: {pre_reasoning}')
+    logger.write(f'Decision reasoning: {pre_decision_making_reasoning}')
 
 
 def main_test_success_detection(planner_params, task_description):
@@ -121,10 +121,10 @@ def main_test_success_detection(planner_params, task_description):
     input["task_description"] = task_description
 
     pre_action = 'buy_product()'
-    pre_reasoning = "1. The items on the screen from top left moving right are: Big Valley Canned Strawberries, Schmitz Canned Salmon, a warning advertisement, Local Produce Apple, Local Produce Corn, Local Produce Carrot. 2. Yes, the target item 'Apple' is on the current screen, located under the 'Local Produce' section in the top right quadrant. 3. The currently selected item is the Apple, as indicated by the highlighted description at the bottom of the screen which says 'Apple'. Since the target item 'Apple' is selected, the next action is to purchase it."
+    pre_decision_making_reasoning = "1. The items on the screen from top left moving right are: Big Valley Canned Strawberries, Schmitz Canned Salmon, a warning advertisement, Local Produce Apple, Local Produce Corn, Local Produce Carrot. 2. Yes, the target item 'Apple' is on the current screen, located under the 'Local Produce' section in the top right quadrant. 3. The currently selected item is the Apple, as indicated by the highlighted description at the bottom of the screen which says 'Apple'. Since the target item 'Apple' is selected, the next action is to purchase it."
 
     input["previous_action"] = pre_action
-    input["previous_reasoning"] = pre_reasoning
+    input["previous_reasoning"] = pre_decision_making_reasoning
 
     data = planner.success_detection(input = input)
 
@@ -165,7 +165,7 @@ def main_test_information_summary(planner_params, task_description, skill_librar
 
     success = False
     pre_action = ""
-    pre_reasoning = ""
+    pre_decision_making_reasoning = ""
     event_count = min(config.event_count, config.max_recent_steps)
 
     while not success:
@@ -212,16 +212,16 @@ def main_test_information_summary(planner_params, task_description, skill_librar
 
         pre_action = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
 
-        pre_reasoning = ''
+        pre_decision_making_reasoning = ''
         if 'res_dict' in data.keys() and 'reasoning' in data['res_dict'].keys():
-            pre_reasoning = data['res_dict']['reasoning']
+            pre_decision_making_reasoning = data['res_dict']['reasoning']
 
         memory.add_recent_history("action", pre_action)
-        memory.add_recent_history("decision_making_reasoning", pre_reasoning)
+        memory.add_recent_history("decision_making_reasoning", pre_decision_making_reasoning)
 
         # For such cases with no expected response, we should define a retry limit
 
-        logger.write(f'Decision reasoning: {pre_reasoning}')
+        logger.write(f'Decision reasoning: {pre_decision_making_reasoning}')
 
         cur_screen_shot_path, _ = gm.capture_screen()
         memory.add_recent_history("image", cur_screen_shot_path)
@@ -294,10 +294,10 @@ def main_test_self_reflection(planner_params, task_description, skill_library, v
     input["task_description"] = task_description
 
     pre_action = 'move_forward(duration=1)'
-    pre_reasoning = ""
+    pre_decision_making_reasoning = ""
 
     input["previous_action"] = pre_action
-    input["previous_reasoning"] = pre_reasoning
+    input["previous_reasoning"] = pre_decision_making_reasoning
 
     data = planner.self_reflection(input = input)
 
@@ -359,7 +359,8 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
     planner = Planner(llm_provider=llm_provider,
                       planner_params=planner_params,
-                      frame_extractor=frame_extractor)
+                      frame_extractor=frame_extractor,
+                      use_self_reflection=use_self_reflection)
 
     memory = LocalMemory(memory_path=config.work_dir,
                          max_recent_steps=config.max_recent_steps)
@@ -382,7 +383,8 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
     success = False
     pre_action = ""
-    pre_reasoning = ""
+    pre_decision_making_reasoning = ""
+    pre_self_reflection_reasoning = ""
 
     time.sleep(2)
     end_frame_id = videocapture.get_current_frame_id()
@@ -404,13 +406,12 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                     "assistant": input["image_introduction"][-1]["assistant"]
                 }
             ]
+            input["task_description"] = task_description
             input["image_introduction"] = image_introduction
             input["video_clip_path"] = video_clip_path
             input["get_text_input"] = get_text_input
 
             data = planner.gather_information(input=input)
-
-            image_description=data['res_dict']['description']
 
             # you can extract any information from the gathered_information_JSON
             gathered_information_JSON=data['res_dict']['gathered_information_JSON']
@@ -427,14 +428,20 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             else:
                 last_task_guidance = max(all_task_guidance, key=lambda x: x['index'])['values']
 
+            image_description=data['res_dict']['description']
+            target_object_name=data['res_dict']['target_object_name']
+            object_name_reasoning=data['res_dict']['reasoning']
+
+            logger.write(f'Image Description: {image_description}')
+            logger.write(f'Object Name: {target_object_name}')
+            logger.write(f'Reasoning: {object_name_reasoning}')
+
             logger.write(f'Dialogue: {all_dialogue}')
             logger.write(f'Gathered Information: {gathered_information}')
+            logger.write(f'All Task Guidance: {all_task_guidance}')
             logger.write(f'Last Task Guidance: {last_task_guidance}')
-            logger.write(f'Image Description: {image_description}')
             logger.write(f'Generated Actions: {all_generated_actions}')
-
-            logger.write(f'all_task_guidance: {all_task_guidance}')
-
+            
             if last_task_guidance:
                 task_description = last_task_guidance
 
@@ -456,6 +463,9 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             if pre_action:
                 input["previous_action"] = memory.get_recent_history("action", k=1)[-1]
                 input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
+            
+            if pre_self_reflection_reasoning:
+                input["previous_self_reflection_reasoning"] = memory.get_recent_history("self_reflection_reasoning", k=1)[-1]
 
             input['skill_library'] = skill_library
 
@@ -519,15 +529,15 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
             pre_action = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
 
-            pre_reasoning = ''
+            pre_decision_making_reasoning = ''
             if 'res_dict' in data.keys() and 'reasoning' in data['res_dict'].keys():
-                pre_reasoning = data['res_dict']['reasoning']
+                pre_decision_making_reasoning = data['res_dict']['reasoning']
 
             memory.add_recent_history("action", pre_action)
-            memory.add_recent_history("decision_making_reasoning", pre_reasoning)
+            memory.add_recent_history("decision_making_reasoning", pre_decision_making_reasoning)
 
             # For such cases with no expected response, we should define a retry limit
-            logger.write(f'Decision reasoning: {pre_reasoning}')
+            logger.write(f'Decision reasoning: {pre_decision_making_reasoning}')
 
             # for success detection
             if use_success_detection:
@@ -572,22 +582,30 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
                 image_introduction.append(
                     {
-                        "introduction": "Here are the sequential frames of the character executing the last action. Is this action executed successfully? Does this action takes any effect? Does this action contributes to the task?",
+                        "introduction": "Here are the sequential frames of the character executing the last action. Is this action executed successfully? Does this action takes any effect? Does this action contributes to the task? If not, what would be a better action based on the last screenshot?",
                         "path": action_frames,
                         "assistant": ""
                 })
 
                 input["image_introduction"] = image_introduction
                 input["task_description"] = task_description
-
-                input["previous_action"] = pre_action
-                input["previous_reasoning"] = pre_reasoning
+                input['skill_library'] = skill_library
+                input["previous_reasoning"] = pre_decision_making_reasoning
+                if pre_action:
+                    input["previous_action"] = pre_action
+                    action_code, action_code_info = gm.get_skill_library_in_code(pre_action)
+                    input['action_code'] = action_code if action_code is not None else action_code_info
+                else:
+                    input['executing_action_error']  = exec_info["errors_info"]
 
                 data = planner.self_reflection(input = input)
 
                 self_reflection_reasoning = data['res_dict']['reasoning']
                 memory.add_recent_history("self_reflection_reasoning", self_reflection_reasoning)
                 logger.write(f'Self-reflection reason: {self_reflection_reasoning}')
+
+                #gm.delete_skill("action")
+
 
             #store memory
             memory.save()
@@ -634,7 +652,9 @@ if __name__ == '__main__':
         }
     }
 
-    skill_library = move_skills + follow_skills
+
+    skill_library = ['turn', 'move_forward', 'turn_and_move_forward', 'follow']
+    #skill_library = move_skills + follow_skills
     #task_description =  "Follow Dutch."
     #task_description =  "Hitch your horse."
     #task_description =  "Go to the shed and press Q to take cover"
@@ -663,7 +683,7 @@ if __name__ == '__main__':
     #main_test_information_summary(planner_params, task_description, skill_library)
 
     config.skill_retrieval = True
-    main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = False)
+    main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True)
 
     # skill_library_test()
 
