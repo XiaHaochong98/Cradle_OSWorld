@@ -83,10 +83,11 @@ def parse_semi_formatted_text(text):
     current_key = None
     current_value = []
     parsed_data = []
+    in_code_flag = False
 
     for line in lines:
         # Check if the line indicates a new key
-        if line.endswith(":") and not line.endswith("):"):
+        if line.endswith(":") and in_code_flag == False:
             # If there's a previous key, process its values
             if current_key and current_key.lower() == "context-sensitive prompts":
                 result_dict[current_key.lower()] = parsed_data
@@ -98,22 +99,24 @@ def parse_semi_formatted_text(text):
             parsed_data = []
         else:
             if current_key.lower() == "context-sensitive prompts":
-                if line.strip() == '```python':
+                in_code_flag = True
+                if line.strip() == '```':
                     if current_value:  # Process previous code block and description
-                        entry = {"code": '\n'.join(current_value[:-2]),
-                                 "description": current_value[-1].strip()}
+                        entry = {"code": '\n'.join(current_value[1:])}
                         parsed_data.append(entry)
                         current_value = []
+                    in_code_flag = False
                 else:
                     current_value.append(line)
             else:
+                in_code_flag = False
                 line = line.strip()
                 current_value.append(line)
 
     # Process the last key
     if current_key.lower() == "context-sensitive prompts":
         if current_value:  # Process the last code block and description
-            entry = {"code": '\n'.join(current_value[:-2]).strip(), "description": current_value[-1].strip()}
+            entry = {"code": '\n'.join(current_value[:-1]).strip()}
             parsed_data.append(entry)
         result_dict[current_key.lower()] = parsed_data
     else:

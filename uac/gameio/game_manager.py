@@ -60,8 +60,12 @@ class GameManager:
         return filtered_skill_library
 
 
-    def add_new_skill(self, skill_code, skill_doc):
-        self.skill_registry.register_skill_from_code(skill_code = skill_code, skill_doc = skill_doc)
+    def add_new_skill(self, skill_code):
+        return self.skill_registry.register_skill_from_code(skill_code = skill_code)
+
+
+    def delete_skill(self, skill_name):
+        self.skill_registry.delete_skill(skill_name)
 
 
     def retrieve_skills(self, query_task, skill_num):

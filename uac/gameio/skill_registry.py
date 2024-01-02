@@ -1,7 +1,7 @@
 import re
 import ast
 import time
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 import inspect
 import numpy as np
 import copy
@@ -18,17 +18,15 @@ SKILL_REGISTRY = {}
 SKILL_INDEX = []
 
 SKILL_NAME_KEY = 'skill_name'
-SKILL_DOCUMENTATION_KEY = 'skill_doc'
 SKILL_EMBEDDING_KEY = 'skill_emb'
 SKILL_CODE_KEY = 'skill_code'
-SKILL_DOC_HASH_KEY = 'skill_doc_base64'
+SKILL_CODE_HASH_KEY = 'skill_code_base64'
 
 
 def register_skill(name):
     def decorator(skill):
         SKILL_REGISTRY[name] = skill
         SKILL_INDEX.append({SKILL_NAME_KEY:          name,
-                            SKILL_DOCUMENTATION_KEY: inspect.getdoc(skill),
                             SKILL_EMBEDDING_KEY:     None,
                             SKILL_CODE_KEY:          inspect.getsource(skill)})
         return skill
@@ -145,30 +143,76 @@ class SkillRegistry:
             return None
 
 
-    def get_skill_library_in_code(self, skill: Any) -> str:
-        return inspect.getsource(skill)
+    def get_skill_library_in_code(self, skill: Any) -> Tuple[str, str]:
+
+        info = None
+        try:
+            skill_name, _ = self.extract_function_info(skill)
+        except:
+            skill_name = skill
+
+        skill_code = None
+        if skill_name in self.skill_registry:
+            skill_code = inspect.getsource(self.skill_registry[skill_name])
+            if f"@register_skill(\"{skill_name}\")\n" in skill_code:
+                skill_code = skill_code.replace(f"@register_skill(\"{skill_name}\")\n", "")
+        else:
+            for item in self.skill_index:
+                if item[SKILL_NAME_KEY] == skill_name:
+                    skill_code = item[SKILL_CODE_KEY]
+                    break
+
+        if skill_code is None:
+            info = f"Skill '{skill_name}' not found in the registry."
+
+        return skill_code, info
 
 
-    def register_skill_from_code(self, skill_code: str, skill_doc: str) -> None:
+    def register_skill_from_code(self, skill_code: str) -> str:
 
         def get_func_name(skill_code):
             return skill_code.split('def ')[-1].split('(')[0]
         
-        skill_name = get_func_name(skill_code)
-        if skill_name not in self.skill_registry:
+        try:
+            skill_name = get_func_name(skill_code)
             exec(skill_code)
             skill = eval(skill_name)
-            skill.__doc__ = skill_doc
+        except:
+            return 'The skill code is invalid.'
+        
+        if skill_name not in self.skill_registry:
+           
             self.skill_registry[skill_name] = skill
             self.skill_index.append({SKILL_NAME_KEY:          skill_name,
-                                    SKILL_DOCUMENTATION_KEY: skill_doc,
-                                    SKILL_EMBEDDING_KEY:     self.get_embedding(skill_name, skill_doc),
+                                    SKILL_EMBEDDING_KEY:     self.get_embedding(skill_name, inspect.getdoc(skill)),
                                     SKILL_CODE_KEY:          skill_code})
-            self.recent_skills.append(skill_name)
         else:
-            if skill_name not in self.recent_skills:
-                self.recent_skills.append(skill_name)
+            self.skill_registry[skill_name] = skill
+            for i in range(len(self.skill_index)):
+                if self.skill_index[i][SKILL_NAME_KEY] == skill_name:
+                    self.skill_index[i][SKILL_EMBEDDING_KEY] = self.get_embedding(skill_name, inspect.getdoc(skill))
+                    self.skill_index[i][SKILL_CODE_KEY] = skill_code
 
+        if skill_name not in self.recent_skills:
+            self.recent_skills.append(skill_name)
+        
+        return "{} has been registered".format(skill_name)
+
+    def delete_skill(self, skill_name: str) -> None:
+    
+        try:
+            skill_name, _ = self.extract_function_info(skill_name)
+        except:
+            skill_name = skill_name
+
+        if skill_name in self.skill_registry:
+            del self.skill_registry[skill_name]
+            position = next((i for i, skill in enumerate(self.skill_index) if skill[SKILL_NAME_KEY] == skill_name), None)
+            self.skill_index.pop(position)
+        if skill_name in self.recent_skills:
+            position = self.recent_skills.index(skill_name)
+            self.recent_skills.pop(position)
+            
 
     def retrieve_skills(self, query_task: str, skill_num: int) -> List[str]:
         skill_num = min(skill_num, len(self.skill_index))
@@ -208,17 +252,15 @@ class SkillRegistry:
     def convert_str_to_func(self, skill_name, skill_local):
         exec(skill_local[skill_name][SKILL_CODE_KEY])
         skill = eval(skill_name)
-        skill.__doc__ = skill_local[skill_name][SKILL_DOCUMENTATION_KEY]
         return skill
-
+    
 
     def store_skills(self) -> None:
         store_file = {}
         for skill in self.skill_index:
-            store_file[skill[SKILL_NAME_KEY]] = {SKILL_DOCUMENTATION_KEY:skill[SKILL_DOCUMENTATION_KEY],
-                                                 SKILL_CODE_KEY:skill[SKILL_CODE_KEY],
+            store_file[skill[SKILL_NAME_KEY]] = {SKILL_CODE_KEY:skill[SKILL_CODE_KEY],
                                                  SKILL_EMBEDDING_KEY:base64.b64encode(skill[SKILL_EMBEDDING_KEY].tobytes()).decode('utf-8'),
-                                                 SKILL_DOC_HASH_KEY:base64.b64encode(skill[SKILL_DOCUMENTATION_KEY].encode('utf-8')).decode('utf-8')}
+                                                 SKILL_CODE_HASH_KEY:base64.b64encode(skill[SKILL_CODE_KEY].encode('utf-8')).decode('utf-8')}
 
         save_json(file_path = os.path.join(self.store_path, self.skill_library_filename), json_dict = store_file, indent = 4)
 
@@ -236,17 +278,15 @@ class SkillRegistry:
                 # the manually-designed skills follow the code in .py files
                 self.skill_registry[skill_name] = SKILL_REGISTRY[skill_name]
 
-                skill_doc_base64 = base64.b64encode(skill_local[skill_name][SKILL_DOCUMENTATION_KEY].encode('utf-8')).decode('utf-8')
+                skill_code_base64 = base64.b64encode(skill_local[skill_name][SKILL_CODE_KEY].encode('utf-8')).decode('utf-8')
 
-                if skill_doc_base64 == skill_local[skill_name][SKILL_DOC_HASH_KEY]: # the skill_doc is not modified
+                if skill_code_base64 == skill_local[skill_name][SKILL_CODE_HASH_KEY]: # the skill_code is not modified
                     self.skill_index.append({SKILL_NAME_KEY:skill_name,
-                                             SKILL_DOCUMENTATION_KEY:inspect.getdoc(SKILL_REGISTRY[skill_name]),
                                              SKILL_EMBEDDING_KEY:np.frombuffer(base64.b64decode(skill_local[skill_name][SKILL_EMBEDDING_KEY]), dtype=np.float64),
                                              SKILL_CODE_KEY:inspect.getsource(SKILL_REGISTRY[skill_name])})
 
-                else: # skill_doc has been modified, we should recompute embeddings
+                else: # skill_code has been modified, we should recompute embeddings
                     self.skill_index.append({SKILL_NAME_KEY:skill_name,
-                                             SKILL_DOCUMENTATION_KEY:inspect.getdoc(SKILL_REGISTRY[skill_name]),
                                              SKILL_EMBEDDING_KEY:self.get_embedding(skill_name, inspect.getdoc(SKILL_REGISTRY[skill_name])),
                                              SKILL_CODE_KEY:inspect.getsource(SKILL_REGISTRY[skill_name])})
 
@@ -255,16 +295,14 @@ class SkillRegistry:
                 skill = self.convert_str_to_func(skill_name, skill_local)
                 self.skill_registry[skill_name] = skill
 
-                skill_doc_base64 = base64.b64encode(skill_local[skill_name][SKILL_DOCUMENTATION_KEY].encode('utf-8')).decode('utf-8')
+                skill_code_base64 = base64.b64encode(skill_local[skill_name][SKILL_CODE_KEY].encode('utf-8')).decode('utf-8')
 
-                if skill_doc_base64 == skill_local[skill_name][SKILL_DOC_HASH_KEY]: # the skill_doc is not modified
+                if skill_code_base64 == skill_local[skill_name][SKILL_CODE_HASH_KEY]: # the skill_code is not modified
                     self.skill_index.append({SKILL_NAME_KEY:skill_name,
-                                             SKILL_DOCUMENTATION_KEY:inspect.getdoc(skill),
                                              SKILL_EMBEDDING_KEY:np.frombuffer(base64.b64decode(skill_local[skill_name][SKILL_EMBEDDING_KEY]), dtype=np.float64),
                                              SKILL_CODE_KEY:skill_local[skill_name][SKILL_CODE_KEY]})
 
-                else: # skill_doc has been modified, we should recompute embedding
+                else: # skill_code has been modified, we should recompute embedding
                     self.skill_index.append({SKILL_NAME_KEY:skill_name,
-                                             SKILL_DOCUMENTATION_KEY:inspect.getdoc(skill),
                                              SKILL_EMBEDDING_KEY:self.get_embedding(skill_name, inspect.getdoc(skill)),
                                              SKILL_CODE_KEY:skill_local[skill_name][SKILL_CODE_KEY]})

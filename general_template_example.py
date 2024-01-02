@@ -312,23 +312,18 @@ def skill_library_test():
     provider = OpenAIProvider()
     provider.init_provider(provider_config_path)
 
+    config.skill_from_local = True
+
     gm = GameManager(env_name = config.env_name, embedding_provider=provider)
+
 
     task_description = "Mark the \"Saloon\" on a Map as the Waypoint via the Index."
 
-    extracted_skills = [
-        {
-            "code": "def pick_up_item_t():\n    pydirectinput.press('e')",
-            "description" : "Presses the R key to pick up nearby items."
-        },
-        {
-            "code":"def go_ahead_t(duration):\n    pydirectinput.keyDown('w')\n    time.sleep(duration)\n    pydirectinput.keyUp('w')\n",
-            "description":"Moves the in-game character forward for the specified duration.\n\nParameters:\n- duration: The duration in seconds for which the character should move forward."
-        }
-    ]
-
+    extracted_skills = ["def pick_up_item_t():\n    \"\"\"\n    Presses the E key to pick up nearby items.\n    \"\"\"\n    pydirectinput.press('e')\n",
+                        "def go_ahead_t(duration):\n    \"\"\"\n    Moves the in-game character forward for the specified duration.\n\nParameters:\n- duration: The duration in seconds for which the character should move forward.\n    \"\"\"\n    pydirectinput.keyDown('w')\n    time.sleep(duration)\n    pydirectinput.keyUp('w')\n"]
+            
     for extracted_skill in extracted_skills:
-        gm.add_new_skill(skill_code=extracted_skill['code'], skill_doc=extracted_skill['description'])
+        gm.add_new_skill(skill_code=extracted_skill)
 
     exec_info = gm.execute_actions(['go_ahead_t(duration = 1)'])
     logger.write(str(exec_info))
@@ -338,6 +333,12 @@ def skill_library_test():
 
     returns_skills = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
     logger.write(str(returns_skills))
+    logger.write(str(gm.get_filtered_skills(returns_skills)))
+
+
+    returns_skills = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
+    logger.write(str(returns_skills))
+
 
     skill_library = move_skills + follow_skills
     gm.register_available_skills(skill_library)
@@ -441,7 +442,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 for extracted_skills in all_generated_actions:
                     extracted_skills=extracted_skills['values']
                     for extracted_skill in extracted_skills:
-                        gm.add_new_skill(skill_code=extracted_skill['code'], skill_doc=extracted_skill['description'])
+                        gm.add_new_skill(skill_code=extracted_skill['code'])
                 gm.store_skills()
                 skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
                 logger.write(f'skill_library: {skill_library}')

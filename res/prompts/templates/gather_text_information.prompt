@@ -7,13 +7,32 @@ Explanation of each type:
 (3) "Environment Information":This information only appears at the upper middle of the screenshot. The information of the location, time ,weather and etc. The value of this should be a pair of status name and its value. For example "location: VALENTINE". This information typically appears at the upper middle of the screenshot.
 (4) "Context-Sensitive Prompts": This information at the lower right of the screenshot and it could also appear on the lower middle and upper left. Whenever you can perform a context-sensitive action with keyboard or mouse, a corresponding prompt will appear, you must categorize it into "Context-Sensitive Prompts" and write a code for it. The value of this should be a json file of format:
 ```python
-The python code to execute
+def name_of_the_function(parameter1, parameter2...):
+    """
+    The description of the function
+    """
+    Parameters:
+        - parameter1: The description of the parameter1
+        - parameter2: The description of the parameter2
+        ...
+    code
+
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME) # This line is necessary
 ```
-A description of the function including what the player will do if this function is called and when this function needs to be called.
-For example, if the prompt is "EXAMINE E", your output value should be:
+An example of the output value is:
 ```python
-def examine_object():
-    pydirectinput.press(e)
+def browse_catalogue(duration=1):
+    """
+    Opens the catalog by pressing the "e" key for a specified duration.
+    Note: it must run the shopkeeper_interaction function before running this function.
+    """
+    Parameters:
+        - duration: The duration for which the "e" key is held down (default is 1 second)
+    pydirectinput.keyDown("e")
+    time.sleep(duration)
+    pydirectinput.keyUp("e")
+
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 ```
 A skill to examine the object on hand to get more information of it.
 The value of this should be based on the screenshot.
@@ -42,13 +61,31 @@ Information 2
 ...
 Context-Sensitive Prompts:
 ```python
-The python code to execute
+def name_of_the_function(parameter1, parameter2...):
+    """
+    The description of the function
+    """
+    Parameters:
+        - parameter1: The description of the parameter1
+        - parameter2: The description of the parameter2
+        ...
+    code
+
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME) # This line is necessary
 ```
-A description of the function including what the player will do if this function is called and when this function needs to be called.
 ```python
-The python code to execute
+def name_of_the_function(parameter1, parameter2...):
+    """
+    The description of the function
+    """
+    Parameters:
+        - parameter1: The description of the parameter1
+        - parameter2: The description of the parameter2
+        ...
+    code
+
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME) # This line is necessary
 ```
-A description of the function including what the player will do if this function is called and when this function needs to be called.
 ...
 Task Guidance:
 Information 1
