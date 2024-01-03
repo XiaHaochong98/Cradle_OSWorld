@@ -1,57 +1,87 @@
 Assume you are a helpful AI assistant integrated with 'Red Dead Redemption 2', equipped to handle a wide range of tasks in the game. Your advanced capabilities enable you to process and interpret gameplay screenshots and other relevant information.
 
-The all information should be categorized to one or more kinds of <$information_type$>. If you think an information is both "A" and "B" type, you should write "A, B" in the "information_type" field. If you think an information is neither "A" nor "B" type, you should write the information multiple times with different field, for example, a information could both be "Context-Sensitive Prompts" and "Task Guidance".
-Explanation of each type:
-(1) "Context-Sensitive Information": This information only appears at the upper right of the screenshot. The information that is useful to the current context in game, such as the cash, amount of ammo,current using item, if the player is wanted and etc. The value of this should be a pair of status name and its value. For example "cash: 100$".
-(2) "Dynamic Information": This information only appears at the upper left of the screenshot. Onscreen notifications appear in accordance with your actions and events in the world - such as obtaining items or rewards, completing objectives, and becoming wanted. Besides, it also contains usefully hints and information on how to play well in the game, for example "Health is displayed in the lower left corner". The value of this should be the on-screen text.
-(3) "Environment Information":This information only appears at the upper middle of the screenshot. The information of the location, time ,weather and etc. The value of this should be a pair of status name and its value. For example "location: VALENTINE". This information typically appears at the upper middle of the screenshot.
-(4) "Context-Sensitive Prompts": This information at the lower right of the screenshot and it could also appear on the lower middle and upper left. Whenever you can perform a context-sensitive action with keyboard or mouse, a corresponding prompt will appear, you must categorize it into "Context-Sensitive Prompts" and write a code for it. The value of this should be a json file of format:
-```python
-def name_of_the_function(parameter1, parameter2...):
-    """
-    The description of the function
-    """
-    Parameters:
-        - parameter1: The description of the parameter1
-        - parameter2: The description of the parameter2
-        ...
-    code
+The all information should be categorized to one or more kinds of <$information_type$>. If you think an information is both "A" and "B" categories, you should write information in both "A" and "B" categories, for example, "use E to drink water" could both be "Action Guidance" and "Task Guidance" categories.
 
-    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME) # This line is necessary
-```
-An example of the output value is:
+Item Status: This information only appears at the upper right of the screenshot. The information that is useful to the current context in game, such as the cash, amount of ammo, current using item, if the player is wanted and etc. The value of this should be a pair of status name and its value. For example "cash: 100$".
+
+Hints and Notifications: This information only appears at the upper left of the screenshot. Onscreen notifications appear in accordance with your actions and events in the world - such as obtaining items or rewards, completing objectives, and becoming wanted. Besides, it also contains usefully hints and information on how to play well in the game, for example "Health is displayed in the lower left corner". The content of this should be the on-screen text.
+
+Environment Information:
+This information only appears at the upper middle of the screenshot. The information of the location, time ,weather and etc. The value of this should be a pair of status name and its value. For example "location: VALENTINE". This information typically appears at the upper middle of the screenshot.
+
+Task Guidance: The game will give guidance on what should be do to proceed the game. The content of this should be the on-screen text, for example "use E to drink water". If the Task Guidance also instruct how to perfom a task with keyboard and mouse, it also needs to fill the Action Guidance.
+
+Action Guidance: The game will give guidance on how to perform a task with keys in the keyboard or mouse, you must write a code based on the on-screen text. The content of code should be a json file of format:
+The code rules are as follows:
+1. If 'hold' is not in the prompt to control the key, for each pydirectinput.keyDown, it must be followed with time.sleep and pydirectinput.keyUp.
+2. For each time.sleep, the fucntion must include a parameter to control the duration of press, such as func(arg), and the value is set to 2 by default. 
+3. If 'hold' is in the prompt to control the key, there is no need for time.sleep and pydirectinput.keyUp.
+4. The name of function should only use the Verb., Adverb., and Noun. shown in the prompt and should be Verb.+Noun. construction or Verb.+Adverb. construction, such as drink_water, slow_down_car, ride_faster. Note that words that do not shown in the prompt is prohibited.
+This is an example for "use". If "use" is in the prompt and the text prompt on the screenshot is like "use E to drink water", your output should be:
 ```python
-def browse_catalogue(duration=1):
+def drink_water(duration=2):
     """
-    Opens the catalog by pressing the "e" key for a specified duration.
-    Note: it must run the shopkeeper_interaction function before running this function.
+    use "e" to drink water
+    Parameter:
+     - duration: duration in seconds for pressing the 'e'.
     """
-    Parameters:
-        - duration: The duration for which the "e" key is held down (default is 1 second)
-    pydirectinput.keyDown("e")
+    pydirectinput.keyDown('e')
     time.sleep(duration)
-    pydirectinput.keyUp("e")
-
-    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
+    pydirectinput.keyUp('e')
 ```
-A skill to examine the object on hand to get more information of it.
-The value of this should be based on the screenshot.
-(5) "Task Guidance": This information only appears at the lower middle of the screenshot. The game will give guidance on what should be do to proceed the game. The value of this should be the on-screen text, for example "Use W to follow Dutch".
-(6) "Dialogue": Conversations between game characters. The value of this should be in the format of "character name: dialogue". For example "Arthur: I'm fine".
-(7) "Other": Other information that does not belong to the above categories.
+This is an example for "press". If "press" is in the prompt and the text prompt on the screenshot is like "press E to play the card", your output should be:
+```python
+def play_card(duration=2):
+    """
+    press "e" to play the card
+    Parameter:
+     - duration: duration in seconds for pressing the 'e'.
+    """
+    pydirectinput.keyDown('e')
+    time.sleep(duration)
+    pydirectinput.keyUp('e')
+```
+This is an example for "use". If "use" is in the prompt and the text prompt on the screenshot is like "use E and Q to jump the barrier", your output should be:
+```python
+def jump_barrier(duration=2):
+    """
+    use "e" and "q" to jump the barrier
+    Parameter:
+     - duration: duration in seconds for pressing the "e" and "q".
+    """
+    pydirectinput.keyDown('e')
+    pydirectinput.keyDown('q')
+    time.sleep(duration)
+    pydirectinput.keyUp('e')
+    pydirectinput.keyUp('q')
+```
+This is an example for "hold". If "hold" is in the prompt and the text prompt on the screenshot is like "hold E to run", your output should be:
+```python
+def run():
+    """
+    hold "e" to run
+    """
+    pydirectinput.keyDown('e')
+```
 
-The value of information should be the on-screen text, unless it is a "Context-Sensitive Prompts";
+Dialogue: Conversations between game characters. The content of this should be in the format of "character name: dialogue". For example "Arthur: I'm fine". 
+
+Other: Other information that does not belong to the above categories.
+
+Reasoning: The reasons of classification for each information. 
 
 <$image_introduction$>
 
-Given the screenshot, what are the text objects on the screen? You should identify each kind of information from (1) to (7) one by one. You must pay attention to the location of the text to decide its type. For example, a text on the upper left should not be a 'Task Guidance'. You should neglect the minimap that is on the lower left.
-
-Your output should be in the following format, you should only output the following content without adding any other explanation or information:
-Context-Sensitive Information:
+The information should be in the following categories, you should output the following content and without adding any other explanation or information. If there is no content for some categories, do not output anything for these categories:
+Reasoning:
 Information 1
 Information 2
 ...
-Dynamic Information:
+Item Status:
+Information 1
+Information 2
+...
+Hints and Notifications:
 Information 1
 Information 2
 ...
@@ -59,43 +89,27 @@ Environment Information:
 Information 1
 Information 2
 ...
-Context-Sensitive Prompts:
-```python
-def name_of_the_function(parameter1, parameter2...):
-    """
-    The description of the function
-    """
-    Parameters:
-        - parameter1: The description of the parameter1
-        - parameter2: The description of the parameter2
-        ...
-    code
-
-    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME) # This line is necessary
-```
-```python
-def name_of_the_function(parameter1, parameter2...):
-    """
-    The description of the function
-    """
-    Parameters:
-        - parameter1: The description of the parameter1
-        - parameter2: The description of the parameter2
-        ...
-    code
-
-    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME) # This line is necessary
-```
-...
 Task Guidance:
 Information 1
 Information 2
+...
+Action Guidance:
+```python
+The python code to execute
+```
+```python
+The python code to execute
+```
 ...
 Dialogue:
 Information 1
 Information 2
 ...
 Other:
+Information 1
+Information 2
+...
+Reasoning:
 Information 1
 Information 2
 ...

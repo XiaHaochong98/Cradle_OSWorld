@@ -1,6 +1,6 @@
 import json
 import re
-
+from uac import constant
 from uac.log import Logger
 
 logger = Logger()
@@ -89,7 +89,7 @@ def parse_semi_formatted_text(text):
         # Check if the line indicates a new key
         if line.endswith(":") and in_code_flag == False:
             # If there's a previous key, process its values
-            if current_key and current_key.lower() == "context-sensitive prompts":
+            if current_key and current_key.lower() == constant.ACTION_GUIDANCE:
                 result_dict[current_key.lower()] = parsed_data
             elif current_key:
                 result_dict[current_key.lower()] = '\n'.join(current_value).strip()
@@ -98,7 +98,7 @@ def parse_semi_formatted_text(text):
             current_value = []
             parsed_data = []
         else:
-            if current_key.lower() == "context-sensitive prompts":
+            if current_key.lower() == constant.ACTION_GUIDANCE:
                 in_code_flag = True
                 if line.strip() == '```':
                     if current_value:  # Process previous code block and description
@@ -114,7 +114,7 @@ def parse_semi_formatted_text(text):
                 current_value.append(line)
 
     # Process the last key
-    if current_key.lower() == "context-sensitive prompts":
+    if current_key.lower() == constant.ACTION_GUIDANCE:
         if current_value:  # Process the last code block and description
             entry = {"code": '\n'.join(current_value[:-1]).strip()}
             parsed_data.append(entry)

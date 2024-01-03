@@ -17,6 +17,7 @@ from uac.gameio.atomic_skills.buy import __all__ as buy_skills
 from uac.gameio.atomic_skills.map import __all__ as map_skills
 from uac.gameio.atomic_skills.move import __all__ as move_skills
 from uac.gameio.composite_skills.follow import __all__ as follow_skills
+from uac import constant
 
 config = Config()
 logger = Logger()
@@ -421,7 +422,8 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             gathered_information = dict(sorted(gathered_information.items(), key=lambda item: item[0]))
             all_dialogue = gathered_information_JSON.search_type_across_all_indices('dialogue')
             all_task_guidance = gathered_information_JSON.search_type_across_all_indices('task guidance')
-            all_generated_actions = gathered_information_JSON.search_type_across_all_indices('context-sensitive prompts')
+            all_generated_actions = gathered_information_JSON.search_type_across_all_indices(constant.ACTION_GUIDANCE)
+            classification_reasons = gathered_information_JSON.search_type_across_all_indices('reasoning')
 
             if len(all_task_guidance) == 0:
                 last_task_guidance = ""
@@ -438,6 +440,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
             logger.write(f'Dialogue: {all_dialogue}')
             logger.write(f'Gathered Information: {gathered_information}')
+            logger.write(f'Classification Reasons: {classification_reasons}')
             logger.write(f'All Task Guidance: {all_task_guidance}')
             logger.write(f'Last Task Guidance: {last_task_guidance}')
             logger.write(f'Generated Actions: {all_generated_actions}')
