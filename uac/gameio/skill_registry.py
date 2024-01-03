@@ -152,7 +152,7 @@ class SkillRegistry:
             skill_name = skill
 
         skill_code = None
-        if skill_name in self.skill_registry:
+        if skill_name in SKILL_REGISTRY:
             skill_code = inspect.getsource(self.skill_registry[skill_name])
             if f"@register_skill(\"{skill_name}\")\n" in skill_code:
                 skill_code = skill_code.replace(f"@register_skill(\"{skill_name}\")\n", "")
