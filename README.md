@@ -215,6 +215,11 @@ Remember to enlarge the icon to ensure the program is working well following: `S
 
 ![minimap_setting](docs/images/minimap_setting.png)
 
+#### 1.4 Subtitles
+Enable to show the speaker's name in the subtitles.
+
+![subtitles_setting](docs/images/subtitles.png)
+
 ### 2. Three libraries for keyboard & mouse control  
 
 - pyautogui: Used to simulate mouse clicks, including long mouse presses.   

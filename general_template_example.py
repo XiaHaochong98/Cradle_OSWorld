@@ -347,7 +347,7 @@ def skill_library_test():
 
     gm.store_skills()
 
-def main_pipeline(planner_params, task_description, skill_library, use_success_detection):
+def main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = False):
 
     llm_provider_config_path = './conf/openai_config.json'
 
@@ -367,6 +367,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                      embedding_provider = llm_provider)
 
     if config.skill_retrieval:
+        gm.register_available_skills(skill_library) 
         skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
     skill_library = gm.get_filtered_skills(skill_library)
 
@@ -393,7 +394,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             logger.write(f'Gather Information Start Frame ID: {start_frame_id}, End Frame ID: {end_frame_id}')
             input = planner.gather_information_.input_map
             get_text_input = planner.gather_information_.get_text_input_map
-            video_clip_path=videocapture.get_video(start_frame_id,end_frame_id)
+            video_clip_path = videocapture.get_video(start_frame_id,end_frame_id)
             videocapture.clear_frame_buffer()
             image_introduction = [
                 {
@@ -431,6 +432,8 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             logger.write(f'Image Description: {image_description}')
             logger.write(f'Generated Actions: {all_generated_actions}')
 
+            logger.write(f'all_task_guidance: {all_task_guidance}')
+
             if last_task_guidance:
                 task_description = last_task_guidance
 
@@ -441,6 +444,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                         gm.add_new_skill(skill_code=extracted_skill['code'], skill_doc=extracted_skill['description'])
                 gm.store_skills()
                 skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
+                logger.write(f'skill_library: {skill_library}')
                 skill_library = gm.get_filtered_skills(skill_library)
 
             # for decision making
@@ -553,6 +557,36 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 logger.write(f'Success: {success}')
                 logger.write(f'Success criteria: {success_criteria}')
                 logger.write(f'Success reason: {success_reasoning}')
+            
+            if use_self_reflection:
+                action_frames = []
+                video_frames = videocapture.get_frames(start_frame_id,end_frame_id)
+
+                if len(video_frames) <= 17:
+                    action_frames = video_frames[1::2]
+                else:
+                    for i in range(8):
+                        step = len(video_frames) // 8 * i + 1
+                        action_frames.append(video_frames[step])
+
+                image_introduction.append(
+                    {
+                        "introduction": "Here are the sequential frames of the character executing the last action. Is this action executed successfully? Does this action takes any effect? Does this action contributes to the task?",
+                        "path": action_frames,
+                        "assistant": ""
+                })
+
+                input["image_introduction"] = image_introduction
+                input["task_description"] = task_description
+
+                input["previous_action"] = pre_action
+                input["previous_reasoning"] = pre_reasoning
+
+                data = planner.self_reflection(input = input)
+
+                self_reflection_reasoning = data['res_dict']['reasoning']
+                memory.add_recent_history("self_reflection_reasoning", self_reflection_reasoning)
+                logger.write(f'Self-reflection reason: {self_reflection_reasoning}')
 
             #store memory
             memory.save()
@@ -628,7 +662,7 @@ if __name__ == '__main__':
     #main_test_information_summary(planner_params, task_description, skill_library)
 
     config.skill_retrieval = True
-    main_pipeline(planner_params, task_description, skill_library, use_success_detection = False)
+    main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = False)
 
     # skill_library_test()
 

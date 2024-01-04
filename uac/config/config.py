@@ -85,6 +85,9 @@ class Config(metaclass=Singleton):
         self.skill_retrieval = False
         self.skill_num = 10
 
+        # video
+        self.video_fps = 4
+
         self._set_dirs()
         self._set_game_window_info()
 

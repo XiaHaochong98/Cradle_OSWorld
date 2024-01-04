@@ -33,7 +33,7 @@ class LocalMemory(BaseMemory):
                                "action": [],
                                "decision_making_reasoning": [],
                                "success_detection_reasoning": [],
-                               "reflection_reasoning": [],
+                               "self_reflection_reasoning": [],
                                "image_description":[],
                                "task_guidance":[],
                                "dialogue":[],
