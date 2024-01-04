@@ -9,11 +9,14 @@ import os
 import base64
 
 from uac.config import Config
+from uac.log import Logger
 from uac.utils.json_utils import load_json, save_json
 import pydirectinput
 import pyautogui
 
 config = Config()
+logger = Logger()
+
 SKILL_REGISTRY = {}
 SKILL_INDEX = []
 
@@ -168,35 +171,44 @@ class SkillRegistry:
         return skill_code, info
 
 
-    def register_skill_from_code(self, skill_code: str) -> str:
+    def register_skill_from_code(self, skill_code: str) -> Tuple[bool, str]:
+
+        def lower_func_name(skill_code):
+            skill_name = get_func_name(skill_code)
+            return skill_code.replace(skill_name, skill_name.lower())
 
         def get_func_name(skill_code):
             return skill_code.split('def ')[-1].split('(')[0]
         
+        info = None
+
+        skill_code = lower_func_name(skill_code)
+        skill_name = get_func_name(skill_code)
+        
+        if skill_name in self.skill_registry:
+            info = f"Skill '{skill_name}' already exists."
+            logger.write(info)
+            return True, info
+
         try:
-            skill_name = get_func_name(skill_code)
             exec(skill_code)
             skill = eval(skill_name)
         except:
-            return 'The skill code is invalid.'
-        
-        if skill_name not in self.skill_registry:
+            info = "The skill code is invalid."
+            logger.error(info)
+            return False, info
 
-            self.skill_registry[skill_name] = skill
-            self.skill_index.append({SKILL_NAME_KEY:          skill_name,
-                                    SKILL_EMBEDDING_KEY:     self.get_embedding(skill_name, inspect.getdoc(skill)),
-                                    SKILL_CODE_KEY:          skill_code})
-        else:
-            self.skill_registry[skill_name] = skill
-            for i in range(len(self.skill_index)):
-                if self.skill_index[i][SKILL_NAME_KEY] == skill_name:
-                    self.skill_index[i][SKILL_EMBEDDING_KEY] = self.get_embedding(skill_name, inspect.getdoc(skill))
-                    self.skill_index[i][SKILL_CODE_KEY] = skill_code
+        self.skill_registry[skill_name] = skill
+        self.skill_index.append({SKILL_NAME_KEY:         skill_name,
+                                SKILL_EMBEDDING_KEY:     self.get_embedding(skill_name, inspect.getdoc(skill)),
+                                SKILL_CODE_KEY:          skill_code})
+        self.recent_skills.append(skill_name)
 
-        if skill_name not in self.recent_skills:
-            self.recent_skills.append(skill_name)
 
-        return "{} has been registered".format(skill_name)
+        info = f"Skill '{skill_name}' has been registered."
+        logger.write(info)
+        return True, info
+
 
     def delete_skill(self, skill_name: str) -> None:
 
