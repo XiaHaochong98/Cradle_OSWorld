@@ -21,7 +21,7 @@ Download its weights to the cache directory:
 ```bash
 mkdir cache
 cd cache
-curl -L -C - -O https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swinb_cogcoor.pth
+curl -L -C - -O https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha2/groundingdino_swinb_cogcoor.pth
 cd ..
 ```
 
@@ -35,7 +35,7 @@ Or search for its environment variable: CUDA_HOME or CUDA_PATH. On Windows it sh
 
 If you don't get the specific version, you should download cudatoolkit and cuDNN first (version 11.8 is recommended).
 
-If you don't download CUDA correctly, after installing GroundingDino, the code will produce: 
+If you don't download CUDA correctly, after installing GroundingDino, the code will produce:
 
 ```bash
 NameError: name '_C' is not defined
@@ -121,7 +121,7 @@ The file structure should be like this:
       - ...
 
 #### Tunning the videosubfinder
-Use res/tool/general.clg to overwrite res/tool/subfinder/settings/general.cfg file.   
+Use res/tool/general.clg to overwrite res/tool/subfinder/settings/general.cfg file.
 To get the best extraction results, you can tune the subfinder by changing the parameters in the settings/general.cfg file. You may follow the readme me in Docs folder to get more information about the parameters.
 Only modify it if absolutely necessary. Values have already been tuned to game scenario and environment setup.
 
@@ -177,7 +177,7 @@ Inside each of these directories, most files will fit into three categories: dec
 
 Files are named according to the format: ./res/prompts/\<type\>/\<category\>_\<sub_task\>.\<ext\>
 
-For example: 
+For example:
 ./res/**input_example**/**decision_making**_**follow_red_line**.json, is an example of **input** for the **decision making** prompt for the **follow the red line** sub-task. In the future, most filenamess will end in "_general", when they are not sub-task-specific anymore.
 
 As shown below, such "input_example" files illustrate the **parameters** needed to fill a prompt "template".
@@ -196,13 +196,13 @@ Also, in most situations the format of the parameter "output-format" (if it exis
 Change mouse mode in the control setting to DirectInput.
 | Original interface | Changed interface |
 |------------|------------|
-| ![Original interface](docs/images/raw_input.png) | ![Changed interface](docs/images/direct_input.png) |  
+| ![Original interface](docs/images/raw_input.png) | ![Changed interface](docs/images/direct_input.png) |
 
 #### 1.2 Control
 Change both two 'Tap and Hold Speed Control' to on, so we can press w twice to run, saving the need to press shift. Also change 'Aiming Mode' to 'Hold To Aim', so we do not need to keep pressing mouse right button when aiming.
 | Original interface | Changed interface |
 |------------|------------|
-| ![Original interface](docs/images/move_control_previous.png) | ![Changed interface](docs/images/move_control_now.png) |  
+| ![Original interface](docs/images/move_control_previous.png) | ![Changed interface](docs/images/move_control_now.png) |
 
 #### 1.3 Game screen
 Use Win+Tab to open two desktops. Put the code on the right desktop and open the game in the left desktop. The recommended default resolution to use is 1920x1080, but it can vary if the **16:9** aspect ratio is preserved. This means your screen must be of size (1920,1080), (2560,1440) or (3840,2160). DO NOT change the aspect ratio. Also, remember to set the game Screen Type to **Windowed Borderless**.
@@ -220,30 +220,30 @@ Enable to show the speaker's name in the subtitles.
 
 ![subtitles_setting](docs/images/subtitles.png)
 
-### 2. Three libraries for keyboard & mouse control  
+### 2. Three libraries for keyboard & mouse control
 
-- pyautogui: Used to simulate mouse clicks, including long mouse presses.   
-- pydirectinput: Used to simulate the operation of the keyboard.  
+- pyautogui: Used to simulate mouse clicks, including long mouse presses.
+- pydirectinput: Used to simulate the operation of the keyboard.
 - ahk: Used to simulate mouse swiping, including moveTo and dragTo.
-  
+
 ### 3. File Structure
 Most of our code are in the uac/gameio and uac/utils.
 
 #### 3.1 uac/gameio/atomic_skills:
 move.py: Includes turn, move_forward, mount horse and dismount horse.
 
-map.py: Includes the operations needed to open the map and manipulate with the map.    
+map.py: Includes the operations needed to open the map and manipulate with the map.
 
-sell.py: Includes the actions needed to sell our products.    
+sell.py: Includes the actions needed to sell our products.
 
-buy.py: It is mainly divided into three parts:   
--   1. Interact with shopkeeper to buy products.   
--   2. The extra work required to buy clothes.   
--   3. Buy products on shelves.  
+buy.py: It is mainly divided into three parts:
+-   1. Interact with shopkeeper to buy products.
+-   2. The extra work required to buy clothes.
+-   3. Buy products on shelves.
 
-trade_utils.py: Stores the functions used to buy and sell products when trading.  
+trade_utils.py: Stores the functions used to buy and sell products when trading.
 
-If you're just buying things from camp to town, you might at involve the following functions (for example: Buying fruit can):   
+If you're just buying things from camp to town, you might at involve the following functions (for example: Buying fruit can):
 
 In the map.py:
 -   open_map
@@ -261,7 +261,7 @@ In the buy.py
 -   view_previous_page
 -   select_product_type
 -   buy_product
-    
+
 
 In the trade_utils.py
 -   shopkeeper_interaction
@@ -285,7 +285,7 @@ We provide two "toy" examples so far.
 4.2 runner.py the agent run, involving other components.
 
 The generated direction_map in the runs/<timestamp> should have a green line cross the white arrow and parallel to the red line (overlayed by the generated blue lines).
-![direction_map](docs/images/direction_map.jpg) 
+![direction_map](docs/images/direction_map.jpg)
 
 
 ## Known issues

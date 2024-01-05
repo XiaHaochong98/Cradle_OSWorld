@@ -1,12 +1,22 @@
-from groundingdino.util.inference import load_model, load_image, predict, annotate
-from uac.gameio.lifecycle.ui_control import annotate_with_coordinates
-from uac.utils import Singleton
 import cv2
 import torch
+from groundingdino.util.inference import load_model, load_image, predict, annotate
+
+from uac.gameio.lifecycle.ui_control import annotate_with_coordinates
+from uac.utils import Singleton
+from uac.log import Logger
+
+logger = Logger()
 
 class GdProvider(metaclass=Singleton):
     def __init__(self):
-        self.detect_model = load_model("./cache/GroundingDINO_SwinB_cfg.py", "./cache/groundingdino_swinb_cogcoor.pth")
+
+        self.detect_model = None
+
+        try:
+            self.detect_model = load_model("./cache/GroundingDINO_SwinB_cfg.py", "./cache/groundingdino_swinb_cogcoor.pth")
+        except Exception as e:
+            logger.error(f"Failed to load the grounding model. Make sure you follow the instructions on README to download the necessary files.\n{e}")
 
     def detect(self, image_path,
                   text_prompt="wolf .",
@@ -14,7 +24,7 @@ class GdProvider(metaclass=Singleton):
                   text_threshold=0.25,
                   device='cuda',
                   ):
-        
+
         image_source, image = load_image(image_path)
 
         boxes, logits, phrases = predict(
@@ -25,7 +35,7 @@ class GdProvider(metaclass=Singleton):
             text_threshold=text_threshold,
             device=device
         )
-        
+
         return image_source, boxes, logits, phrases
 
     def save_annotate_frame(self, image_source, boxes, logits, phrases, text_prompt, cur_screen_shot_path):
@@ -43,12 +53,12 @@ class GdProvider(metaclass=Singleton):
                     if distance < dis:
                         dis = distance
                         index = i
-                
+
                 boxes_ = torch.cat([boxes[:index], boxes[index + 1:]])
                 logits_ = torch.cat([logits[:index], logits[index + 1:]])
 
                 phrases.pop(index)
-                
+
                 annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes_[:,:], logits=logits_[:], phrases=phrases)
                 cv2.imwrite(cur_screen_shot_path, annotated_frame)
             elif len(boxes)==1:
@@ -62,7 +72,7 @@ class GdProvider(metaclass=Singleton):
             else:
                 annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes[:,:], logits=logits[:], phrases=phrases)
                 cv2.imwrite(cur_screen_shot_path, annotated_frame)
-            
+
         else:
             annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes[:,:], logits=logits[:], phrases=phrases)
             cv2.imwrite(cur_screen_shot_path, annotated_frame)

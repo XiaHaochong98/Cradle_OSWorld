@@ -57,12 +57,12 @@ def main_test_decision_making(planner_params, task_description, skill_library):
         # },
         {
             "introduction": input["image_introduction"][-2]["introduction"],
-            "path": "res/prompts/testing/decision_making/buy/4.jpg",
+            "path": "./res/prompts/testing/decision_making/buy/4.jpg",
             "assistant": input["image_introduction"][-2]["assistant"]
         },
         {
             "introduction": input["image_introduction"][-1]["introduction"],
-            "path": "res/prompts/testing/decision_making/buy/5.jpg",
+            "path": "./res/prompts/testing/decision_making/buy/5.jpg",
             "assistant": input["image_introduction"][-1]["assistant"]
         }
     ]
@@ -105,12 +105,12 @@ def main_test_success_detection(planner_params, task_description):
     image_introduction = [
         {
             "introduction": input["image_introduction"][-2]["introduction"],
-            "path": "res/prompts/testing/decision_making/buy/7.jpg",
+            "path": "./res/prompts/testing/decision_making/buy/7.jpg",
             "assistant": input["image_introduction"][-2]["assistant"]
         },
         {
             "introduction": input["image_introduction"][-1]["introduction"],
-            "path": "res/prompts/testing/decision_making/buy/8.jpg",
+            "path": "./res/prompts/testing/decision_making/buy/8.jpg",
             "assistant": input["image_introduction"][-1]["assistant"]
         }
     ]
@@ -172,27 +172,27 @@ def main_pipeline(planner_params, task_description, skill_library):
     image_template_copy = [
         {
             "introduction": "This is an example: the bounding box is on the left side (not slightly left) on the image",
-            "path": "res/samples/few_shot_leftside.jpg",
+            "path": "./res/samples/few_shot_leftside.jpg",
             "assistant": "Yes, it is on the left side"
         },
         {
             "introduction": "This is an example: the bounding box is on the slightly left side (not left) on the image",
-            "path": "res/samples/few_shot_slightly_leftside.jpg",
+            "path": "./res/samples/few_shot_slightly_leftside.jpg",
             "assistant": "Yes, it is on the slightly left side"
         },
         {
             "introduction": "This is an example: the bounding box is on the right side (not slightly right) on the image",
-            "path": "res/samples/few_shot_rightside.jpg",
+            "path": "./res/samples/few_shot_rightside.jpg",
             "assistant": "Yes, it is on the right side"
         },
         {
             "introduction": "This is an example: the bounding box is on the slightly right side (not right) on the image",
-            "path": "res/samples/few_shot_slightly_rightside.jpg",
+            "path": "./res/samples/few_shot_slightly_rightside.jpg",
             "assistant": "Yes, it is on the slightly right side"
         },
         {
             "introduction": "This is an example: the bounding box is on the central on the image",
-            "path": "res/samples/few_shot_central.jpg",
+            "path": "./res/samples/few_shot_central.jpg",
             "assistant": "Yes, it is on the central side"
         },
         {
@@ -217,12 +217,12 @@ def main_pipeline(planner_params, task_description, skill_library):
         },
         {
             "introduction": "This screenshot is the previous step of the game",
-            "path": "res/prompts/testing/decision_making/buy/10.jpg",
+            "path": "./res/prompts/testing/decision_making/buy/10.jpg",
             "assistant": ""
         },
         {
             "introduction": "This screenshot is the current step of the game",
-            "path": "res/prompts/testing/decision_making/buy/11.jpg",
+            "path": "./res/prompts/testing/decision_making/buy/11.jpg",
             "assistant": ""
         }
     ]

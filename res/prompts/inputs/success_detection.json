@@ -11,12 +11,12 @@
         },
         {
             "introduction": "This example shows that the CARROT is currently selected in the image.",
-            "path": "res/prompts/testing/decision_making/buy/14.jpg",
+            "path": "./res/prompts/testing/decision_making/buy/14.jpg",
             "assistant": "Yes. That is correct!"
         },
         {
             "introduction": "This example shows that the Canned peaches is currently selected in the image.",
-            "path": "res/prompts/testing/decision_making/buy/7.jpg",
+            "path": "./res/prompts/testing/decision_making/buy/7.jpg",
             "assistant": "Yes. That is correct!"
         },
         {
@@ -26,12 +26,12 @@
         },
         {
             "introduction": "This screenshot is the previous step of the game",
-            "path": "res/prompts/testing/decision_making/buy/10.jpg",
+            "path": "./res/prompts/testing/decision_making/buy/10.jpg",
             "assistant": ""
         },
         {
             "introduction": "This screenshot is the current step of the game",
-            "path": "res/prompts/testing/decision_making/buy/11.jpg",
+            "path": "./res/prompts/testing/decision_making/buy/11.jpg",
             "assistant": ""
         }
     ]

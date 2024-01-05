@@ -17,7 +17,7 @@ from uac.gameio.atomic_skills.buy import __all__ as buy_skills
 from uac.gameio.atomic_skills.map import __all__ as map_skills
 from uac.gameio.atomic_skills.move import __all__ as move_skills
 from uac.gameio.composite_skills.follow import __all__ as follow_skills
-from uac import constant
+from uac import constants
 
 config = Config()
 logger = Logger()
@@ -62,18 +62,18 @@ def main_test_decision_making(planner_params, task_description, skill_library):
         # },
         {
             "introduction": input["image_introduction"][-2]["introduction"],
-            "path": "res/prompts/testing/decision_making/buy/4.jpg",
+            "path": "./res/prompts/testing/decision_making/buy/4.jpg",
             "assistant": input["image_introduction"][-2]["assistant"]
         },
         {
             "introduction": input["image_introduction"][-1]["introduction"],
-            "path": "res/prompts/testing/decision_making/buy/5.jpg",
+            "path": "./res/prompts/testing/decision_making/buy/5.jpg",
+            "resolution": "high",
             "assistant": input["image_introduction"][-1]["assistant"]
         }
     ]
     input["image_introduction"] = image_introduction
     input["task_description"] = task_description
-
 
     input['skill_library'] = skill_library
     input["previous_action"] = "view_next_page()"
@@ -109,12 +109,12 @@ def main_test_success_detection(planner_params, task_description):
     image_introduction = [
         {
             "introduction": input["image_introduction"][-2]["introduction"],
-            "path": "res/prompts/testing/decision_making/buy/7.jpg",
+            "path": "./res/prompts/testing/decision_making/buy/7.jpg",
             "assistant": input["image_introduction"][-2]["assistant"]
         },
         {
             "introduction": input["image_introduction"][-1]["introduction"],
-            "path": "res/prompts/testing/decision_making/buy/8.jpg",
+            "path": "./res/prompts/testing/decision_making/buy/8.jpg",
             "assistant": input["image_introduction"][-1]["assistant"]
         }
     ]
@@ -322,7 +322,7 @@ def skill_library_test():
 
     extracted_skills = ["def pick_up_item_t():\n    \"\"\"\n    Presses the E key to pick up nearby items.\n    \"\"\"\n    pydirectinput.press('e')\n",
                         "def go_ahead_t(duration):\n    \"\"\"\n    Moves the in-game character forward for the specified duration.\n\nParameters:\n- duration: The duration in seconds for which the character should move forward.\n    \"\"\"\n    pydirectinput.keyDown('w')\n    time.sleep(duration)\n    pydirectinput.keyUp('w')\n"]
-            
+
     for extracted_skill in extracted_skills:
         gm.add_new_skill(skill_code=extracted_skill)
 
@@ -370,7 +370,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                      embedding_provider = llm_provider)
 
     if config.skill_retrieval:
-        gm.register_available_skills(skill_library) 
+        gm.register_available_skills(skill_library)
         skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
     skill_library = gm.get_filtered_skills(skill_library)
 
@@ -422,7 +422,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             gathered_information = dict(sorted(gathered_information.items(), key=lambda item: item[0]))
             all_dialogue = gathered_information_JSON.search_type_across_all_indices('dialogue')
             all_task_guidance = gathered_information_JSON.search_type_across_all_indices('task guidance')
-            all_generated_actions = gathered_information_JSON.search_type_across_all_indices(constant.ACTION_GUIDANCE)
+            all_generated_actions = gathered_information_JSON.search_type_across_all_indices(constants.ACTION_GUIDANCE)
             classification_reasons = gathered_information_JSON.search_type_across_all_indices('reasoning')
 
             if len(all_task_guidance) == 0:
@@ -444,7 +444,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             logger.write(f'All Task Guidance: {all_task_guidance}')
             logger.write(f'Last Task Guidance: {last_task_guidance}')
             logger.write(f'Generated Actions: {all_generated_actions}')
-            
+
             if last_task_guidance:
                 task_description = last_task_guidance
 
@@ -466,7 +466,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             if pre_action:
                 input["previous_action"] = memory.get_recent_history("action", k=1)[-1]
                 input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
-            
+
             if pre_self_reflection_reasoning:
                 input["previous_self_reflection_reasoning"] = memory.get_recent_history("self_reflection_reasoning", k=1)[-1]
 
@@ -571,7 +571,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 logger.write(f'Success: {success}')
                 logger.write(f'Success criteria: {success_criteria}')
                 logger.write(f'Success reason: {success_reasoning}')
-            
+
             if use_self_reflection:
                 action_frames = []
                 video_frames = videocapture.get_frames(start_frame_id,end_frame_id)

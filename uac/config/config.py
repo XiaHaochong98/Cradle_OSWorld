@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from colorama import Fore, Style, init as colours_on
 import pyautogui
 
+from uac import constants
 from uac.utils import Singleton
 from uac.utils.file_utils import assemble_project_path, get_project_root
 
@@ -29,7 +30,7 @@ class Config(metaclass=Singleton):
 
     DEFAULT_POST_ACTION_WAIT_TIME = 3
 
-    DEFAULT_MESSAGE_CONSTRUCTION_MODE = "tripartite"
+    DEFAULT_MESSAGE_CONSTRUCTION_MODE = constants.MESSAGE_CONSTRUCTION_MODE_TRIPART
     DEFAULT_OCR_CROP_REGION = (380, 720, 1920, 1080) # x1, y1, x2, y2, from top left to bottom right
 
     root_dir = '.'
@@ -66,7 +67,7 @@ class Config(metaclass=Singleton):
         self.mouse_move_factor = self.screen_resolution[0] / self.base_resolution[0]
 
         # Default LLM parameters
-        self.temperature = float(os.getenv("TEMPERATURE", self.temperature))	
+        self.temperature = float(os.getenv("TEMPERATURE", self.temperature))
         self.max_tokens = int(os.getenv("MAX_TOKENS", "1024"))
 
         # Sample framework parameters

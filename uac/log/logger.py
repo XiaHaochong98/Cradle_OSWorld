@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-import time
+import re
 import sys
 
 from colorama import Fore, Back, Style, init as colours_on
@@ -66,9 +66,9 @@ class Logger(metaclass=Singleton):
 
     def _log(
             self,
-            title="", 
-            title_color=Fore.WHITE, 
-            message="", 
+            title="",
+            title_color=Fore.WHITE,
+            message="",
             level=logging.INFO
         ):
 
@@ -79,16 +79,16 @@ class Logger(metaclass=Singleton):
         self.logger.log(level, message, extra={"title": title, "color": title_color})
 
     def critical(
-            self, 
-            message, 
+            self,
+            message,
             title=""
         ):
 
         self._log(title, Fore.RED + Back.WHITE, message, logging.ERROR)
 
     def error(
-            self, 
-            message, 
+            self,
+            message,
             title=""
         ):
 
@@ -127,3 +127,38 @@ class Logger(metaclass=Singleton):
         while traceback:
             self.error("{}: {}".format(traceback.tb_frame.f_code.co_filename, traceback.tb_lineno))
             traceback = traceback.tb_next
+
+
+def _extract_text_between_tokens(text, start_token=";base64,", end_token="'}}]}"):
+
+    # Escape the tokens if they contain special regex characters
+    escaped_start_token = re.escape(start_token)
+    escaped_end_token = re.escape(end_token)
+
+    # Regex pattern to capture text between start_token and end_token
+    pattern = rf'{escaped_start_token}(.*?){escaped_end_token}'
+
+    # Extracting all occurrences
+    extracted_texts = re.findall(pattern, text)
+
+    return extracted_texts
+
+
+def _replacer(text, encoded_images, image_paths):
+
+    if image_paths is None or len(image_paths) == 0:
+        image_paths = ['<$img_placeholder$>']
+
+    for i in range(len(encoded_images)):
+        if i >= len(image_paths):
+            paths_idx = 0
+        else:
+            paths_idx = i
+        text = text.replace(encoded_images[i], image_paths[paths_idx])
+
+    return text
+
+
+def shrink_log_message(text):
+    encoded_images = _extract_text_between_tokens(text)
+    return _replacer(text, encoded_images, None)

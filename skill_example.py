@@ -1,4 +1,5 @@
-import time,argparse
+import time
+import argparse
 
 from uac.gameio.lifecycle.ui_control import switch_to_code, switch_to_game, take_screenshot, segment_minimap, pause_game, unpause_game, exit_back_to_game
 from uac.gameio.composite_skills.navigation import cv_navigation
@@ -9,10 +10,11 @@ from uac.gameio.atomic_skills.move import turn, mount_horse
 from uac.gameio.composite_skills.follow import follow
 from uac.gameio.composite_skills.auto_shoot import shoot_wolves, shoot_people
 from uac.config import Config
-
-
+from uac.log import Logger
+from uac.log.logger import shrink_log_message
 
 config = Config()
+logger = Logger()
 
 
 class SwitchWindow(object):
@@ -25,6 +27,10 @@ class SwitchWindow(object):
 
 
 if __name__ == "__main__":
+
+    # c_text = shrink_log_message(text)
+    # logger.write(c_text)
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--skill_chosen",type=str,default="following",help="['navigation', 'go_to_horse', 'map_operation', 'shooting', 'following']"

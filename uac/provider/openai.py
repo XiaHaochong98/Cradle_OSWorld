@@ -13,22 +13,23 @@ from typing import (
 )
 import json
 import re
+import io
+import asyncio
+
 import backoff
 import tiktoken
 import numpy as np
 import cv2
-import io
 from PIL import Image
 from openai import OpenAI, AzureOpenAI, APIError, RateLimitError, BadRequestError, APITimeoutError
 
+from uac import constants
 from uac.provider import LLMProvider, EmbeddingProvider
 from uac.config import Config
 from uac.log import Logger
 from uac.planner.util import get_attr
 from uac.utils.json_utils import load_json
 from uac.utils.file_utils import assemble_project_path
-
-import asyncio
 
 config = Config()
 logger = Logger()
@@ -96,8 +97,8 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         key_var_name = conf_dict[PROVIDER_SETTING_KEY_VAR]
 
         if conf_dict[PROVIDER_SETTING_IS_AZURE]:
-            
-            key = os.getenv(key_var_name)  
+
+            key = os.getenv(key_var_name)
             endpoint_var_name = conf_dict[PROVIDER_SETTING_BASE_VAR]
             endpoint = os.getenv(endpoint_var_name)
 
@@ -305,8 +306,8 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         @backoff.on_exception(
             backoff.constant,
             (
-                APIError, 
-                RateLimitError, 
+                APIError,
+                RateLimitError,
                 APITimeoutError),
             max_tries=self.retries,
             interval=10,
@@ -318,7 +319,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             seed: int = None,
             max_tokens: int = 512,
         ) -> Tuple[str, Dict[str, int]]:
-            
+
             """Send a request to the OpenAI API."""
             if self.provider_cfg[PROVIDER_SETTING_IS_AZURE]:
                 response = self.client.chat.completions.create(deployment_id=self.get_azure_deployment_id_for_model(model),
@@ -341,8 +342,8 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             message = response.choices[0].message.content
 
             info = {
-                "prompt_tokens" : response.usage.prompt_tokens, 
-                "completion_tokens" : response.usage.completion_tokens, 
+                "prompt_tokens" : response.usage.prompt_tokens,
+                "completion_tokens" : response.usage.completion_tokens,
                 "total_tokens" : response.usage.total_tokens,
                 "system_fingerprint" : response.system_fingerprint,
             }
@@ -467,7 +468,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             max_tokens,
         )
 
-   
+
     def num_tokens_from_messages(self, messages, model):
         """Return the number of tokens used by a list of messages.
         Borrowed from https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
@@ -481,7 +482,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             "gpt-4-1106-vision-preview",
         }:
             raise ValueError("We don't support counting tokens of GPT-4V yet.")
-        
+
         if model in {
             "gpt-3.5-turbo-0613",
             "gpt-3.5-turbo-16k-0613",
@@ -502,7 +503,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             raise NotImplementedError(
                 f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens."""
             )
-        
+
         num_tokens = 0
         for message in messages:
             num_tokens += tokens_per_message
@@ -518,6 +519,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
 
     def _get_azure_deployment_id_for_model(self, model_label) -> list:
         return self.provider_cfg[PROVIDER_SETTING_DEPLOYMENT_MAP][model_label]
+
 
     def assemble_prompt_tripartite(self, template_str: str = None, params: Dict[str, Any] = None) -> List[Dict[str, Any]]:
 
@@ -546,10 +548,11 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             ]
         }
 
+        # segmenting "paragraphs"
         image_introduction_paragraph_index = None
         image_introduction_paragraph = None
         for i, paragraph in enumerate(filtered_paragraphs):
-            if "<$image_introduction$>" in paragraph:
+            if constants.IMAGES_INPUT_TAG in paragraph:
                 image_introduction_paragraph_index = i
                 image_introduction_paragraph = paragraph
                 break
@@ -595,11 +598,12 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
 
         # assemble image introduction messages
         image_introduction_messages = []
-        paragraph_input = params.get("image_introduction", None)
+        paragraph_input = params.get(constants.IMAGES_INPUT_TAG_NAME, None)
+
         if paragraph_input is None or paragraph_input == "" or paragraph_input == []:
             image_introduction_messages = []
         else:
-            paragraph_content_pre = image_introduction_paragraph.replace("<$image_introduction$>", "")
+            paragraph_content_pre = image_introduction_paragraph.replace(constants.IMAGES_INPUT_TAG, "")
             message = {
                 "role": "user",
                 "content": [
@@ -609,11 +613,14 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                     }
                 ]
             }
+
             image_introduction_messages.append(message)
+
             for item in paragraph_input:
-                introduction = item.get("introduction", None)
-                path = item.get("path", None)
-                assistant = item.get("assistant", None)
+                introduction = item.get(constants.IMAGE_INTRO_TAG_NAME, None)
+                path = item.get(constants.IMAGE_PATH_TAG_NAME, None)
+                assistant = item.get(constants.IMAGE_ASSISTANT_TAG_NAME, None)
+                resolution = item.get(constants.IMAGE_RESOLUTION_TAG_NAME, None)
 
                 if introduction is not None and introduction != "":
                     message = {
@@ -625,19 +632,24 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                             }
                         ]
                     }
+
                     if path is not None and path != "":
-                        encoded_images = encode_path_to_base64(path)
+                        encoded_images = encode_data_to_base64_path(path)
 
                         for encoded_image in encoded_images:
-                            message["content"].append(
-                                {
+                            msg_content = {
                                     "type": "image_url",
                                     "image_url":
                                         {
                                             "url": f"{encoded_image}"
                                         }
                                 }
-                            )
+
+                            if resolution is not None and resolution != "":
+                                msg_content["image_url"]["detail"] = resolution
+
+                            message["content"].append(msg_content)
+
                     image_introduction_messages.append(message)
 
                 if assistant is not None and assistant != "":
@@ -689,6 +701,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         }
 
         return [system_message] + [user_messages_part1] + image_introduction_messages + [user_messages_part2]
+
 
     def assemble_prompt_paragraph(self, template_str: str = None, params: Dict[str, Any] = None) -> List[
         Dict[str, Any]]:
@@ -752,6 +765,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                             ]
                         }
                         user_messages.append(message)
+
                     # TODO: re-visit this later and try to remove such assumptions about the input content structure "introduction" from prompt assembling
                     elif isinstance(paragraph_input, list) and "introduction" not in placeholder_name:
                         paragraph_content = paragraph.replace(placeholder, json.dumps(paragraph_input))
@@ -765,6 +779,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                             ]
                         }
                         user_messages.append(message)
+
                     # TODO: re-visit this later and try to remove such assumptions about the input content structure "introduction" from prompt assembling
                     elif isinstance(paragraph_input, list) and "introduction" in placeholder_name:
                         paragraph_content_pre = paragraph.replace(placeholder,
@@ -796,7 +811,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                                     ]
                                 }
                                 if path is not None and path != "":
-                                    encoded_images = encode_path_to_base64(path)
+                                    encoded_images = encode_data_to_base64_path(path)
 
                                     for encoded_image in encoded_images:
                                         message["content"].append(
@@ -829,16 +844,18 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         return messages
 
     def assemble_prompt(self, template_str: str = None, params: Dict[str, Any] = None) -> List[Dict[str, Any]]:
-        if config.DEFAULT_MESSAGE_CONSTRUCTION_MODE == "tripartite":
+        if config.DEFAULT_MESSAGE_CONSTRUCTION_MODE == constants.MESSAGE_CONSTRUCTION_MODE_TRIPART:
             return self.assemble_prompt_tripartite(template_str=template_str, params=params)
-        elif config.DEFAULT_MESSAGE_CONSTRUCTION_MODE == "paragraph":
+        elif config.DEFAULT_MESSAGE_CONSTRUCTION_MODE == constants.MESSAGE_CONSTRUCTION_MODE_PARAGRAPH:
             return self.assemble_prompt_paragraph(template_str=template_str, params=params)
+
 
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
 
-def encode_path_to_base64(data: Any) -> List[str]:
+
+def encode_data_to_base64_path(data: Any) -> List[str]:
     encoded_images = []
 
     if isinstance(data, (str, Image.Image, np.ndarray, bytes)):
@@ -854,6 +871,7 @@ def encode_path_to_base64(data: Any) -> List[str]:
                 encoded_images.append(encoded_image)
             else:
                 encoded_images.append(item)
+
         elif isinstance(item, bytes):  # mss grab bytes
             image = Image.frombytes('RGB', item.size, item.bgra, 'raw', 'BGRX')
             buffered = io.BytesIO()
@@ -861,12 +879,14 @@ def encode_path_to_base64(data: Any) -> List[str]:
             encoded_image = base64.b64encode(buffered.getvalue()).decode('utf-8')
             encoded_image = f"data:image/jpeg;base64,{encoded_image}"
             encoded_images.append(encoded_image)
+
         elif isinstance(item, Image.Image):  # PIL image
             buffered = io.BytesIO()
             item.save(buffered, format="JPEG")
             encoded_image = base64.b64encode(buffered.getvalue()).decode('utf-8')
             encoded_image = f"data:image/jpeg;base64,{encoded_image}"
             encoded_images.append(encoded_image)
+
         elif isinstance(item, np.ndarray):  # cv2 image array
             item = cv2.cvtColor(item, cv2.COLOR_BGR2RGB)  # convert to RGB
             image = Image.fromarray(item)
