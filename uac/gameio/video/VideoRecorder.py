@@ -138,10 +138,10 @@ class VideoRecorder():
                     video_writer.write(frame)
 
                     self.current_frame = frame
-                    for i in range(2):
+                    for i in range(config.duplicate_frames):
                         self.current_frame_id += 1
                         frame_buffer.add_frame(self.current_frame_id, frame)
-                    time.sleep(2 / config.video_fps - 0.05) # 0.05: time for taking a screenshots
+                    time.sleep(config.duplicate_frames / config.video_fps - 0.05) # 0.05: time for taking a screenshots
 
                     # Check the flag at regular intervals
                     if not self.thread_flag:

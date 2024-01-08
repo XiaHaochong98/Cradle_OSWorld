@@ -288,7 +288,8 @@ def main_test_self_reflection(planner_params, task_description, skill_library, v
         {
             "introduction": "Here are the sequential frames of the character executing an action called, move_forward(duration=1). Is this action executed successfully? Does this action takes any effect?",
             "path": image_path,
-            "assistant": ""
+            "assistant": "",
+            "resolution": "low"
     })
 
     input["image_introduction"] = image_introduction
@@ -576,18 +577,19 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 action_frames = []
                 video_frames = videocapture.get_frames(start_frame_id,end_frame_id)
 
-                if len(video_frames) <= 17:
-                    action_frames = video_frames[1::2]
+                if len(video_frames) <= config.max_images_in_self_reflection * config.duplicate_frames + 1:
+                    action_frames = [frame[1] for frame in video_frames[1::config.duplicate_frames]]
                 else:
-                    for i in range(8):
-                        step = len(video_frames) // 8 * i + 1
-                        action_frames.append(video_frames[step])
+                    for i in range(config.max_images_in_self_reflection):
+                        step = len(video_frames) // config.max_images_in_self_reflection * i + 1
+                        action_frames.append(video_frames[step][1])
 
                 image_introduction.append(
                     {
                         "introduction": "Here are the sequential frames of the character executing the last action. Is this action executed successfully? Does this action takes any effect? Does this action contributes to the task? If not, what would be a better action based on the last screenshot?",
                         "path": action_frames,
-                        "assistant": ""
+                        "assistant": "",
+                        "resolution": "low"
                 })
 
                 input["image_introduction"] = image_introduction
@@ -604,6 +606,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 data = planner.self_reflection(input = input)
 
                 self_reflection_reasoning = data['res_dict']['reasoning']
+                pre_self_reflection_reasoning = self_reflection_reasoning
                 memory.add_recent_history("self_reflection_reasoning", self_reflection_reasoning)
                 logger.write(f'Self-reflection reason: {self_reflection_reasoning}')
 

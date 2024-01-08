@@ -87,7 +87,11 @@ class Config(metaclass=Singleton):
         self.skill_num = 10
 
         # video
-        self.video_fps = 4
+        self.video_fps = 8
+        self.duplicate_frames = 4
+
+        # self-reflection
+        self.max_images_in_self_reflection = 8
 
         self._set_dirs()
         self._set_game_window_info()
