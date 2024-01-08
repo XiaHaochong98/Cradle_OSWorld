@@ -2,22 +2,22 @@ Assume you are a helpful AI assistant integrated with 'Red Dead Redemption 2', e
 
 The all information should be categorized to one or more kinds of <$information_type$>. If you think an information is both "A" and "B" categories, you should write information in both "A" and "B" categories, for example, "use E to drink water" could both be "Action Guidance" and "Task Guidance" categories.
 
-Item Status: This information only appears at the upper right of the screenshot. The information that is useful to the current context in game, such as the cash, amount of ammo, current using item, if the player is wanted and etc. The value of this should be a pair of status name and its value. For example "cash: 100$".
+Item Status: The information that is useful to the current context in game, such as the cash, amount of ammo, current using item, if the player is wanted and etc. The value of this should be a pair of status name and its value. For example "cash: 100$".
 
-Hints and Notifications: This information only appears at the upper left of the screenshot. Onscreen notifications appear in accordance with your actions and events in the world - such as obtaining items or rewards, completing objectives, and becoming wanted. Besides, it also contains usefully hints and information on how to play well in the game, for example "Health is displayed in the lower left corner". The content of this should be the on-screen text.
+Notifications: Onscreen notifications show the results of your actions and events in the world - such as obtaining items or rewards, completing objectives, and becoming wanted. Besides, it also contains useful notifications of the mechanism of the game, for example "Health is displayed in the lower left corner". The content of this should be the on-screen text.
 
-Environment Information:
-This information only appears at the upper middle of the screenshot. The information of the location, time ,weather and etc. The value of this should be a pair of status name and its value. For example "location: VALENTINE". This information typically appears at the upper middle of the screenshot.
+Environment Information: The information of the location, time ,weather and etc. The value of this should be a pair of status name and its value. For example "location: VALENTINE". This information typically appears at the upper middle of the screenshot.
 
 Task Guidance: The game will give guidance on what should be do to proceed the game. The content of this should be the on-screen text, for example "use E to drink water". If the Task Guidance also instruct how to perfom a task with keyboard and mouse, it also needs to fill the Action Guidance.
 
-Action Guidance: The game will give guidance on how to perform a task with keys in the keyboard or mouse, you must write a code based on the on-screen text. The content of code should be a json file of format:
+Action Guidance: The game will give guidance on how to perform a task with keys in the keyboard or mouse, you must write a code based on the on-screen text. The content of code should obey the following rules:
 The code rules are as follows:
-1. If 'hold' is not in the prompt to control the key, for each pydirectinput.keyDown, it must be followed with time.sleep and pydirectinput.keyUp.
-2. For each time.sleep, the fucntion must include a parameter to control the duration of press, such as func(arg), and the value is set to 2 by default. 
-3. If 'hold' is in the prompt to control the key, there is no need for time.sleep and pydirectinput.keyUp.
-4. The name of function should only use the Verb., Adverb., and Noun. shown in the prompt and should be Verb.+Noun. construction or Verb.+Adverb. construction, such as drink_water, slow_down_car, ride_faster. Note that words that do not shown in the prompt is prohibited.
-This is an example for "use". If "use" is in the prompt and the text prompt on the screenshot is like "use E to drink water", your output should be:
+1. You should refer to different examples strictly based on the word used to control the key, such as 'hold', 'release', and 'press'.
+2. If 'hold' is not in the prompt to control the key, for each pydirectinput.keyDown, it must be followed with time.sleep and pydirectinput.keyUp. Refer to examples 1,2,3.
+3. For each time.sleep, the fucntion must include a parameter to control the duration of press, like func(arg), and the value is set to 2 by default. Refer to examples 1,2,3.
+4. If 'hold' is in the prompt to control the key, it means keeping the button pressed indefinitely. There is no need for time.sleep and pydirectinput.keyUp. Refer to example 4.
+5. The name of function should only use all the phrasal verb, verb, noun, adverb shown in the prompt and should be verb+noun. construction or verb+adverb construction, such as drink_water, slow_down_car, ride_faster. Note that words that do not shown in the prompt is prohibited.
+This is example 1. If "use" is in the prompt and the text prompt on the screenshot is "use E to drink water", your output should be:
 ```python
 def drink_water(duration=2):
     """
@@ -29,7 +29,7 @@ def drink_water(duration=2):
     time.sleep(duration)
     pydirectinput.keyUp('e')
 ```
-This is an example for "press". If "press" is in the prompt and the text prompt on the screenshot is like "press E to play the card", your output should be:
+This is example 2. If "press" is in the prompt and the text prompt on the screenshot is "press E to play the card", your output should be:
 ```python
 def play_card(duration=2):
     """
@@ -41,7 +41,7 @@ def play_card(duration=2):
     time.sleep(duration)
     pydirectinput.keyUp('e')
 ```
-This is an example for "use". If "use" is in the prompt and the text prompt on the screenshot is like "use E and Q to jump the barrier", your output should be:
+This is example 3. If "use" is in the prompt and the text prompt on the screenshot is "use E and Q to jump the barrier", your output should be:
 ```python
 def jump_barrier(duration=2):
     """
@@ -55,7 +55,7 @@ def jump_barrier(duration=2):
     pydirectinput.keyUp('e')
     pydirectinput.keyUp('q')
 ```
-This is an example for "hold". If "hold" is in the prompt and the text prompt on the screenshot is like "hold E to run", your output should be:
+This is example 4. If "hold" is in the prompt and the text prompt on the screenshot is "hold E to run", your output should be:
 ```python
 def run():
     """
@@ -63,12 +63,21 @@ def run():
     """
     pydirectinput.keyDown('e')
 ```
+This is example 5. If "release" is in the prompt and the text prompt on the screenshot is "release E to drop the items", your output should be:
+```python
+def drop_items():
+    """
+    release "e" to drop the items
+    """
+    pydirectinput.keyUp('e')
+```
 
 Dialogue: Conversations between game characters. The content of this should be in the format of "character name: dialogue". For example "Arthur: I'm fine". 
 
 Other: Other information that does not belong to the above categories.
 
 Reasoning: The reasons of classification for each information. 
+For Action Guidance, based on the word used in to prompt to control the key, such as press, hold, release, what code rules should it follow?
 
 <$image_introduction$>
 
@@ -81,7 +90,7 @@ Item Status:
 Information 1
 Information 2
 ...
-Hints and Notifications:
+Notifications:
 Information 1
 Information 2
 ...
@@ -110,6 +119,6 @@ Information 1
 Information 2
 ...
 Reasoning:
-Information 1
-Information 2
+1. ...
+2. ...
 ...
