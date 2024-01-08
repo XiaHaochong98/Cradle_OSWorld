@@ -74,6 +74,7 @@ HUGGINGFACE_HUB_CACHE = "./cache/hf" # This can be the full path too, if the rel
 
 # Pre-download huggingface files needed by GroundingDino
 # This step may require a VPN connection
+# Windows user needs to run it in git bash
 mkdir $HUGGINGFACE_HUB_CACHE
 huggingface-cli download bert-base-uncased config.json tokenizer.json vocab.txt tokenizer_config.json model.safetensors --cache-dir $HUGGINGFACE_HUB_CACHE
 
@@ -187,7 +188,7 @@ Also, in most situations the format of the parameter "output-format" (if it exis
 
 **>>> Allways check the /main branch for the latest examples!!!**
 
-## Game & Skill Libraryg
+## Game & Skill Library
 
 
 ### 1. Change settings before running the code.
@@ -205,8 +206,11 @@ Change both two 'Tap and Hold Speed Control' to on, so we can press w twice to r
 | ![Original interface](docs/images/move_control_previous.png) | ![Changed interface](docs/images/move_control_now.png) |
 
 #### 1.3 Game screen
-Use Win+Tab to open two desktops. Put the code on the right desktop and open the game in the left desktop. The recommended default resolution to use is 1920x1080, but it can vary if the **16:9** aspect ratio is preserved. This means your screen must be of size (1920,1080), (2560,1440) or (3840,2160). DO NOT change the aspect ratio. Also, remember to set the game Screen Type to **Windowed Borderless**.
+The recommended default resolution to use is 1920x1080 (For developers, it must be 1920x1080), but it can vary if the **16:9** aspect ratio is preserved. This means your screen must be of size (1920,1080), (2560,1440) or (3840,2160). DO NOT change the aspect ratio. Also, remember to set the game Screen Type to **Windowed Borderless**. 
+`SETTING -> GRAPHICS -> Resolution = 1920X1080` and  `Screen Type = Windowed Borderless`
 ![game_position](docs/images/game_position.png)
+
+![resolution](docs/images/resolution.png)
 
 #### 1.4 Mini-map
 Remember to enlarge the icon to ensure the program is working well following: `SETTING -> DISPLAY ->  Radar Blip Size = Large` and  `SETTING -> DISPLAY ->  Map Blip Size = Large` and  `SETTING -> DISPLAY ->  Radar = Expanded` (or press Alt + X).
@@ -226,7 +230,7 @@ Enable to show the speaker's name in the subtitles.
 - pydirectinput: Used to simulate the operation of the keyboard.
 - ahk: Used to simulate mouse swiping, including moveTo and dragTo.
 
-### 3. File Structure
+### 3. File Structure（Outdated. Do not read）
 Most of our code are in the uac/gameio and uac/utils.
 
 #### 3.1 uac/gameio/atomic_skills:
@@ -276,7 +280,7 @@ Currently, we only have 'cv_navigation' as a composite skill. Includes calculate
 Contains code for switch game and code between two desktops and take_screenshot of the game.
 
 
-## Running examples
+## Running examples （Outdated. Do not read）
 
 We provide two "toy" examples so far.
 
@@ -288,7 +292,7 @@ The generated direction_map in the runs/<timestamp> should have a green line cro
 ![direction_map](docs/images/direction_map.jpg)
 
 
-## Known issues
+## Known issues（Outdated. Do not read）
 - You need to use time.sleep() between the execution of two skills for now.
 - Planning and success detection sometimes not ideal.
 - Very high latency and call errors in GPT-4V API.
