@@ -403,6 +403,41 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             videocapture.clear_frame_buffer()
             image_introduction = [
                 {
+                    "introduction": "Here are some examples of the icons, representing keyboard & mouse keys, shown in the in-game instructions and prompts.",
+                    "path": "",
+                    "assistant": ""
+                },
+                {
+                    "introduction": "This icon refers to the key, enter.",
+                    "path": ".res/icons/keys/enter.jpg",
+                    "assistant": "Yes. That is correct!"
+                },
+                {
+                    "introduction": "This icon refers to the key, left shift.",
+                    "path": ".res/icons/keys/leftshift.jpg",
+                    "assistant": "Yes. That is correct!"
+                },
+                {
+                    "introduction": "This icon refers to the key, space.",
+                    "path": ".res/icons/keys/space.jpg",
+                    "assistant": "Yes. That is correct!"
+                },
+                {
+                    "introduction": "This icon refers to the key, left shift.",
+                    "path": ".res/icons/keys/mouse.jpg",
+                    "assistant": "Yes. That is correct!"
+                },
+                {
+                    "introduction": "This icon refers to the key, click right mouse button.",
+                    "path": ".res/icons/keys/mouse_right_click.jpg",
+                    "assistant": "Yes. That is correct!"
+                },
+                {
+                    "introduction": "This icon refers to the key, click left mouse button.",
+                    "path": ".res/icons/keys/mouse_left_click.jpg",
+                    "assistant": "Yes. That is correct!"
+                },
+                {
                     "introduction": input["image_introduction"][-1]["introduction"],
                     "path": memory.get_recent_history("image", k=1)[0],
                     "assistant": input["image_introduction"][-1]["assistant"]
