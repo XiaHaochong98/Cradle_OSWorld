@@ -24,6 +24,10 @@ SKILL_NAME_KEY = 'skill_name'
 SKILL_EMBEDDING_KEY = 'skill_emb'
 SKILL_CODE_KEY = 'skill_code'
 SKILL_CODE_HASH_KEY = 'skill_code_base64'
+EXPL_SKILL_LIB_FILE='skill_lib.json'
+BASIC_SKILL_LIB_FILE='skill_lib_basic.json'
+BASIC_SKILLS = ['shoot_people', 'shoot_wolves', 'follow', 'go_to_horse', 'turn_and_move_forward', 'turn', 'move_forward', 'navigate_path']
+NECESSARY_SKILLS = []
 
 
 def register_skill(name):
@@ -43,31 +47,36 @@ def post_skill_wait(wait_time: config.DEFAULT_POST_ACTION_WAIT_TIME):
 
 class SkillRegistry:
 
-    skill_library_filename = 'skill_lib.json'
 
     def __init__(
         self,
         local_path = '',
         from_local = False,
         store_path = '',
+        use_basic = True,
         embedding_provider = None
     ):
-        self.from_local = from_local
+        if use_basic:
+            self.skill_library_filename = BASIC_SKILL_LIB_FILE
+        else:
+            self.skill_library_filename = EXPL_SKILL_LIB_FILE
+        self.use_basic = use_basic
         self.local_path = local_path
+        self.from_local = from_local
         self.store_path = store_path
         self.embedding_provider = embedding_provider
+        self.basic_skills = copy.deepcopy(BASIC_SKILLS)
         self.recent_skills = []
-        self.necessary_skills = []
+        self.necessary_skills = copy.deepcopy(NECESSARY_SKILLS)
         
         if self.from_local:
-            # @TODO validate the local skill registry exists
-            self.load_skill_library()
+            if not os.path.exists(os.path.join(self.local_path, self.skill_library_filename)):
+                logger.error(f"{os.path.join(self.local_path, self.skill_library_filename)} does not exist.")
+                self.filter_skill_library()
+            else:
+                self.load_skill_library(os.path.join(self.local_path, self.skill_library_filename))
         else:
-            self.skill_registry = copy.deepcopy(SKILL_REGISTRY)
-            self.skill_index = copy.deepcopy(SKILL_INDEX)
-            for skill in self.skill_index:
-                skill[SKILL_EMBEDDING_KEY] = self.get_embedding(skill[SKILL_NAME_KEY], inspect.getdoc(SKILL_REGISTRY[skill[SKILL_NAME_KEY]]))
-
+            self.filter_skill_library()
 
     def extract_function_info(self, input_string: str = "open_map()"):
 
@@ -180,6 +189,20 @@ class SkillRegistry:
         def get_func_name(skill_code):
             return skill_code.split('def ')[-1].split('(')[0]
         
+        def check_param_description(skill) -> bool:
+            docstring = inspect.getdoc(skill)
+            if docstring:
+                params = inspect.signature(skill).parameters
+                if len(params) > 0:
+                    for param in params.values():
+                        if not re.search(rf"- {param.name}: (.+).", docstring):
+                            return False
+                    return True
+                else:
+                    return True
+            else:
+                return True
+        
         info = None
 
         skill_code = lower_func_name(skill_code)
@@ -195,6 +218,11 @@ class SkillRegistry:
             skill = eval(skill_name)
         except:
             info = "The skill code is invalid."
+            logger.error(info)
+            return False, info
+        
+        if check_param_description(skill) == False:
+            info = "The format of parameter description is wrong."
             logger.error(info)
             return False, info
 
@@ -277,9 +305,9 @@ class SkillRegistry:
         save_json(file_path = os.path.join(self.store_path, self.skill_library_filename), json_dict = store_file, indent = 4)
 
 
-    def load_skill_library(self) -> None:
+    def load_skill_library(self, file_name) -> None:
 
-        skill_local = load_json(os.path.join(self.local_path, self.skill_library_filename))
+        skill_local = load_json(file_name)
 
         self.skill_index = []
         self.skill_registry = {}
@@ -318,3 +346,20 @@ class SkillRegistry:
                     self.skill_index.append({SKILL_NAME_KEY:skill_name,
                                              SKILL_EMBEDDING_KEY:self.get_embedding(skill_name, inspect.getdoc(skill)),
                                              SKILL_CODE_KEY:skill_local[skill_name][SKILL_CODE_KEY]})
+    
+    def filter_skill_library(self) -> None:
+        if self.use_basic:
+            self.skill_registry = {}
+            self.skill_index = []
+            for skill in SKILL_INDEX:
+                if skill[SKILL_NAME_KEY] in self.basic_skills:
+                    self.skill_registry[skill[SKILL_NAME_KEY]] = SKILL_REGISTRY[skill[SKILL_NAME_KEY]]
+                    self.skill_index.append(skill)
+        
+        else:
+            self.skill_registry = copy.deepcopy(SKILL_REGISTRY)
+            self.skill_index = copy.deepcopy(SKILL_INDEX)
+
+        for skill in self.skill_index:
+            skill[SKILL_EMBEDDING_KEY] = self.get_embedding(skill[SKILL_NAME_KEY], inspect.getdoc(SKILL_REGISTRY[skill[SKILL_NAME_KEY]]))
+

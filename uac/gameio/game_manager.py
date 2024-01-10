@@ -25,6 +25,7 @@ class GameManager:
         self.skill_registry = SkillRegistry(local_path = config.skill_local_path, 
                                             from_local = config.skill_from_local,
                                             store_path = config.work_dir,
+                                            use_basic = config.use_basic,
                                             embedding_provider = embedding_provider)
 
 
