@@ -6,6 +6,7 @@ from uac.config import Config
 from uac.log import Logger
 from uac.planner.base import BasePlanner
 from uac.provider.base_llm import LLMProvider
+from uac.provider import GdProvider
 from uac.utils.check import check_planner_params
 from uac.utils.json_utils import load_json, parse_semi_formatted_json, parse_semi_formatted_text
 from uac.utils.file_utils import assemble_project_path, read_resource_file
@@ -252,16 +253,6 @@ class GatherInformation():
                 logger.error(f"Error in gather information by marker matcher: {e}")
                 flag = False
 
-        # Gather information by object detector
-        if self.object_detector is not None:
-            try:
-                object_detector_gathered_information = self.object_detector(screenshot_file=image_files[0],
-                                                                            class_=class_)
-
-            except Exception as e:
-                logger.error(f"Error in gather information by object detector: {e}")
-                flag = False
-
         # Gather information by LLM provider - mandatory
         try:
             # Call the LLM provider for gather information json
@@ -301,6 +292,20 @@ class GatherInformation():
             res_dict = processed_response
 
             # res_json = json.dumps(processed_response, indent=4)
+            
+        # Gather information by object detector, which is grounding dino.
+        if self.object_detector is not None:
+            try:
+                image_source, boxes, logits, phrases = self.object_detector.detect(image_path=image_files[0], text_prompt=processed_response["target_object_name"].title(), box_threshold=0.4, device='cuda')
+                processed_response["boxes"] = boxes
+                processed_response["logits"] = logits
+                processed_response["phrases"] = phrases
+                # directory, filename = os.path.split(image_files[0])
+                # bb_image_path = os.path.join(directory, "bb_"+filename)
+                # self.object_detector.save_annotate_frame(image_source, boxes, logits, phrases, res_dict["target_object_name"].title(), bb_image_path)
+            except Exception as e:
+                logger.error(f"Error in gather information by object detector: {e}")
+                flag = False
 
         success = self._check_success(data=processed_response)
 

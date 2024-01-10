@@ -238,8 +238,16 @@ def annotate_with_coordinates(image_source, boxes, logits, phrases):
     logger.debug(f"boxes: {boxes}, xyxy: {xyxy}")
 
     detections = sv.Detections(xyxy=xyxy)
+    # Coordinates normalization to percentages
+    # labels = [
+    #     f"{phrase} {' '.join(map(str, ['x=', round((xyxy_s[0]+xyxy_s[2])/(2*w), 3), 'y=', round((xyxy_s[1]+xyxy_s[3])/(2*h), 3)]))}"
+    #     for phrase, xyxy_s
+    #     in zip(phrases, xyxy)
+    # ]
+    
+    # Without coordinates normalization
     labels = [
-        f"{phrase} {' '.join(map(str, ['x=', round((xyxy_s[0]+xyxy_s[2])/(2*w), 3), 'y=', round((xyxy_s[1]+xyxy_s[3])/(2*h), 3)]))}"
+        f"{phrase} {' '.join(map(str, ['x=', round((xyxy_s[0]+xyxy_s[2])/2), 'y=', round((xyxy_s[1]+xyxy_s[3])/2)]))}"
         for phrase, xyxy_s
         in zip(phrases, xyxy)
     ]

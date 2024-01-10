@@ -9,6 +9,7 @@ from uac.agent import Agent
 from uac.planner.planner import Planner
 from uac.memory import LocalMemory
 from uac.provider.openai import OpenAIProvider
+from uac.provider import GdProvider
 from uac.gameio.lifecycle.ui_control import switch_to_game, pause_game, unpause_game
 from uac.gameio.video.VideoRecorder import VideoRecorder
 from uac.gameio.video.VideoFrameExtractor import VideoFrameExtractor
@@ -18,6 +19,8 @@ from uac.gameio.atomic_skills.map import __all__ as map_skills
 from uac.gameio.atomic_skills.move import __all__ as move_skills
 from uac.gameio.composite_skills.follow import __all__ as follow_skills
 from uac import constants
+
+from groundingdino.util.inference import load_image
 
 config = Config()
 logger = Logger()
@@ -357,11 +360,14 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
     llm_provider = OpenAIProvider()
     llm_provider.init_provider(llm_provider_config_path)
 
+    gd_detector = GdProvider()
+
     frame_extractor = VideoFrameExtractor()
 
     planner = Planner(llm_provider=llm_provider,
                       planner_params=planner_params,
                       frame_extractor=frame_extractor,
+                      object_detector=gd_detector,
                       use_self_reflection=use_self_reflection)
 
     memory = LocalMemory(memory_path=config.work_dir,
@@ -469,6 +475,14 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             image_description=data['res_dict']['description']
             target_object_name=data['res_dict']['target_object_name']
             object_name_reasoning=data['res_dict']['reasoning']
+            
+            image_source, image = load_image(cur_screen_shot_path)
+            boxes = data['res_dict']["boxes"]
+            logits = data['res_dict']["logits"]
+            phrases = data['res_dict']["phrases"]
+            directory, filename = os.path.split(cur_screen_shot_path)
+            bb_image_path = os.path.join(directory, "bb_"+filename)
+            gd_detector.save_annotate_frame(image_source, boxes, logits, phrases, target_object_name.title(), bb_image_path)
 
             logger.write(f'Image Description: {image_description}')
             logger.write(f'Object Name: {target_object_name}')
@@ -538,7 +552,12 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                     "introduction": input["image_introduction"][-1]["introduction"],
                     "path": memory.get_recent_history("image", k=1)[0],
                     "assistant": input["image_introduction"][-1]["assistant"]
-                }
+                },
+                {
+                    "introduction": "This image is the screenshot of the current step with bounding boxes.",
+                    "path": bb_image_path,
+                    "assistant": ""
+                },
             ]
 
             input["image_introduction"] = image_introduction
