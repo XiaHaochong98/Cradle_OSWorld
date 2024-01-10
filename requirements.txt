@@ -16,3 +16,4 @@ imageio[ffmpeg]
 mss==9.0.1
 aiohttp
 easyocr==1.7.1
+spacy==3.7.2

@@ -108,6 +108,12 @@ def cv_go_to_icon(
         
         logger.write(f'Go to icon iter #{step}')
 
+        if config.ocr_different_previous_text:
+            logger.write("The text is different from the previous one.")
+            config.ocr_enabled = False # disable ocr
+            config.ocr_different_previous_text = False  # reset
+            break
+
         timestep = time.time()
 
         # 1. Get observation screenshot

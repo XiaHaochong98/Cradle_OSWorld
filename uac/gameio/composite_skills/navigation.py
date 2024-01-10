@@ -44,8 +44,14 @@ def cv_navigation(total_iterations, terminal_threshold=100, debug = False):
     waypoint_marker_filename = './res/icons/red_marker.jpg'
 
     try:
-
         for step in range(total_iterations):
+
+            if config.ocr_different_previous_text:
+                logger.write("The text is different from the previous one.")
+                config.ocr_enabled = False  # disable ocr
+                config.ocr_different_previous_text = False  # reset
+                break
+
             timestep = time.time()
             logger.debug(f"step {step}, {timestep}")
             if step > 0:

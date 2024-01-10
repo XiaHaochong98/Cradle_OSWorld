@@ -2,13 +2,14 @@ import threading
 import os
 import time
 from typing import Tuple
-
+import spacy
 import numpy as np
 import cv2
 import mss
 
 from uac.log import Logger
 from uac.config import Config
+from uac.gameio.video.VideoEasyOCRExtractor import VideoEasyOCRExtractor
 
 config = Config()
 logger = Logger()
@@ -83,6 +84,10 @@ class VideoRecorder():
         self.video_splits_dir = os.path.join(os.path.dirname(self.video_path), 'video_splits')
         os.makedirs(self.video_splits_dir, exist_ok=True)
 
+        self.nlp = spacy.load("en_core_web_sm")
+        self.video_ocr_extractor = VideoEasyOCRExtractor()
+        self.pre_text = None
+
     def get_frames(self, start_frame_id, end_frame_id = None):
         return self.frame_buffer.get_frames(start_frame_id, end_frame_id)
 
@@ -133,6 +138,27 @@ class VideoRecorder():
             while self.thread_flag:
                 try:
                     frame = sct.grab(region)
+
+                    # if config.ocr_enabled is true, start ocr and check whether the text is different from the previous one
+                    if config.ocr_enabled:
+                        cur_text = self.video_ocr_extractor.extract_text(frame)
+                        cur_text = cur_text[0]
+                        cur_text = " ".join(cur_text)
+                        if self.pre_text is None:
+                            self.pre_text = cur_text
+                        else:
+                            emb1 = self.nlp(self.pre_text)
+                            emb2 = self.nlp(cur_text)
+                            if emb1.similarity(emb2) < config.ocr_similarity_threshold:
+                                config.ocr_different_previous_text = True
+                            else:
+                                config.ocr_different_previous_text = False
+                            self.pre_text = cur_text
+
+                    # if config.ocr_enabled is false, the ocr is not enabled, so the pre_text should be None
+                    if not config.ocr_enabled and self.pre_text is not None:
+                        self.pre_text = None
+
                     frame = np.array(frame)
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
                     video_writer.write(frame)

@@ -93,6 +93,18 @@ class Config(metaclass=Singleton):
         # self-reflection
         self.max_images_in_self_reflection = 8
 
+        # ocr
+        self.ocr_enabled = False # whether to enable ocr
+        self.ocr_similarity_threshold = 0.9  # cosine similarity, smaller than this threshold the text is considered to be different
+        self.ocr_different_previous_text = False # whether the text is different from the previous one
+        self.ocr_check_composite_skill_names = [
+            "shoot_people",
+            "shoot_wolves",
+            "follow",
+            "go_to_horse",
+            "navigate_path"
+        ]
+
         self._set_dirs()
         self._set_game_window_info()
 

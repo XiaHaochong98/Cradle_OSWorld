@@ -115,6 +115,11 @@ class GameManager:
 
                 logger.write(f"Executing skill: {skill_name} with params: {skill_params}")
 
+                # Enable OCR for composite skills, start the ocr check
+                if skill_name in config.ocr_check_composite_skill_names:
+                    config.ocr_different_previous_text = False
+                    config.enable_ocr = True
+
                 if "navigate" in skill_name:
                     self.execute_navigation(skill_name)
                 else:
