@@ -4,6 +4,7 @@ import numpy as np
 from typing import Dict, Any, List
 import subprocess
 import shutil
+from collections import OrderedDict
 
 from uac.log import Logger
 from uac.config import Config
@@ -35,7 +36,7 @@ class JSONStructure:
         extracted_data = [(key, value) for entry in self.data_structure.values() for key, value in entry.items()]
         sorted_data = sorted(extracted_data, key=lambda x: x[0])
         # Reconstructing the JSON structure with sorted data
-        self.data_structure = {index: {key: value} for index, (key, value) in enumerate(sorted_data)}
+        self.data_structure = OrderedDict({index: {key: value} for index, (key, value) in enumerate(sorted_data)})
 
     def search_type_across_all_indices(self, search_type: str) -> list[dict[str, any]]:
         results = []

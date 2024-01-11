@@ -230,6 +230,11 @@ class GatherInformation():
         else:
             gathered_information_JSON=None
 
+
+        # get dialogue information from the gathered_information_JSON at the subfounder find the dialogue frames
+        dialogues = [item["values"] for item in gathered_information_JSON.search_type_across_all_indices("dialogue")]
+        # TODO: summary the dialogues
+
         input = self.input_map if input is None else input
         input = self._pre(input=input)
 
