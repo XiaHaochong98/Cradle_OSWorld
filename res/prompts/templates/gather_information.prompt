@@ -5,7 +5,7 @@ Assume you are a helpful AI assistant integrated with 'Red Dead Redemption 2' on
 Current task:
 <$task_description$>
 
-Target object name: Assume you can use the object detection model to detect the most relevant object for completing task if needed, what object should be detected to complete the task based on the current screenshot? The object should be relevant to the current target or the intermediate target of the task. Just give one object name without any modifiers. If the object name belongs to the person type, replace it with person. If there is no need to detect an object, just output " ".
+Target_object_name: Assume you can use the object detection model to detect the most relevant object for completing task if needed, what object should be detected to complete the task based on the current screenshot? The object should be relevant to the current target or the intermediate target of the task. Just give one object name without any modifiers. If the object name belongs to the person type, replace it with person. If there is no need to detect an object, just output " ".
 
 Reasoning: The reasons why this object is chosen or why there is no need to detect an object.
 

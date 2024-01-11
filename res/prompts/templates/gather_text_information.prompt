@@ -12,39 +12,39 @@ Task Guidance: The game will give guidance on what should be done to proceed wit
 
 Action Guidance: The game will give guidance on how to perform a task with keys in the keyboard or mouse, you must write a code based on the on-screen text. The content of the code should obey the following rules:
 The code rules are as follows:
-1. You should refer to different examples strictly based on the word used to control the key, such as 'hold', 'release', and 'press'.
-2. If 'hold' is not in the prompt to control the key, for each pydirectinput.keyDown, it must be followed with time.sleep and pydirectinput.keyUp. Refer to Example 1,2,3.
-3. For each time.sleep, the function must include a parameter to control the duration of press, like func(arg), and the value is set to 2 by default. Refer to Example 1,2,3.
-4. If 'hold' is in the prompt to control the key, it means keeping the button pressed indefinitely. There is no need for time.sleep and pydirectinput.keyUp. Refer to Example 4.
+1. You should refer to different examples strictly based on the word used to control the key, such as 'use', 'hold', 'release', and 'press'.
+2. If 'use' or 'press' is in the prompt to control the key, each pydirectinput.keyDown must be followed with time.sleep and pydirectinput.keyUp. Refer to Examples 1,2,3.
+3. If 'hold' is in the prompt to control the key, it means keeping the button pressed indefinitely. Each pydirectinput.keyDown must be followed with time.sleep, but there is no need for pydirectinput.keyUp. Refer to Example 4.
+4. All time.sleep is set to sleep for 2 seconds by default.
 5. The name of the function should only use all the phrasal verbs, verbs, nouns, and adverbs shown in the prompt and should be verb+noun. construction or verb+adverb construction, such as drink_water, slow_down_car, ride_faster. Note that words that do not show in the prompt are prohibited.
 
 This is Example 1. If "use" is in the prompt and the text prompt on the screenshot is "use E to drink water", your output should be:
 ```python
-def drink_water(duration=2):
+def drink_water():
     """
     use "e" to drink water
     Parameter:
      - duration: duration in seconds for pressing the 'e'.
     """
     pydirectinput.keyDown('e')
-    time.sleep(duration)
+    time.sleep(2)
     pydirectinput.keyUp('e')
 ```
 This is Example 2. If "press" is in the prompt and the text prompt on the screenshot is "press E to play the card", your output should be:
 ```python
-def play_card(duration=2):
+def play_card():
     """
     press "e" to play the card
     Parameter:
      - duration: duration in seconds for pressing the 'e'.
     """
     pydirectinput.keyDown('e')
-    time.sleep(duration)
+    time.sleep(2)
     pydirectinput.keyUp('e')
 ```
 This is Example 3. If "use" is in the prompt and the text prompt on the screenshot is "use E and Q to jump the barrier", your output should be:
 ```python
-def jump_barrier(duration=2):
+def jump_barrier():
     """
     use "e" and "q" to jump the barrier
     Parameter:
@@ -52,7 +52,7 @@ def jump_barrier(duration=2):
     """
     pydirectinput.keyDown('e')
     pydirectinput.keyDown('q')
-    time.sleep(duration)
+    time.sleep(2)
     pydirectinput.keyUp('e')
     pydirectinput.keyUp('q')
 ```
@@ -63,6 +63,7 @@ def run():
     hold "e" to run
     """
     pydirectinput.keyDown('e')
+    time.sleep(2)
 ```
 This is Example 5. If "release" is in the prompt and the text prompt on the screenshot is "release E to drop the items", your output should be:
 ```python
@@ -71,6 +72,7 @@ def drop_items():
     release "e" to drop the items
     """
     pydirectinput.keyUp('e')
+    time.sleep(2)
 ```
 
 Dialogue: Conversations between game characters. The content of this should be in the format of "character name: dialogue". For example "Arthur: I'm fine". 

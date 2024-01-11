@@ -415,32 +415,32 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 },
                 {
                     "introduction": "This icon refers to the key, enter.",
-                    "path": ".res/icons/keys/enter.jpg",
+                    "path": "./res/icons/keys/enter.jpg",
                     "assistant": "Yes. That is correct!"
                 },
                 {
-                    "introduction": "This icon refers to the key, left shift.",
-                    "path": ".res/icons/keys/leftshift.jpg",
+                    "introduction": "This icon refers to the key, shift.",
+                    "path": "./res/icons/keys/leftshift.jpg",
                     "assistant": "Yes. That is correct!"
                 },
                 {
                     "introduction": "This icon refers to the key, space.",
-                    "path": ".res/icons/keys/space.jpg",
+                    "path": "./res/icons/keys/space.jpg",
                     "assistant": "Yes. That is correct!"
                 },
                 {
-                    "introduction": "This icon refers to the key, left shift.",
-                    "path": ".res/icons/keys/mouse.jpg",
+                    "introduction": "This icon refers to the mouse.",
+                    "path": "./res/icons/keys/mouse.jpg",
                     "assistant": "Yes. That is correct!"
                 },
                 {
-                    "introduction": "This icon refers to the key, click right mouse button.",
-                    "path": ".res/icons/keys/mouse_right_click.jpg",
+                    "introduction": "This icon refers to the mouse, click right mouse button.",
+                    "path": "./res/icons/keys/mouse_right_click.jpg",
                     "assistant": "Yes. That is correct!"
                 },
                 {
-                    "introduction": "This icon refers to the key, click left mouse button.",
-                    "path": ".res/icons/keys/mouse_left_click.jpg",
+                    "introduction": "This icon refers to the mouse, click left mouse button.",
+                    "path": "./res/icons/keys/mouse_left_click.jpg",
                     "assistant": "Yes. That is correct!"
                 },
                 {
