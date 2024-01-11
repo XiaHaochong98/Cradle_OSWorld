@@ -20,6 +20,9 @@ Previous reasoning for the last action:
 Self-reflection for the last executd actoin:
 <$previous_self_reflection_reasoning$>
 
+Summarization of recent history:
+<$info_summary$>
+
 Valid action set in Python format to select the next action:
 <$skill_library$>
 

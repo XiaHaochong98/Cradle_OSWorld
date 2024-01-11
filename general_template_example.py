@@ -353,7 +353,7 @@ def skill_library_test():
 
     gm.store_skills()
 
-def main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = False):
+def main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = False, use_information_summary = False):
 
     llm_provider_config_path = './conf/openai_config.json'
 
@@ -368,7 +368,8 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                       planner_params=planner_params,
                       frame_extractor=frame_extractor,
                       object_detector=gd_detector,
-                      use_self_reflection=use_self_reflection)
+                      use_self_reflection=use_self_reflection,
+                      use_information_summary=use_information_summary)
 
     memory = LocalMemory(memory_path=config.work_dir,
                          max_recent_steps=config.max_recent_steps)
@@ -521,6 +522,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 input["previous_self_reflection_reasoning"] = memory.get_recent_history("self_reflection_reasoning", k=1)[-1]
 
             input['skill_library'] = skill_library
+            input['info_summary'] = memory.get_summarization()
 
             image_introduction = [
                 # {
@@ -580,7 +582,6 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             exec_info = gm.execute_actions(skill_steps)
 
             cur_screen_shot_path, _ = gm.capture_screen()
-            memory.add_recent_history("image", cur_screen_shot_path)
 
             end_frame_id = videocapture.get_current_frame_id()
             pause_game()
@@ -596,6 +597,28 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
             # For such cases with no expected response, we should define a retry limit
             logger.write(f'Decision reasoning: {pre_decision_making_reasoning}')
+
+            # for information summary
+            if use_information_summary and len(memory.get_recent_history("decision_making_reasoning", memory.max_recent_steps)) == memory.max_recent_steps:
+                input = planner.information_summary_.input_map
+                logger.write(f'> Information summary call...')
+                images = memory.get_recent_history('image', config.event_count)
+                reasonings = memory.get_recent_history('decision_making_reasoning', config.event_count)
+                image_introduction = [{"path": images[event_i],"assistant": "","introduction": 'This is the {} screenshot of recent events. The description of this image: {}'.format(['first','second','third','fourth','fifth'][event_i], reasonings[event_i])} for event_i in range(config.event_count)]
+
+                input["image_introduction"] = image_introduction
+                input["previous_summarization"] = memory.get_summarization()
+                input["task_description"] = task_description
+                input["event_count"] = str(config.event_count)
+
+                data = planner.information_summary(input = input)
+                info_summary = data['res_dict']['info_summary']
+                entities_and_behaviors = data['res_dict']['entities_and_behaviors']
+                logger.write(f'R: Summary: {info_summary}')
+                logger.write(f'R: entities_and_behaviors: {entities_and_behaviors}')
+                memory.add_summarization(info_summary)
+            
+            memory.add_recent_history("image", cur_screen_shot_path)
 
             # for success detection
             if use_success_detection:
@@ -743,7 +766,7 @@ if __name__ == '__main__':
     #main_test_information_summary(planner_params, task_description, skill_library)
 
     config.skill_retrieval = True
-    main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True)
+    main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True, use_information_summary = True)
 
     # skill_library_test()
 

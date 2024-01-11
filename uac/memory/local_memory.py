@@ -39,7 +39,7 @@ class LocalMemory(BaseMemory):
                                "dialogue":[],
                                "task_description":[],
                                "skill_library":[],
-                               "summarization":''}
+                               "summarization":"The player is playing the game Red Dead Redemption for the PC."}
 
 
     def add_recent_history(
