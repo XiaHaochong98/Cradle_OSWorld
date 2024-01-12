@@ -1,5 +1,12 @@
 # Gather information expected fields
-ACTION_GUIDANCE = 'action guidance'
+ACTION_GUIDANCE = 'action_guidance'
+ITEM_STATUS = 'item_status'
+TASK_GUIDANCE = 'task_guidance'
+DIALOGUE = 'dialogue'
+GATHER_TEXT_REASONING = 'reasoning'
+IMAGE_DESCRIPTION = 'description'
+TARGET_OBJECT_NAME = 'target_object_name'
+GATHER_INFO_REASONING = 'reasoning'
 
 # LLM message type constants
 MESSAGE_CONSTRUCTION_MODE_TRIPART = 'tripartite'

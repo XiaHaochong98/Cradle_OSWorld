@@ -463,19 +463,19 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
             # sort the gathered_information by the time stamp
             gathered_information = dict(sorted(gathered_information.items(), key=lambda item: item[0]))
-            all_dialogue = gathered_information_JSON.search_type_across_all_indices('dialogue')
-            all_task_guidance = gathered_information_JSON.search_type_across_all_indices('task guidance')
+            all_dialogue = gathered_information_JSON.search_type_across_all_indices(constants.DIALOGUE)
+            all_task_guidance = gathered_information_JSON.search_type_across_all_indices(constants.TASK_GUIDANCE)
             all_generated_actions = gathered_information_JSON.search_type_across_all_indices(constants.ACTION_GUIDANCE)
-            classification_reasons = gathered_information_JSON.search_type_across_all_indices('reasoning')
+            classification_reasons = gathered_information_JSON.search_type_across_all_indices(constants.GATHER_TEXT_REASONING)
 
             if len(all_task_guidance) == 0:
                 last_task_guidance = ""
             else:
                 last_task_guidance = max(all_task_guidance, key=lambda x: x['index'])['values']
 
-            image_description=data['res_dict']['description']
-            target_object_name=data['res_dict']['target_object_name']
-            object_name_reasoning=data['res_dict']['reasoning']
+            image_description=data['res_dict'][constants.IMAGE_DESCRIPTION]
+            target_object_name=data['res_dict'][constants.TARGET_OBJECT_NAME]
+            object_name_reasoning=data['res_dict'][constants.GATHER_INFO_REASONING]
             
             image_source, image = load_image(cur_screen_shot_path)
             boxes = data['res_dict']["boxes"]
@@ -663,7 +663,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
                 image_introduction.append(
                     {
-                        "introduction": "Here are the sequential frames of the character executing the last action. Is this action executed successfully? Does this action takes any effect? Does this action contributes to the task? If not, what would be a better action based on the last screenshot?",
+                        "introduction": "Here are the sequential frames of the character executing the last action.",
                         "path": action_frames,
                         "assistant": "",
                         "resolution": "low"
@@ -680,8 +680,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 else:
                     input['executing_action_error']  = exec_info["errors_info"]
 
-                data = planner.self_reflection(input = input)
-
+                data = planner.self_reflection(input = input)          
                 self_reflection_reasoning = data['res_dict']['reasoning']
                 pre_self_reflection_reasoning = self_reflection_reasoning
                 memory.add_recent_history("self_reflection_reasoning", self_reflection_reasoning)

@@ -7,5 +7,5 @@
             "assistant": ""
         }
     ],
-    "information_type": ["Item Status", "Notifications", "Environment Information", "Action Guidance", "Task Guidance","Dialogue", "Others"]
+    "information_type": ["Item_status", "Notifications", "Environment_information", "Action_guidance", "Task_guidance", "Dialogue", "Others"]
 }                                                              

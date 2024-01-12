@@ -4,12 +4,12 @@ Current task:
 <$task_description$>
 
 Last executed action:
-<$action_code$>
+<$previous_action$>
 
 Error report for the last executed action:
 <$executing_action_error$>
 
-Previous reasoning for the last action:
+Reasoning for the last action:
 <$previous_reasoning$>
 
 Valid action set in Python format to select the next action:

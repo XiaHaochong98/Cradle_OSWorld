@@ -92,7 +92,7 @@ class Config(metaclass=Singleton):
         self.duplicate_frames = 4
 
         # self-reflection
-        self.max_images_in_self_reflection = 8
+        self.max_images_in_self_reflection = 4
 
         # ocr
         self.ocr_enabled = False # whether to enable ocr

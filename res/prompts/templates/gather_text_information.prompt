@@ -1,16 +1,18 @@
 Assume you are a helpful AI assistant integrated with 'Red Dead Redemption 2' on PC, equipped to handle a wide range of tasks in the game. Your advanced capabilities enable you to process and interpret gameplay screenshots and other relevant information.
 
+<$image_introduction$>
+
 All information should be categorized into one or more kinds of <$information_type$>. If you think a piece of information is both "A" and "B" categories, you should write information in both "A" and "B" categories, for example, "use E to drink water" could both be "Action Guidance" and "Task Guidance" categories.
 
-Item Status: The information that is useful to the current context in the game, such as the cash, amount of ammo, current using item, if the player is wanted, etc. The value of this should be a pair of status names and its value. For example "cash: 100$".
+Item_status: The information that is useful to the current context in the game, such as the cash, amount of ammo, current using item, if the player is wanted, etc. The value of this should be a pair of status names and its value. For example "cash: 100$".
 
 Notifications: Onscreen notifications show the results of your actions and events in the world - such as obtaining items or rewards, completing objectives, and becoming wanted. Besides, it also contains useful notifications of the mechanism of the game, for example, "Health is displayed in the lower left corner". The content of this should be the on-screen text.
 
-Environment Information: The information about the location, time, weather, etc. The value of this should be a pair of status names and its value. For example "location: VALENTINE". This information typically appears in the upper middle of the screenshot.
+Environment_information: The information about the location, time, weather, etc. The value of this should be a pair of status names and its value. For example "location: VALENTINE". This information typically appears in the upper middle of the screenshot.
 
-Task Guidance: The game will give guidance on what should be done to proceed with the game. The content of this should be the on-screen text, for example, "use E to drink water". If the Task Guidance also instructs how to perform a task with keyboard and mouse, it also needs to fill the Action Guidance.
+Task_guidance: The game will give guidance on what should be done to proceed with the game. The content of this should be the on-screen text, for example, "use E to drink water". If the Task Guidance also instructs how to perform a task with keyboard and mouse, it also needs to fill the Action Guidance.
 
-Action Guidance: The game will give guidance on how to perform a task with keys in the keyboard or mouse, you must write a code based on the on-screen text. The content of the code should obey the following rules:
+Action_guidance: The game will give guidance on how to perform a task with keys in the keyboard or mouse, you must write a code based on the on-screen text. The content of the code should obey the following rules:
 The code rules are as follows:
 1. You should refer to different examples strictly based on the word used to control the key, such as 'use', 'hold', 'release', and 'press'.
 2. If 'use' or 'press' is in the prompt to control the key, each pydirectinput.keyDown must be followed with time.sleep and pydirectinput.keyUp. Refer to Examples 1,2,3.
@@ -23,8 +25,6 @@ This is Example 1. If "use" is in the prompt and the text prompt on the screensh
 def drink_water():
     """
     use "e" to drink water
-    Parameter:
-     - duration: duration in seconds for pressing the 'e'.
     """
     pydirectinput.keyDown('e')
     time.sleep(2)
@@ -35,8 +35,6 @@ This is Example 2. If "press" is in the prompt and the text prompt on the screen
 def play_card():
     """
     press "e" to play the card
-    Parameter:
-     - duration: duration in seconds for pressing the 'e'.
     """
     pydirectinput.keyDown('e')
     time.sleep(2)
@@ -47,8 +45,6 @@ This is Example 3. If "use" is in the prompt and the text prompt on the screensh
 def jump_barrier():
     """
     use "e" and "q" to jump the barrier
-    Parameter:
-     - duration: duration in seconds for pressing the "e" and "q".
     """
     pydirectinput.keyDown('e')
     pydirectinput.keyDown('q')
@@ -79,17 +75,16 @@ Dialogue: Conversations between game characters. The content of this should be i
 
 Other: Other information that does not belong to the above categories.
 
-Reasoning: The reasons for classification for each piece of information. 
+Reasoning: List all the text information on the screenshot.
+The reasons for classification for each piece of information. 
 For Action Guidance, based on the word used to prompt to control the key, such as press, hold, release, what code rules should it follow?
-
-<$image_introduction$>
 
 The information should be in the following categories, you should output the following content without adding any other explanation or information. If there is no content for some categories, do not output anything for these categories:
 Reasoning:
 Information 1
 Information 2
 ...
-Item Status:
+Item_status:
 Information 1
 Information 2
 ...
@@ -97,15 +92,15 @@ Notifications:
 Information 1
 Information 2
 ...
-Environment Information:
+Environment_information:
 Information 1
 Information 2
 ...
-Task Guidance:
+Task_guidance:
 Information 1
 Information 2
 ...
-Action Guidance:
+Action_guidance:
 ```python
 Python code to execute
 ```
