@@ -25,7 +25,7 @@ class GameManager:
         self.skill_registry = SkillRegistry(local_path = config.skill_local_path, 
                                             from_local = config.skill_from_local,
                                             store_path = config.work_dir,
-                                            use_basic = config.use_basic,
+                                            skill_scope = config.skill_scope,
                                             embedding_provider = embedding_provider)
 
 
@@ -62,8 +62,8 @@ class GameManager:
         return filtered_skill_library
 
 
-    def add_new_skill(self, skill_code):
-        return self.skill_registry.register_skill_from_code(skill_code = skill_code)
+    def add_new_skill(self, skill_code, overwrite = False):
+        return self.skill_registry.register_skill_from_code(skill_code = skill_code, overwrite = overwrite)
 
 
     def delete_skill(self, skill_name):

@@ -53,16 +53,20 @@ class SkillRegistry:
         local_path = '',
         from_local = False,
         store_path = '',
-        use_basic = True,
+        skill_scope = 'Full',
         embedding_provider = None
     ):
-        if use_basic:
-            self.skill_library_filename = BASIC_SKILL_LIB_FILE
-        else:
-            self.skill_library_filename = EXPL_SKILL_LIB_FILE
-        self.use_basic = use_basic
-        self.local_path = local_path
+        
         self.from_local = from_local
+        if skill_scope == 'Basic':
+            self.skill_library_filename = BASIC_SKILL_LIB_FILE
+        if skill_scope == 'Full':
+            self.skill_library_filename = EXPL_SKILL_LIB_FILE
+        if skill_scope == None:
+            self.from_local = False
+        
+        self.skill_scope = skill_scope
+        self.local_path = local_path
         self.store_path = store_path
         self.embedding_provider = embedding_provider
         self.basic_skills = copy.deepcopy(BASIC_SKILLS)
@@ -180,7 +184,7 @@ class SkillRegistry:
         return skill_code, info
 
 
-    def register_skill_from_code(self, skill_code: str) -> Tuple[bool, str]:
+    def register_skill_from_code(self, skill_code: str, overwrite = False) -> Tuple[bool, str]:
 
         def lower_func_name(skill_code):
             skill_name = get_func_name(skill_code)
@@ -207,6 +211,9 @@ class SkillRegistry:
 
         skill_code = lower_func_name(skill_code)
         skill_name = get_func_name(skill_code)
+
+        if overwrite and skill_name not in self.basic_skills:
+            self.delete_skill(skill_name)
         
         if skill_name in self.skill_registry:
             info = f"Skill '{skill_name}' already exists."
@@ -348,7 +355,7 @@ class SkillRegistry:
                                              SKILL_CODE_KEY:skill_local[skill_name][SKILL_CODE_KEY]})
     
     def filter_skill_library(self) -> None:
-        if self.use_basic:
+        if self.skill_scope == 'Basic':
             self.skill_registry = {}
             self.skill_index = []
             for skill in SKILL_INDEX:
@@ -356,9 +363,17 @@ class SkillRegistry:
                     self.skill_registry[skill[SKILL_NAME_KEY]] = SKILL_REGISTRY[skill[SKILL_NAME_KEY]]
                     self.skill_index.append(skill)
         
-        else:
+        if self.skill_scope == 'Full':
             self.skill_registry = copy.deepcopy(SKILL_REGISTRY)
             self.skill_index = copy.deepcopy(SKILL_INDEX)
+        
+        if self.skill_scope == None:
+            self.skill_registry = {}
+            self.skill_index = []
+            for skill in SKILL_INDEX:
+                if skill[SKILL_NAME_KEY] in self.necessary_skills:
+                    self.skill_registry[skill[SKILL_NAME_KEY]] = SKILL_REGISTRY[skill[SKILL_NAME_KEY]]
+                    self.skill_index.append(skill)
 
         for skill in self.skill_index:
             skill[SKILL_EMBEDDING_KEY] = self.get_embedding(skill[SKILL_NAME_KEY], inspect.getdoc(SKILL_REGISTRY[skill[SKILL_NAME_KEY]]))

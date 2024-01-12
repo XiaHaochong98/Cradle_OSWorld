@@ -85,7 +85,7 @@ class Config(metaclass=Singleton):
         self.skill_local_path = './res/skills/'
         self.skill_retrieval = False
         self.skill_num = 10
-        self.use_basic = False
+        self.skill_scope = 'Full' #'Full', 'Basic', and None
 
         # video
         self.video_fps = 8
