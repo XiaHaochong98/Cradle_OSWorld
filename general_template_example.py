@@ -271,29 +271,33 @@ def main_test_self_reflection(planner_params, task_description, skill_library, v
     image_introduction = []
     video = cv2.VideoCapture(video_path)
     step = 0
-    image_path = []
+    video_frames = []
+    action_frames = []
     while True:
         ret, frame = video.read()
         if not ret:
             break
+        # path = 'test/' + str(step) + ".jpg"
+        # cv2.imwrite(path, frame)
+        #image_path.append(path)
+        video_frames.append((step, frame))
         step += 1
-        if step % 4 != 1:
-            continue
-
-        if step // 4 > 2:
-            #path = 'test/' + str(step) + ".jpg"
-            #cv2.imwrite(path, frame)
-            #image_path.append(path)
-            image_path.append(frame)
     video.release()
 
-    image_introduction.append(
+    if len(video_frames) <= config.max_images_in_self_reflection * config.duplicate_frames + 1:
+        action_frames = [frame[1] for frame in video_frames[1::config.duplicate_frames]]
+    else:
+        for i in range(config.max_images_in_self_reflection):
+            step = len(video_frames) // config.max_images_in_self_reflection * i + 1
+            action_frames.append(video_frames[step][1])
+
+    image_introduction = [
         {
-            "introduction": "Here are the sequential frames of the character executing an action called, move_forward(duration=1). Is this action executed successfully? Does this action takes any effect?",
-            "path": image_path,
+            "introduction": "Here are the sequential frames of the character executing the last action. Is this action executed successfully? Does this action takes any effect? Does this action contributes to the task? If not, what would be a better action based on the last screenshot?",
+            "path": action_frames,
             "assistant": "",
             "resolution": "low"
-    })
+    }]
 
     input["image_introduction"] = image_introduction
     input["task_description"] = task_description
@@ -661,13 +665,13 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                         step = len(video_frames) // config.max_images_in_self_reflection * i + 1
                         action_frames.append(video_frames[step][1])
 
-                image_introduction.append(
+                image_introduction = [
                     {
                         "introduction": "Here are the sequential frames of the character executing the last action.",
                         "path": action_frames,
                         "assistant": "",
                         "resolution": "low"
-                })
+                }]
 
                 input["image_introduction"] = image_introduction
                 input["task_description"] = task_description
