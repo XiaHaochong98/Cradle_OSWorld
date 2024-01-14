@@ -412,7 +412,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             get_text_input = planner.gather_information_.get_text_input_map
             video_clip_path = videocapture.get_video(start_frame_id,end_frame_id)
             videocapture.clear_frame_buffer()
-            image_introduction = [
+            get_text_image_introduction = [
                 {
                     "introduction": "Here are some examples of the icons, representing keyboard & mouse keys, shown in the in-game instructions and prompts.",
                     "path": "",
@@ -454,9 +454,13 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                     "assistant": input["image_introduction"][-1]["assistant"]
                 }
             ]
+            # modify the general input for gather_information here
+            image_introduction=[get_text_image_introduction[-1]]
             input["task_description"] = task_description
-            input["image_introduction"] = image_introduction
             input["video_clip_path"] = video_clip_path
+            input["image_introduction"] = image_introduction
+            # Modify the input for get_text module in gather_information here
+            get_text_input["image_introduction"] = get_text_image_introduction
             input["get_text_input"] = get_text_input
 
             data = planner.gather_information(input=input)
