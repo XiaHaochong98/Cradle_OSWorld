@@ -772,6 +772,7 @@ if __name__ == '__main__':
 
     #main_test_information_summary(planner_params, task_description, skill_library)
 
+    config.ocr_enabled = True
     config.skill_retrieval = True
     main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True, use_information_summary = True)
 
