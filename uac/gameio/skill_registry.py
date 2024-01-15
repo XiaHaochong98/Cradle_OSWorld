@@ -26,16 +26,21 @@ SKILL_CODE_KEY = 'skill_code'
 SKILL_CODE_HASH_KEY = 'skill_code_base64'
 EXPL_SKILL_LIB_FILE='skill_lib.json'
 BASIC_SKILL_LIB_FILE='skill_lib_basic.json'
-BASIC_SKILLS = ['shoot_people', 'shoot_wolves', 'follow', 'go_to_horse', 'turn_and_move_forward', 'turn', 'move_forward', 'navigate_path']
+BASIC_SKILLS = ['shoot_people', 'shoot_wolves', 'follow', 'go_to_horse', 'turn_and_move_forward', 'turn', 'move_forward', 'navigate_path', 'shoot', 'choose_weapons_at']
 NECESSARY_SKILLS = []
+DENY_LIST_TERMS = ['shoot', 'follow', 'turn', 'move_forward', 'go_to_horse', 'navigate_path', 'weapon']
+ALLOW_LIST_TERMS = ['wheel']
 
 
 def register_skill(name):
     def decorator(skill):
         SKILL_REGISTRY[name] = skill
+        skill_code = inspect.getsource(skill)
+        if f"@register_skill(\"{name}\")\n" in skill_code:
+            skill_code = skill_code.replace(f"@register_skill(\"{name}\")\n", "")
         SKILL_INDEX.append({SKILL_NAME_KEY:          name,
                             SKILL_EMBEDDING_KEY:     None,
-                            SKILL_CODE_KEY:          inspect.getsource(skill)})
+                            SKILL_CODE_KEY:          skill_code})
         return skill
     return decorator
 
@@ -77,6 +82,7 @@ class SkillRegistry:
             if not os.path.exists(os.path.join(self.local_path, self.skill_library_filename)):
                 logger.error(f"{os.path.join(self.local_path, self.skill_library_filename)} does not exist.")
                 self.filter_skill_library()
+                self.store_skills(os.path.join(self.local_path, self.skill_library_filename))
             else:
                 self.load_skill_library(os.path.join(self.local_path, self.skill_library_filename))
         else:
@@ -168,15 +174,12 @@ class SkillRegistry:
             skill_name = skill
 
         skill_code = None
-        if skill_name in SKILL_REGISTRY:
-            skill_code = inspect.getsource(self.skill_registry[skill_name])
-            if f"@register_skill(\"{skill_name}\")\n" in skill_code:
-                skill_code = skill_code.replace(f"@register_skill(\"{skill_name}\")\n", "")
-        else:
-            for item in self.skill_index:
-                if item[SKILL_NAME_KEY] == skill_name:
-                    skill_code = item[SKILL_CODE_KEY]
-                    break
+        for item in self.skill_index:
+            if item[SKILL_NAME_KEY] == skill_name:
+                skill_code = item[SKILL_CODE_KEY]
+                if f"@register_skill(\"{skill_name}\")\n" in skill_code:
+                    skill_code = skill_code.replace(f"@register_skill(\"{skill_name}\")\n", "")
+                break
 
         if skill_code is None:
             info = f"Skill '{skill_name}' not found in the registry."
@@ -207,13 +210,29 @@ class SkillRegistry:
             else:
                 return True
         
+        def check_protection_conflict(skill):
+            for word in ALLOW_LIST_TERMS:
+                if word in skill:
+                    return True
+            for word in DENY_LIST_TERMS:
+                if word in skill:
+                    return False
+            return True
+
+        
         info = None
 
         skill_code = lower_func_name(skill_code)
         skill_name = get_func_name(skill_code)
 
-        if overwrite and skill_name not in self.basic_skills:
-            self.delete_skill(skill_name)
+        if overwrite:
+            if check_protection_conflict(skill_name):
+                self.delete_skill(skill_name)
+                logger.write(f"Skill '{skill_name}' will be overwritten.")
+            else:
+                info = f"Skill '{skill_name}' conflicts with protected skills."
+                logger.write(info)
+                return True, info
         
         if skill_name in self.skill_registry:
             info = f"Skill '{skill_name}' already exists."
@@ -302,14 +321,16 @@ class SkillRegistry:
         return skill
     
 
-    def store_skills(self) -> None:
+    def store_skills(self, file_path = None) -> None:
+        if file_path == None:
+            file_path = os.path.join(self.store_path, self.skill_library_filename)
         store_file = {}
         for skill in self.skill_index:
             store_file[skill[SKILL_NAME_KEY]] = {SKILL_CODE_KEY:skill[SKILL_CODE_KEY],
                                                  SKILL_EMBEDDING_KEY:base64.b64encode(skill[SKILL_EMBEDDING_KEY].tobytes()).decode('utf-8'),
                                                  SKILL_CODE_HASH_KEY:base64.b64encode(skill[SKILL_CODE_KEY].encode('utf-8')).decode('utf-8')}
 
-        save_json(file_path = os.path.join(self.store_path, self.skill_library_filename), json_dict = store_file, indent = 4)
+        save_json(file_path = file_path, json_dict = store_file, indent = 4)
 
 
     def load_skill_library(self, file_name) -> None:
