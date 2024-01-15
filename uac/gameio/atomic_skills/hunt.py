@@ -46,31 +46,52 @@ class Input_I(ctypes.Union):
 
 class Input(ctypes.Structure):
     _fields_ = [("type", ctypes.c_ulong), ("ii", Input_I)]
-
-
-def MouseMoveTo(x, y):
-    extra = ctypes.c_ulong(0)
-    ii_ = Input_I()
-    ii_.mi = MouseInput(x, y, 0, 0x0001, 0, ctypes.pointer(extra))
-
-    command = Input(ctypes.c_ulong(0), ii_)
-    ctypes.windll.user32.SendInput(1, ctypes.pointer(command), ctypes.sizeof(command))
-
-
+    
 config = Config()
 io_env = IOEnvironment()
 ahk = io_env.ahk
 
+def MouseMoveTo(x, y):
+    move_x = int(x - config.game_resolution[0] // 2)
+    move_y = int(y - config.game_resolution[1] // 2)
+    
+    extra = ctypes.c_ulong(0)
+    ii_ = Input_I()
+    ii_.mi = MouseInput(move_x, move_y, 0, 0x0001, 0, ctypes.pointer(extra))
+
+    command = Input(ctypes.c_ulong(0), ii_)
+    ctypes.windll.user32.SendInput(1, ctypes.pointer(command), ctypes.sizeof(command))
+
+@register_skill("choose_weapons_at")
+def choose_weapons_at(x, y):
+    """
+    Move the mouse to a specific location to choose weapons in the game.
+    Parameters:
+    - x: The abscissa of the pixel.
+    - y: The ordinate of the pixel.
+    """
+    MouseMoveTo(x, y)
+    
 
 @register_skill("shoot")
 def shoot(x, y):
     """
-    Shoots the weapon in the game.
+    Shoot the weapon at a specific location in view.
+    Parameters:
+    - x: The abscissa of the pixel.
+    - y: The ordinate of the pixel.
     """
 
     MouseMoveTo(x, y)
     ahk.click(click_count=1, button='R', relative=False)
     ahk.click(click_count=2, relative=False)
+    
+@register_skill("view_weapons")
+def view_weapons():
+    """
+    View the weapon wheel.
+    """
+    pydirectinput.keyDown('tab')
 
 
 def call_animals():
@@ -86,4 +107,6 @@ def call_animals():
 
 __all__ = [
     "shoot",
+    "choose_weapons_at",
+    "view_weapons",
 ]

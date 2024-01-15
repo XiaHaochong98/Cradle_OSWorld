@@ -4,6 +4,7 @@ import pydirectinput
 from uac.config import Config
 from uac.gameio import IOEnvironment
 from uac.gameio.skill_registry import register_skill, post_skill_wait
+from uac.gameio.atomic_skills.hunt import MouseMoveTo
 
 config = Config()
 io_env = IOEnvironment()
@@ -32,18 +33,28 @@ def cancel_shopkeeper_interaction():
     post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
 
-@register_skill("select_products_by_mouse")
-def select_products_by_mouse(width, height, speed=100, relative=False):
-    """
-    Moves the mouse to the specified position for selecting products.
+# @register_skill("select_products_by_mouse")
+# def select_products_by_mouse(width, height, speed=100, relative=False):
+#     """
+#     Moves the mouse to the specified position for selecting products.
 
-    Parameters:
-     - width: The offset in pixels to move the mouse horizontally on the map.
-     - height: The offset in pixels to move the mouse vertically
-     - speed: The speed of the mouse movement (default is 100).
-     - relative: If True, the offsets are relative to the current mouse position. If False, Move the mouse to the pixel position of (width, height)(default is False).
+#     Parameters:
+#      - width: The offset in pixels to move the mouse horizontally on the map.
+#      - height: The offset in pixels to move the mouse vertically
+#      - speed: The speed of the mouse movement (default is 100).
+#      - relative: If True, the offsets are relative to the current mouse position. If False, Move the mouse to the pixel position of (width, height)(default is False).
+#     """
+#     ahk.mouse_move(width, height, speed=speed, relative=relative)
+    
+@register_skill("choose_products_at")
+def choose_products_at(x, y):
     """
-    ahk.mouse_move(width, height, speed=speed, relative=relative)
+    Move the mouse to a specific location to choose products in the game.
+    Parameters:
+    - x: The abscissa of the pixel.
+    - y: The ordinate of the pixel.
+    """
+    MouseMoveTo(x, y)
 
 
 @register_skill("mouse_select_target_object")
@@ -114,6 +125,7 @@ __all__ = [
     "shopkeeper_interaction",
     "cancel_shopkeeper_interaction",
     #"select_products_by_mouse",
+    # "choose_products_at",
     #"select_upside_product",
     #"select_downside_product",
     "select_next_product",

@@ -92,11 +92,11 @@ def keep_shooting_target(
         for detect_xyxy, detect_object, detect_confidence in zip(xyxy, phrases, logits):
             if debug:
                 logger.debug(
-                    f'detect_xyxy is {detect_xyxy},detect_object is {detect_object},shoot_xy is {int((detect_xyxy[0] + detect_xyxy[2]) / 2) - config.game_resolution[0] // 2},{int((detect_xyxy[1] + detect_xyxy[3]) / 2) - config.game_resolution[1] // 2}')
+                    f'detect_xyxy is {detect_xyxy},detect_object is {detect_object},shoot_xy is {int((detect_xyxy[0] + detect_xyxy[2]) / 2)},{int((detect_xyxy[1] + detect_xyxy[3]) / 2)}')
 
             if detect_object in detect_target:  # TODO: shoot confidence threshold
-                shoot_x = int((detect_xyxy[0] + detect_xyxy[2]) / 2 - config.game_resolution[0] // 2)
-                shoot_y = int((detect_xyxy[1] + detect_xyxy[3]) / 2 - config.game_resolution[1] // 2)
+                shoot_x = int((detect_xyxy[0] + detect_xyxy[2]) / 2)
+                shoot_y = int((detect_xyxy[1] + detect_xyxy[3]) / 2)
                 if debug:
                     cv2.arrowedLine(annotated_frame, (config.game_resolution[0] // 2, config.game_resolution[1] // 2), (
                         int((detect_xyxy[0] + detect_xyxy[2]) / 2), int((detect_xyxy[1] + detect_xyxy[3]) / 2)),
