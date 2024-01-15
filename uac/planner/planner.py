@@ -37,18 +37,19 @@ async def gather_information_get_completion_parallel(llm_provider, get_text_inpu
                                                    params=get_text_input)
     logger.debug(f'>> Upstream - R: {message_prompts}')
 
-    response, info = await llm_provider.create_completion_async(message_prompts)
-
-    logger.debug(f'>> Downstream - A: {response}')
     success_flag = False
     while not success_flag:
         try:
+            response, info = await llm_provider.create_completion_async(message_prompts)
+            logger.debug(f'>> Downstream - A: {response}')
             # Convert the response to dict
             processed_response = parse_semi_formatted_text(response)
             success_flag = True
         except Exception as e:
             logger.error(f"Response is not in the correct format: {e}, retrying...")
             success_flag = False
+            # wait 2 seconds for the next request and retry
+            await asyncio.sleep(2)
     # Convert the response to dict
     if processed_response is None or len(response) == 0:
         logger.warn('Empty response in gather text information call')
@@ -105,10 +106,13 @@ def gather_information_get_completion_sequence(llm_provider, get_text_input_map,
 
 
 async def get_completion_in_parallel(llm_provider, get_text_input_map, extracted_frame_paths, get_text_input,get_text_template,video_prefix,gathered_information_JSON):
-    tasks = [
-        gather_information_get_completion_parallel(llm_provider, get_text_input_map, current_frame_path, time_stamp,
-                                                   get_text_input, get_text_template, i,video_prefix,gathered_information_JSON) for
-        i, (current_frame_path, time_stamp) in enumerate(extracted_frame_paths)]
+    tasks =[]
+    for i, (current_frame_path, time_stamp) in enumerate(extracted_frame_paths):
+        task=gather_information_get_completion_parallel(llm_provider, get_text_input_map, current_frame_path, time_stamp,
+                                                   get_text_input, get_text_template, i,video_prefix,gathered_information_JSON)
+        tasks.append(task)
+        # wait 2 seconds for the next request
+        time.sleep(2)
     return await asyncio.gather(*tasks)
 
 
@@ -275,12 +279,20 @@ class GatherInformation():
             message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
 
             logger.debug(f'>> Upstream - R: {message_prompts}')
-            response, info = self.llm_provider.create_completion(message_prompts)
+            gather_information_success_flag = False
+            while gather_information_success_flag is False:
+                try:
+                    response, info = self.llm_provider.create_completion(message_prompts)
 
-            logger.debug(f'>> Downstream - A: {response}')
-            # Convert the response to dict
-            processed_response = parse_semi_formatted_text(response)
-
+                    logger.debug(f'>> Downstream - A: {response}')
+                    # Convert the response to dict
+                    processed_response = parse_semi_formatted_text(response)
+                    gather_information_success_flag = True
+                except Exception as e:
+                    logger.error(f"Response of image description is not in the correct format: {e}, retrying...")
+                    gather_information_success_flag = False
+                    # wait 2 seconds for the next request and retry
+                    time.sleep(2)
             llm_provider_gather_information = processed_response
 
         except Exception as e:
