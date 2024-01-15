@@ -498,6 +498,57 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             bb_image_path = os.path.join(directory, "bb_"+filename)
             gd_detector.save_annotate_frame(image_source, boxes, logits, phrases, target_object_name.title(), bb_image_path)
 
+            # add the screenshot with bounding boxes and add few shots
+            if boxes.numel() != 0:
+                memory.get_recent_history("image", k=1)[0] = bb_image_path
+                image_introduction = [
+                    # {
+                    #     "introduction": "Here are some examples of trading in the game.",
+                    #     "path": "",
+                    #     "assistant": ""
+                    # },
+                    # {
+                    #     "introduction": "This example shows that the CARROT is currently selected in the image.",
+                    #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163732.2476993.jpg",
+                    #     "assistant": "Yes. That is correct!"
+                    # },
+                    # {
+                    #     "introduction": "This example shows that the Canned SALMON is currently selected in the image.",
+                    #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163680.5057523.jpg",
+                    #     "assistant": "Yes. That is correct!"
+                    # },
+                    # {
+                    #     "introduction": "I will give you two images for decision making.",
+                    #     "path": "",
+                    #     "assistant": ""
+                    # },
+                    {
+                        "introduction": "This is an example: the bounding box is on the left side (not slightly left) on the image",
+                        "path": "./res/samples/few_shot_leftside.jpg",
+                        "assistant": "Yes, it is on the left side"
+                    },
+                    {
+                        "introduction": "This is an example: the bounding box is on the slightly left side (not left) on the image",
+                        "path": "./res/samples/few_shot_slightly_leftside.jpg",
+                        "assistant": "Yes, it is on the slightly left side"
+                    },
+                    {
+                        "introduction": "This is an example: the bounding box is on the right side (not slightly right) on the image",
+                        "path": "./res/samples/few_shot_rightside.jpg",
+                        "assistant": "Yes, it is on the right side"
+                    },
+                    {
+                        "introduction": "This is an example: the bounding box is on the slightly right side (not right) on the image",
+                        "path": "./res/samples/few_shot_slightly_rightside.jpg",
+                        "assistant": "Yes, it is on the slightly right side"
+                    },
+                    {
+                        "introduction": "This is an example: the bounding box is on the central on the image",
+                        "path": "./res/samples/few_shot_central.jpg",
+                        "assistant": "Yes, it is on the central side"
+                    },
+                ]
+
             logger.write(f'Image Description: {image_description}')
             logger.write(f'Object Name: {target_object_name}')
             logger.write(f'Reasoning: {object_name_reasoning}')
@@ -537,43 +588,15 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             input['skill_library'] = skill_library
             input['info_summary'] = memory.get_summarization()
 
-            image_introduction = [
-                # {
-                #     "introduction": "Here are some examples of trading in the game.",
-                #     "path": "",
-                #     "assistant": ""
-                # },
-                # {
-                #     "introduction": "This example shows that the CARROT is currently selected in the image.",
-                #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163732.2476993.jpg",
-                #     "assistant": "Yes. That is correct!"
-                # },
-                # {
-                #     "introduction": "This example shows that the Canned SALMON is currently selected in the image.",
-                #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163680.5057523.jpg",
-                #     "assistant": "Yes. That is correct!"
-                # },
-                # {
-                #     "introduction": "I will give you two images for decision making.",
-                #     "path": "",
-                #     "assistant": ""
-                # },
-                {
-                    "introduction": input["image_introduction"][-2]["introduction"],
-                    "path": memory.get_recent_history("image", k=2)[0],
-                    "assistant": input["image_introduction"][-2]["assistant"]
-                },
-                {
-                    "introduction": input["image_introduction"][-1]["introduction"],
-                    "path": memory.get_recent_history("image", k=1)[0],
-                    "assistant": input["image_introduction"][-1]["assistant"]
-                },
-                {
-                    "introduction": "This image is the screenshot of the current step with bounding boxes.",
-                    "path": bb_image_path,
-                    "assistant": ""
-                },
-            ]
+            # add screenshots into image_introductions
+            image_memory = memory.get_recent_history("image", k=5)
+            for i in range(len(image_memory), 0, -1):
+                image_introduction.append(
+                    {
+                        "introduction": input["image_introduction"][-i]["introduction"],
+                        "path":image_memory[-i],
+                        "assistant": input["image_introduction"][-i]["assistant"]
+                    })
 
             input["image_introduction"] = image_introduction
             input["task_description"] = task_description

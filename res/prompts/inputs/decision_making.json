@@ -30,6 +30,21 @@
             "assistant": ""
         },
         {
+            "introduction": "This screenshot is four step before the previous step of the game",
+            "path": "",
+            "assistant": ""
+        },
+        {
+            "introduction": "This screenshot is three step before the previous step of the game",
+            "path": "",
+            "assistant": ""
+        },
+        {
+            "introduction": "This screenshot is two step before the previous step of the game",
+            "path": "",
+            "assistant": ""
+        },
+        {
             "introduction": "This screenshot is the previous step of the game",
             "path": "./res/prompts/testing/decision_making/buy/10.jpg",
             "assistant": ""
