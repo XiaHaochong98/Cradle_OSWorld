@@ -84,7 +84,7 @@ class VideoRecorder():
         self.video_splits_dir = os.path.join(os.path.dirname(self.video_path), 'video_splits')
         os.makedirs(self.video_splits_dir, exist_ok=True)
 
-        self.nlp = spacy.load("en_core_web_sm")
+        self.nlp = spacy.load("en_core_web_lg")
         self.video_ocr_extractor = VideoEasyOCRExtractor()
         self.pre_text = None
 
@@ -138,18 +138,23 @@ class VideoRecorder():
             while self.thread_flag:
                 try:
                     frame = sct.grab(region)
+                    frame = np.array(frame) # Convert to numpy array
 
                     # if config.ocr_enabled is true, start ocr and check whether the text is different from the previous one
                     if config.ocr_enabled:
-                        cur_text = self.video_ocr_extractor.extract_text(frame)
+                        cur_text = self.video_ocr_extractor.extract_text(frame, return_full=0)
                         cur_text = cur_text[0]
                         cur_text = " ".join(cur_text)
+
                         if self.pre_text is None:
                             self.pre_text = cur_text
                         else:
                             emb1 = self.nlp(self.pre_text)
                             emb2 = self.nlp(cur_text)
-                            if emb1.similarity(emb2) < config.ocr_similarity_threshold:
+
+                            score = emb1.similarity(emb2)
+
+                            if score < config.ocr_similarity_threshold:
                                 config.ocr_different_previous_text = True
                             else:
                                 config.ocr_different_previous_text = False
@@ -159,7 +164,6 @@ class VideoRecorder():
                     if not config.ocr_enabled and self.pre_text is not None:
                         self.pre_text = None
 
-                    frame = np.array(frame)
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
                     video_writer.write(frame)
 
@@ -195,8 +199,10 @@ if __name__ == '__main__':
     capture_video = VideoRecorder('test.mp4')
 
     capture_video.start_capture()
+    config.ocr_enabled = True
 
     time.sleep(10)
     capture_video.get_video(start_frame_id=0)
+    config.ocr_enabled = False
 
     capture_video.finish_capture()
