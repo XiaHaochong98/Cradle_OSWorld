@@ -94,6 +94,9 @@ class Config(metaclass=Singleton):
         # self-reflection
         self.max_images_in_self_reflection = 4
 
+        # decision-making
+        self.decision_making_image_num = 2
+
         # ocr
         self.ocr_enabled = False # whether to enable ocr
         self.ocr_similarity_threshold = 0.9  # cosine similarity, smaller than this threshold the text is considered to be different

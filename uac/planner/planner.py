@@ -22,20 +22,20 @@ PROMPT_EXT = ".prompt"
 JSON_EXT = ".json"
 
 
-async def gather_information_get_completion_parallel(llm_provider, get_text_input_map, current_frame_path, time_stamp,
-                                                     get_text_input, get_text_template, i,video_prefix,gathered_information_JSON):
+async def gather_information_get_completion_parallel(llm_provider, text_input_map, current_frame_path, time_stamp,
+                                                     text_input, get_text_template, i,video_prefix,gathered_information_JSON):
     logger.write(f"Start gathering text information from the {i + 1}th frame")
-    get_text_input = get_text_input_map if get_text_input is None else get_text_input
-    image_introduction = get_text_input["image_introduction"]
+    text_input = text_input_map if text_input is None else text_input
+    image_introduction = text_input["image_introduction"]
     # Set the last frame path as the current frame path
     image_introduction[-1] = {
         "introduction": image_introduction[-1]["introduction"],
         "path": f"{current_frame_path}",
         "assistant": image_introduction[-1]["assistant"]
     }
-    get_text_input["image_introduction"] = image_introduction
+    text_input["image_introduction"] = image_introduction
     message_prompts = llm_provider.assemble_prompt(template_str=get_text_template,
-                                                   params=get_text_input)
+                                                   params=text_input)
     logger.debug(f'>> Upstream - R: {message_prompts}')
 
     success_flag = False
@@ -63,22 +63,22 @@ async def gather_information_get_completion_parallel(llm_provider, get_text_inpu
     return True
 
 
-def gather_information_get_completion_sequence(llm_provider, get_text_input_map, current_frame_path, time_stamp,
-                                               get_text_input, get_text_template, i,video_prefix,gathered_information_JSON):
+def gather_information_get_completion_sequence(llm_provider, text_input_map, current_frame_path, time_stamp,
+                                               text_input, get_text_template, i,video_prefix,gathered_information_JSON):
     logger.write(f"Start gathering text information from the {i + 1}th frame")
-    get_text_input = get_text_input_map if get_text_input is None else get_text_input
+    text_input = text_input_map if text_input is None else text_input
 
-    image_introduction = get_text_input["image_introduction"]
+    image_introduction = text_input["image_introduction"]
     # Set the last frame path as the current frame path
     image_introduction[-1] = {
         "introduction": image_introduction[-1]["introduction"],
         "path": f"{current_frame_path}",
         "assistant": image_introduction[-1]["assistant"]
     }
-    get_text_input["image_introduction"] = image_introduction
+    text_input["image_introduction"] = image_introduction
 
     message_prompts = llm_provider.assemble_prompt(template_str=get_text_template,
-                                                   params=get_text_input)
+                                                   params=text_input)
 
     logger.debug(f'>> Upstream - R: {message_prompts}')
 
@@ -106,21 +106,21 @@ def gather_information_get_completion_sequence(llm_provider, get_text_input_map,
     return True
 
 
-async def get_completion_in_parallel(llm_provider, get_text_input_map, extracted_frame_paths, get_text_input,get_text_template,video_prefix,gathered_information_JSON):
+async def get_completion_in_parallel(llm_provider, text_input_map, extracted_frame_paths, text_input,get_text_template,video_prefix,gathered_information_JSON):
     tasks =[]
     for i, (current_frame_path, time_stamp) in enumerate(extracted_frame_paths):
-        task=gather_information_get_completion_parallel(llm_provider, get_text_input_map, current_frame_path, time_stamp,
-                                                   get_text_input, get_text_template, i,video_prefix,gathered_information_JSON)
+        task=gather_information_get_completion_parallel(llm_provider, text_input_map, current_frame_path, time_stamp,
+                                                   text_input, get_text_template, i,video_prefix,gathered_information_JSON)
         tasks.append(task)
         # wait 2 seconds for the next request
         time.sleep(2)
     return await asyncio.gather(*tasks)
 
 
-def get_completion_in_sequence(llm_provider, get_text_input_map, extracted_frame_paths, get_text_input,get_text_template,video_prefix,gathered_information_JSON):
+def get_completion_in_sequence(llm_provider, text_input_map, extracted_frame_paths, text_input,get_text_template,video_prefix,gathered_information_JSON):
     for i, (current_frame_path, time_stamp) in enumerate(extracted_frame_paths):
-        gather_information_get_completion_sequence(llm_provider, get_text_input_map, current_frame_path, time_stamp,
-                                                   get_text_input, get_text_template, i,video_prefix,gathered_information_JSON)
+        gather_information_get_completion_sequence(llm_provider, text_input_map, current_frame_path, time_stamp,
+                                                   text_input, get_text_template, i,video_prefix,gathered_information_JSON)
     return True
 
 
@@ -191,7 +191,7 @@ class GatherInformation():
                  marker_matcher: Any = None,
                  object_detector: Any = None,
                  llm_provider: LLMProvider = None,
-                 get_text_input_map: Dict = None,
+                 text_input_map: Dict = None,
                  get_text_template: str = None,
                  frame_extractor: Any = None
                  ):
@@ -201,7 +201,7 @@ class GatherInformation():
         self.marker_matcher = marker_matcher
         self.object_detector = object_detector
         self.llm_provider = llm_provider
-        self.get_text_input_map = get_text_input_map
+        self.text_input_map = text_input_map
         self.get_text_template = get_text_template
         self.frame_extractor = frame_extractor
 
@@ -212,7 +212,7 @@ class GatherInformation():
 
         flag = True
         if self.frame_extractor is not None:
-            get_text_input = input["get_text_input"]
+            text_input = input["text_input"]
             video_path = input["video_clip_path"]
             # extract the text information of the whole video
             # run the frame_extractor to get the key frames
@@ -228,8 +228,8 @@ class GatherInformation():
                 asyncio.set_event_loop(loop)
                 try:
                     loop.run_until_complete(
-                        get_completion_in_parallel(self.llm_provider, self.get_text_input_map, extracted_frame_paths,
-                                                   get_text_input,self.get_text_template,video_prefix,gathered_information_JSON))
+                        get_completion_in_parallel(self.llm_provider, self.text_input_map, extracted_frame_paths,
+                                                   text_input,self.get_text_template,video_prefix,gathered_information_JSON))
                 except KeyboardInterrupt:
                     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
                     for task in tasks:
@@ -239,8 +239,8 @@ class GatherInformation():
                     loop.close()
             else:
                 logger.write(f"Start gathering text information from the whole video in sequence")
-                get_completion_in_sequence(self.llm_provider, self.get_text_input_map, extracted_frame_paths,
-                                           get_text_input,self.get_text_template,video_prefix,gathered_information_JSON)
+                get_completion_in_sequence(self.llm_provider, self.text_input_map, extracted_frame_paths,
+                                           text_input,self.get_text_template,video_prefix,gathered_information_JSON)
             gathered_information_JSON.sort_index_by_timestamp()
             logger.write(f"Finish gathering text information from the whole video")
 
@@ -688,7 +688,7 @@ class Planner(BasePlanner):
 
         self.gather_information_ = GatherInformation(input_map=self.inputs["gather_information"],
                                                      template=self.templates["gather_information"],
-                                                     get_text_input_map=self.inputs["gather_text_information"],
+                                                     text_input_map=self.inputs["gather_text_information"],
                                                      get_text_template=self.templates["gather_text_information"],
                                                      frame_extractor=self.frame_extractor,
                                                      marker_matcher=self.marker_matcher,

@@ -1,38 +1,7 @@
 {
     "type": "self_reflection",
-    "task_description": "Your task is to buy one 'APPLE'.",
-    "previous_action": "view_next_page()",
-    "previous_reasoning": "The current page displayed is the 'Canned Food' section of the Wheeler, Rawson & Co. catalogue, which includes a variety of canned goods. Items on the page, from the top left and moving to the right, are: Big Valley Canned Apricots, Schmitz Baked Beans, Flock of Sparrows Canned Kidney Beans, Big Valley Canned Peaches, Edna McSweeney Brand Canned Corned Beef, Blackwing Foods Canned Sweetcorn, Dewberry Brand Canned Peas, and Big Valley Canned Pineapples. The currently selected item is 'Canned Apricots' as indicated by the box around the item's description at the bottom of the screen. The target item, which is an 'Apple,' is not depicted on the current screen as these are all canned goods and do not include fresh produce. Therefore, the next logical step would be to navigate to the next page, which likely contains the Fresh Food section, with the hope of finding an apple there.",
-    "image_introduction":[
-        {
-            "introduction": "Here are some examples of trading in the game.",
-            "path": "",
-            "assistant": ""
-        },
-        {
-            "introduction": "This example shows that the CARROT is currently selected in the image.",
-            "path": "./res/prompts/testing/decision_making/buy/14.jpg",
-            "assistant": "Yes. That is correct!"
-        },
-        {
-            "introduction": "This example shows that the Canned peaches is currently selected in the image.",
-            "path": "./res/prompts/testing/decision_making/buy/7.jpg",
-            "assistant": "Yes. That is correct!"
-        },
-        {
-            "introduction": "Now, I will give you two screenshots for decision making.",
-            "path": "",
-            "assistant": ""
-        },
-        {
-            "introduction": "This screenshot is the previous step of the game",
-            "path": "./res/prompts/testing/decision_making/buy/10.jpg",
-            "assistant": ""
-        },
-        {
-            "introduction": "This screenshot is the current step of the game",
-            "path": "./res/prompts/testing/decision_making/buy/11.jpg",
-            "assistant": ""
-        }
-    ]
+    "task_description": "",
+    "previous_action": "",
+    "previous_reasoning": "",
+    "image_introduction": ""
 }

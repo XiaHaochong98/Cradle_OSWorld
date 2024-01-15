@@ -43,26 +43,6 @@ def main_test_decision_making(planner_params, task_description, skill_library):
     skill_library = gm.get_filtered_skills(skill_library)
 
     image_introduction = [
-        # {
-        #     "introduction": "Here are some examples of trading in the game.",
-        #     "path": "",
-        #     "assistant": ""
-        # },
-        # {
-        #     "introduction": "This example shows that the CARROT is currently selected in the image.",
-        #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163732.2476993.jpg",
-        #     "assistant": "Yes. That is correct!"
-        # },
-        # {
-        #     "introduction": "This example shows that the Canned SALMON is currently selected in the image.",
-        #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163680.5057523.jpg",
-        #     "assistant": "Yes. That is correct!"
-        # },
-        # {
-        #     "introduction": "I will give you two images for decision making.",
-        #     "path": "",
-        #     "assistant": ""
-        # },
         {
             "introduction": input["image_introduction"][-2]["introduction"],
             "path": "./res/prompts/testing/decision_making/buy/4.jpg",
@@ -409,50 +389,11 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             #for gather information
             logger.write(f'Gather Information Start Frame ID: {start_frame_id}, End Frame ID: {end_frame_id}')
             input = planner.gather_information_.input_map
-            get_text_input = planner.gather_information_.get_text_input_map
+            text_input = planner.gather_information_.text_input_map
             video_clip_path = videocapture.get_video(start_frame_id,end_frame_id)
             videocapture.clear_frame_buffer()
+
             get_text_image_introduction = [
-                {
-                    "introduction": "Here are some examples of the icons, representing keyboard & mouse keys, shown in the in-game instructions and prompts.",
-                    "path": "",
-                    "assistant": ""
-                },
-                {
-                    "introduction": "This icon refers to the keyboard key, enter.",
-                    "path": "./res/icons/keys/enter.jpg",
-                    "assistant": "Yes. That is correct!"
-                },
-                {
-                    "introduction": "This icon refers to the keyboard key, shift.",
-                    "path": "./res/icons/keys/leftshift.jpg",
-                    "assistant": "Yes. That is correct!"
-                },
-                {
-                    "introduction": "This icon refers to the keyboard key, ctrl.",
-                    "path": "./res/icons/keys/leftctrl.jpg",
-                    "assistant": "Yes. That is correct!"
-                },
-                {
-                    "introduction": "This icon refers to the keyboard key, space.",
-                    "path": "./res/icons/keys/space.jpg",
-                    "assistant": "Yes. That is correct!"
-                },
-                {
-                    "introduction": "This icon refers to the mouse movement.",
-                    "path": "./res/icons/keys/mouse.jpg",
-                    "assistant": "Yes. That is correct!"
-                },
-                {
-                    "introduction": "This icon refers to the mouse operation, click right mouse button.",
-                    "path": "./res/icons/keys/mouse_right_click.jpg",
-                    "assistant": "Yes. That is correct!"
-                },
-                {
-                    "introduction": "This icon refers to the mouse operation, click left mouse button.",
-                    "path": "./res/icons/keys/mouse_left_click.jpg",
-                    "assistant": "Yes. That is correct!"
-                },
                 {
                     "introduction": input["image_introduction"][-1]["introduction"],
                     "path": memory.get_recent_history("image", k=1)[0],
@@ -465,8 +406,8 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             input["video_clip_path"] = video_clip_path
             input["image_introduction"] = image_introduction
             # Modify the input for get_text module in gather_information here
-            get_text_input["image_introduction"] = get_text_image_introduction
-            input["get_text_input"] = get_text_input
+            text_input["image_introduction"] = get_text_image_introduction
+            input["text_input"] = text_input
 
             data = planner.gather_information(input=input)
 
@@ -499,57 +440,9 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 bb_image_path = os.path.join(directory, "bb_"+filename)
                 gd_detector.save_annotate_frame(image_source, boxes, logits, phrases, target_object_name.title(), bb_image_path)
 
-                # add few shots
                 if boxes is not None and boxes.numel() != 0:
                     #add the screenshot with bounding boxes into the local memory
                     memory.add_recent_history(key=constants.AUGMENTED_IMAGES_MEM_BUCKET, info=bb_image_path)
-                    image_introduction = [
-                        # {
-                        #     "introduction": "Here are some examples of trading in the game.",
-                        #     "path": "",
-                        #     "assistant": ""
-                        # },
-                        # {
-                        #     "introduction": "This example shows that the CARROT is currently selected in the image.",
-                        #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163732.2476993.jpg",
-                        #     "assistant": "Yes. That is correct!"
-                        # },
-                        # {
-                        #     "introduction": "This example shows that the Canned SALMON is currently selected in the image.",
-                        #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163680.5057523.jpg",
-                        #     "assistant": "Yes. That is correct!"
-                        # },
-                        # {
-                        #     "introduction": "I will give you two images for decision making.",
-                        #     "path": "",
-                        #     "assistant": ""
-                        # },
-                        {
-                            "introduction": "This is an example: the bounding box is on the left side (not slightly left) on the image",
-                            "path": "./res/samples/few_shot_leftside.jpg",
-                            "assistant": "Yes, it is on the left side"
-                        },
-                        {
-                            "introduction": "This is an example: the bounding box is on the slightly left side (not left) on the image",
-                            "path": "./res/samples/few_shot_slightly_leftside.jpg",
-                            "assistant": "Yes, it is on the slightly left side"
-                        },
-                        {
-                            "introduction": "This is an example: the bounding box is on the right side (not slightly right) on the image",
-                            "path": "./res/samples/few_shot_rightside.jpg",
-                            "assistant": "Yes, it is on the right side"
-                        },
-                        {
-                            "introduction": "This is an example: the bounding box is on the slightly right side (not right) on the image",
-                            "path": "./res/samples/few_shot_slightly_rightside.jpg",
-                            "assistant": "Yes, it is on the slightly right side"
-                        },
-                        {
-                            "introduction": "This is an example: the bounding box is on the central on the image",
-                            "path": "./res/samples/few_shot_central.jpg",
-                            "assistant": "Yes, it is on the central side"
-                        },
-                    ]
                 else:
                     memory.add_recent_history(key=constants.AUGMENTED_IMAGES_MEM_BUCKET, info=constants.NO_IMAGE)
 
@@ -591,11 +484,12 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
             input['skill_library'] = skill_library
             input['info_summary'] = memory.get_summarization()
+            if boxes.numel() == 0:
+                input['few_shots'] = []
 
-            # add screenshots into image_introductions
             #@TODO Temporary solution with fake augmented entries if no bounding box exists. Ideally it should read images, then check for possible augmentation.
-            image_memory = memory.get_recent_history("image", k=2)
-            augmented_image_memory = memory.get_recent_history(constants.AUGMENTED_IMAGES_MEM_BUCKET, k=2)
+            image_memory = memory.get_recent_history("image", k=config.decision_making_image_num)
+            augmented_image_memory = memory.get_recent_history(constants.AUGMENTED_IMAGES_MEM_BUCKET, k=config.decision_making_image_num)
             for i in range(len(image_memory), 0, -1):
                 if augmented_image_memory[-i] != constants.NO_IMAGE:
                     image_introduction.append(
@@ -785,7 +679,6 @@ if __name__ == '__main__':
         }
     }
 
-
     skill_library = ['turn', 'move_forward', 'turn_and_move_forward', 'follow']
     #skill_library = move_skills + follow_skills
     #task_description =  "Follow Dutch."
@@ -815,7 +708,7 @@ if __name__ == '__main__':
 
     #main_test_information_summary(planner_params, task_description, skill_library)
 
-    config.ocr_enabled = True
+    config.ocr_enabled = False
     config.skill_retrieval = True
     main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True, use_information_summary = True)
 
