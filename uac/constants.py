@@ -8,6 +8,11 @@ IMAGE_DESCRIPTION = 'description'
 TARGET_OBJECT_NAME = 'target_object_name'
 GATHER_INFO_REASONING = 'reasoning'
 
+#Local memory
+AUGMENTED_IMAGES_MEM_BUCKET = 'augmented_image'
+IMAGES_MEM_BUCKET = 'image'
+NO_IMAGE = '[None]'
+
 # LLM message type constants
 MESSAGE_CONSTRUCTION_MODE_TRIPART = 'tripartite'
 MESSAGE_CONSTRUCTION_MODE_PARAGRAPH = 'paragraph'

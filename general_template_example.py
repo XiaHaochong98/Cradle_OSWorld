@@ -490,64 +490,68 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             target_object_name=data['res_dict'][constants.TARGET_OBJECT_NAME]
             object_name_reasoning=data['res_dict'][constants.GATHER_INFO_REASONING]
             
-            image_source, image = load_image(cur_screen_shot_path)
-            boxes = data['res_dict']["boxes"]
-            logits = data['res_dict']["logits"]
-            phrases = data['res_dict']["phrases"]
-            directory, filename = os.path.split(cur_screen_shot_path)
-            bb_image_path = os.path.join(directory, "bb_"+filename)
-            gd_detector.save_annotate_frame(image_source, boxes, logits, phrases, target_object_name.title(), bb_image_path)
+            if "boxes" in data['res_dict'].keys():
+                image_source, image = load_image(cur_screen_shot_path)
+                boxes = data['res_dict']["boxes"]
+                logits = data['res_dict']["logits"]
+                phrases = data['res_dict']["phrases"]
+                directory, filename = os.path.split(cur_screen_shot_path)
+                bb_image_path = os.path.join(directory, "bb_"+filename)
+                gd_detector.save_annotate_frame(image_source, boxes, logits, phrases, target_object_name.title(), bb_image_path)
 
-            # add the screenshot with bounding boxes and add few shots
-            if boxes.numel() != 0:
-                memory.get_recent_history("image", k=1)[0] = bb_image_path
-                image_introduction = [
-                    # {
-                    #     "introduction": "Here are some examples of trading in the game.",
-                    #     "path": "",
-                    #     "assistant": ""
-                    # },
-                    # {
-                    #     "introduction": "This example shows that the CARROT is currently selected in the image.",
-                    #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163732.2476993.jpg",
-                    #     "assistant": "Yes. That is correct!"
-                    # },
-                    # {
-                    #     "introduction": "This example shows that the Canned SALMON is currently selected in the image.",
-                    #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163680.5057523.jpg",
-                    #     "assistant": "Yes. That is correct!"
-                    # },
-                    # {
-                    #     "introduction": "I will give you two images for decision making.",
-                    #     "path": "",
-                    #     "assistant": ""
-                    # },
-                    {
-                        "introduction": "This is an example: the bounding box is on the left side (not slightly left) on the image",
-                        "path": "./res/samples/few_shot_leftside.jpg",
-                        "assistant": "Yes, it is on the left side"
-                    },
-                    {
-                        "introduction": "This is an example: the bounding box is on the slightly left side (not left) on the image",
-                        "path": "./res/samples/few_shot_slightly_leftside.jpg",
-                        "assistant": "Yes, it is on the slightly left side"
-                    },
-                    {
-                        "introduction": "This is an example: the bounding box is on the right side (not slightly right) on the image",
-                        "path": "./res/samples/few_shot_rightside.jpg",
-                        "assistant": "Yes, it is on the right side"
-                    },
-                    {
-                        "introduction": "This is an example: the bounding box is on the slightly right side (not right) on the image",
-                        "path": "./res/samples/few_shot_slightly_rightside.jpg",
-                        "assistant": "Yes, it is on the slightly right side"
-                    },
-                    {
-                        "introduction": "This is an example: the bounding box is on the central on the image",
-                        "path": "./res/samples/few_shot_central.jpg",
-                        "assistant": "Yes, it is on the central side"
-                    },
-                ]
+                # add few shots
+                if boxes is not None and boxes.numel() != 0:
+                    #add the screenshot with bounding boxes into the local memory
+                    memory.add_recent_history(key=constants.AUGMENTED_IMAGES_MEM_BUCKET, info=bb_image_path)
+                    image_introduction = [
+                        # {
+                        #     "introduction": "Here are some examples of trading in the game.",
+                        #     "path": "",
+                        #     "assistant": ""
+                        # },
+                        # {
+                        #     "introduction": "This example shows that the CARROT is currently selected in the image.",
+                        #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163732.2476993.jpg",
+                        #     "assistant": "Yes. That is correct!"
+                        # },
+                        # {
+                        #     "introduction": "This example shows that the Canned SALMON is currently selected in the image.",
+                        #     "path": r"C:\Users\28094\Desktop\UAC_wentao_1124_1127\UAC\runs\1701163597.4037797\screen_1701163680.5057523.jpg",
+                        #     "assistant": "Yes. That is correct!"
+                        # },
+                        # {
+                        #     "introduction": "I will give you two images for decision making.",
+                        #     "path": "",
+                        #     "assistant": ""
+                        # },
+                        {
+                            "introduction": "This is an example: the bounding box is on the left side (not slightly left) on the image",
+                            "path": "./res/samples/few_shot_leftside.jpg",
+                            "assistant": "Yes, it is on the left side"
+                        },
+                        {
+                            "introduction": "This is an example: the bounding box is on the slightly left side (not left) on the image",
+                            "path": "./res/samples/few_shot_slightly_leftside.jpg",
+                            "assistant": "Yes, it is on the slightly left side"
+                        },
+                        {
+                            "introduction": "This is an example: the bounding box is on the right side (not slightly right) on the image",
+                            "path": "./res/samples/few_shot_rightside.jpg",
+                            "assistant": "Yes, it is on the right side"
+                        },
+                        {
+                            "introduction": "This is an example: the bounding box is on the slightly right side (not right) on the image",
+                            "path": "./res/samples/few_shot_slightly_rightside.jpg",
+                            "assistant": "Yes, it is on the slightly right side"
+                        },
+                        {
+                            "introduction": "This is an example: the bounding box is on the central on the image",
+                            "path": "./res/samples/few_shot_central.jpg",
+                            "assistant": "Yes, it is on the central side"
+                        },
+                    ]
+                else:
+                    memory.add_recent_history(key=constants.AUGMENTED_IMAGES_MEM_BUCKET, info=constants.NO_IMAGE)
 
             logger.write(f'Image Description: {image_description}')
             logger.write(f'Object Name: {target_object_name}')
@@ -589,14 +593,24 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             input['info_summary'] = memory.get_summarization()
 
             # add screenshots into image_introductions
-            image_memory = memory.get_recent_history("image", k=5)
+            #@TODO Temporary solution with fake augmented entries if no bounding box exists. Ideally it should read images, then check for possible augmentation.
+            image_memory = memory.get_recent_history("image", k=2)
+            augmented_image_memory = memory.get_recent_history(constants.AUGMENTED_IMAGES_MEM_BUCKET, k=2)
             for i in range(len(image_memory), 0, -1):
-                image_introduction.append(
-                    {
-                        "introduction": input["image_introduction"][-i]["introduction"],
-                        "path":image_memory[-i],
-                        "assistant": input["image_introduction"][-i]["assistant"]
-                    })
+                if augmented_image_memory[-i] != constants.NO_IMAGE:
+                    image_introduction.append(
+                        {
+                            "introduction": input["image_introduction"][-i]["introduction"],
+                            "path":augmented_image_memory[-i],
+                            "assistant": input["image_introduction"][-i]["assistant"]
+                        })
+                else:
+                    image_introduction.append(
+                        {
+                            "introduction": input["image_introduction"][-i]["introduction"],
+                            "path":image_memory[-i],
+                            "assistant": input["image_introduction"][-i]["assistant"]
+                        })
 
             input["image_introduction"] = image_introduction
             input["task_description"] = task_description

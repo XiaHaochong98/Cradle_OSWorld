@@ -8,6 +8,7 @@ from typing import (
 import os
 
 from uac.config import Config
+from uac import constants
 from uac.log import Logger
 from uac.memory.base import BaseMemory, Image
 from uac.utils.json_utils import load_json, save_json
@@ -30,6 +31,7 @@ class LocalMemory(BaseMemory):
         self.memory_path = memory_path
 
         self.recent_history = {"image": [],
+                               constants.AUGMENTED_IMAGES_MEM_BUCKET:[],
                                "action": [],
                                "decision_making_reasoning": [],
                                "success_detection_reasoning": [],
