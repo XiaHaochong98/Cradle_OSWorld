@@ -687,7 +687,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 logger.write(f'Success reason: {success_reasoning}')
 
             if use_self_reflection:
-                input = planner.self_reflection.input_map
+                input = planner.self_reflection_.input_map
                 action_frames = []
                 video_frames = videocapture.get_frames(start_frame_id,end_frame_id)
 
