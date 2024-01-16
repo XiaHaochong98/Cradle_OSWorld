@@ -225,14 +225,17 @@ class SkillRegistry:
         skill_code = lower_func_name(skill_code)
         skill_name = get_func_name(skill_code)
 
+        # Always avoid adding skills that are ambiguous with existing pre-defined ones.
+        if check_protection_conflict(skill_name) == False:
+            info = f"Skill '{skill_name}' conflicts with protected skills."
+            logger.write(info)
+            return True, info
+
         if overwrite:
-            if check_protection_conflict(skill_name):
+            if skill_name in self.skill_registry:
                 self.delete_skill(skill_name)
                 logger.write(f"Skill '{skill_name}' will be overwritten.")
-            else:
-                info = f"Skill '{skill_name}' conflicts with protected skills."
-                logger.write(info)
-                return True, info
+                
         
         if skill_name in self.skill_registry:
             info = f"Skill '{skill_name}' already exists."
