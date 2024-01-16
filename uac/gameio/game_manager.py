@@ -118,8 +118,12 @@ class GameManager:
 
                 # Enable OCR for composite skills, start the ocr check
                 if skill_name in config.ocr_check_composite_skill_names:
-                    config.ocr_different_previous_text = False
-                    config.enable_ocr = True
+                    if not config.ocr_fully_ban:
+                        config.ocr_different_previous_text = False
+                        config.enable_ocr = True
+                    else:
+                        config.ocr_different_previous_text = False
+                        config.enable_ocr = False
 
                 if "navigate" in skill_name:
                     self.execute_navigation(skill_name)

@@ -98,6 +98,7 @@ class Config(metaclass=Singleton):
         self.decision_making_image_num = 2
 
         # ocr
+        self.ocr_fully_ban = True # whether to fully ban ocr
         self.ocr_enabled = False # whether to enable ocr
         self.ocr_similarity_threshold = 0.9  # cosine similarity, smaller than this threshold the text is considered to be different
         self.ocr_different_previous_text = False # whether the text is different from the previous one

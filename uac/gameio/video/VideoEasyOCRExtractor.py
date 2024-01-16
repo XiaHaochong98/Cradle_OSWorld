@@ -1,6 +1,11 @@
 import os
 import numpy as np
 from typing import Any, List, Tuple
+import PIL
+
+# Hack to avoid EasyOCR crash
+PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
+
 from PIL import Image
 import cv2
 import base64

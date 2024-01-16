@@ -679,6 +679,7 @@ if __name__ == '__main__':
         }
     }
 
+
     skill_library = ['turn', 'move_forward', 'turn_and_move_forward', 'follow']
     #skill_library = move_skills + follow_skills
     #task_description =  "Follow Dutch."
@@ -708,6 +709,7 @@ if __name__ == '__main__':
 
     #main_test_information_summary(planner_params, task_description, skill_library)
 
+    config.ocr_fully_ban = True # not use ocr
     config.ocr_enabled = False
     config.skill_retrieval = True
     main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True, use_information_summary = True)
