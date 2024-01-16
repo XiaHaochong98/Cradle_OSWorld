@@ -484,8 +484,12 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
             input['skill_library'] = skill_library
             input['info_summary'] = memory.get_summarization()
-            if boxes.numel() == 0:
+
+            if not "boxes" in data['res_dict'].keys():
                 input['few_shots'] = []
+            else:
+                if boxes is None or boxes.numel() == 0:
+                    input['few_shots'] = []
 
             #@TODO Temporary solution with fake augmented entries if no bounding box exists. Ideally it should read images, then check for possible augmentation.
             image_memory = memory.get_recent_history("image", k=config.decision_making_image_num)
