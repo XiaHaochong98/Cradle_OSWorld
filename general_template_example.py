@@ -400,6 +400,15 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                     "assistant": input["image_introduction"][-1]["assistant"]
                 }
             ]
+
+            #configure the gather_information module
+            gather_information_configurations = {
+                "frame_extractor": True, # extract text from the video clip
+                "marker_matcher": True,
+                "llm_description": True, # get the description of the current screenshot
+                "object_detector": True
+            }
+            input["gather_information_configurations"] = gather_information_configurations
             # modify the general input for gather_information here
             image_introduction=[get_text_image_introduction[-1]]
             input["task_description"] = task_description

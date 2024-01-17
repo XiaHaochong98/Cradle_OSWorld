@@ -209,47 +209,12 @@ class GatherInformation():
         return input
 
     def __call__(self, *args, input: Dict[str, Any] = None, class_=None, **kwargs) -> Dict[str, Any]:
+        gather_infromation_configurations = input["gather_information_configurations"]
 
-        flag = True
-        if self.frame_extractor is not None:
-            text_input = input["text_input"]
-            video_path = input["video_clip_path"]
-            # extract the text information of the whole video
-            # run the frame_extractor to get the key frames
-            extracted_frame_paths = self.frame_extractor.extract(video_path=video_path)
-            # for each key frame, use llm to get the text information
-            video_prefix = os.path.basename(video_path).split('.')[0].split('_')[
-                -1]  # different video should have differen prefix for avoiding the same time stamp
-            gathered_information_JSON = JSONStructure()
-            if config.parallel_request_gather_information:
-                # create completion in parallel
-                logger.write(f"Start gathering text information from the whole video in parallel")
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                try:
-                    loop.run_until_complete(
-                        get_completion_in_parallel(self.llm_provider, self.text_input_map, extracted_frame_paths,
-                                                   text_input,self.get_text_template,video_prefix,gathered_information_JSON))
-                except KeyboardInterrupt:
-                    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-                    for task in tasks:
-                        task.cancel()
-                    loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
-                finally:
-                    loop.close()
-            else:
-                logger.write(f"Start gathering text information from the whole video in sequence")
-                get_completion_in_sequence(self.llm_provider, self.text_input_map, extracted_frame_paths,
-                                           text_input,self.get_text_template,video_prefix,gathered_information_JSON)
-            gathered_information_JSON.sort_index_by_timestamp()
-            logger.write(f"Finish gathering text information from the whole video")
-
-        else:
-            gathered_information_JSON = None
-
-        # get dialogue information from the gathered_information_JSON at the subfounder find the dialogue frames
-        dialogues = [item["values"] for item in gathered_information_JSON.search_type_across_all_indices("dialogue")]
-        # TODO: summary the dialogues
+        frame_extractor_gathered_information = None
+        marker_matcher_gathered_information = None
+        object_detector_gathered_information = None
+        llm_description_gathered_information = None
 
         input = self.input_map if input is None else input
         input = self._pre(input=input)
@@ -259,46 +224,96 @@ class GatherInformation():
             for image_info in input["image_introduction"]:
                 image_files.append(image_info["path"])
 
-        marker_matcher_gathered_information = None
-        object_detector_gathered_information = None
-        llm_provider_gather_information = None
-
+        flag = True
         processed_response = {}
-        res_json = None
+
+        # Gather information by frame extractor
+        if gather_infromation_configurations["frame_extractor"] is True:
+            logger.write(f"Using frame extractor to gather information")
+            if self.frame_extractor is not None:
+                text_input = input["text_input"]
+                video_path = input["video_clip_path"]
+                # extract the text information of the whole video
+                # run the frame_extractor to get the key frames
+                extracted_frame_paths = self.frame_extractor.extract(video_path=video_path)
+                # for each key frame, use llm to get the text information
+                video_prefix = os.path.basename(video_path).split('.')[0].split('_')[
+                    -1]  # different video should have differen prefix for avoiding the same time stamp
+                frame_extractor_gathered_information = JSONStructure()
+                if config.parallel_request_gather_information:
+                    # create completion in parallel
+                    logger.write(f"Start gathering text information from the whole video in parallel")
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    try:
+                        loop.run_until_complete(
+                            get_completion_in_parallel(self.llm_provider, self.text_input_map, extracted_frame_paths,
+                                                       text_input,self.get_text_template,video_prefix,frame_extractor_gathered_information))
+                    except KeyboardInterrupt:
+                        tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+                        for task in tasks:
+                            task.cancel()
+                        loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
+                    finally:
+                        loop.close()
+                else:
+                    logger.write(f"Start gathering text information from the whole video in sequence")
+                    get_completion_in_sequence(self.llm_provider, self.text_input_map, extracted_frame_paths,
+                                               text_input,self.get_text_template,video_prefix,frame_extractor_gathered_information)
+                frame_extractor_gathered_information.sort_index_by_timestamp()
+                logger.write(f"Finish gathering text information from the whole video")
+            else:
+                logger.warn('Frame extractor is not set, skipping gather information by frame extractor')
+            # get dialogue information from the gathered_information_JSON at the subfounder find the dialogue frames
+            dialogues = [item["values"] for item in frame_extractor_gathered_information.search_type_across_all_indices("dialogue")]
+            # TODO: summary the dialogues
+
+
+
+
 
         # Gather information by marker matcher
-        if self.marker_matcher is not None:
+        if gather_infromation_configurations["marker_matcher"] is True:
+            logger.write(f"Using marker matcher to gather information")
+            if self.marker_matcher is not None:
+                try:
+                    marker_matcher_gathered_information = self.marker_matcher(screenshot_file=image_files[0], class_=class_)
+                except Exception as e:
+                    logger.error(f"Error in gather information by marker matcher: {e}")
+                    flag = False
+            else:
+                logger.warn('Marker matcher is not set, skipping gather information by marker matcher')
+
+        if gather_infromation_configurations["llm_description"] is True:
+            logger.write(f"Using llm description to gather information")
+            # Gather information by LLM provider
             try:
-                marker_matcher_gathered_information = self.marker_matcher(screenshot_file=image_files[0], class_=class_)
+                # Call the LLM provider for gather information json
+                message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
+
+                logger.debug(f'>> Upstream - R: {message_prompts}')
+                gather_information_success_flag = False
+                while gather_information_success_flag is False:
+                    try:
+                        response, info = self.llm_provider.create_completion(message_prompts)
+
+                        logger.debug(f'>> Downstream - A: {response}')
+                        # Convert the response to dict
+                        processed_response = parse_semi_formatted_text(response)
+                        gather_information_success_flag = True
+                    except Exception as e:
+                        logger.error(f"Response of image description is not in the correct format: {e}, retrying...")
+                        gather_information_success_flag = False
+                        # wait 2 seconds for the next request and retry
+                        time.sleep(2)
+                llm_description_gathered_information = processed_response
+
             except Exception as e:
-                logger.error(f"Error in gather information by marker matcher: {e}")
+                logger.error(f"Error in gather image description information: {e}")
                 flag = False
 
-        # Gather information by LLM provider - mandatory
-        try:
-            # Call the LLM provider for gather information json
-            message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
 
-            logger.debug(f'>> Upstream - R: {message_prompts}')
-            gather_information_success_flag = False
-            while gather_information_success_flag is False:
-                try:
-                    response, info = self.llm_provider.create_completion(message_prompts)
-
-                    logger.debug(f'>> Downstream - A: {response}')
-                    # Convert the response to dict
-                    processed_response = parse_semi_formatted_text(response)
-                    gather_information_success_flag = True
-                except Exception as e:
-                    logger.error(f"Response of image description is not in the correct format: {e}, retrying...")
-                    gather_information_success_flag = False
-                    # wait 2 seconds for the next request and retry
-                    time.sleep(2)
-            llm_provider_gather_information = processed_response
-
-        except Exception as e:
-            logger.error(f"Error in gather image description information: {e}")
-            flag = False
+        # assemble the gathered_information_JSON
 
         if flag:
             objects = []
@@ -307,37 +322,36 @@ class GatherInformation():
                 objects.extend(marker_matcher_gathered_information["objects"])
             if object_detector_gathered_information is not None and "objects" in object_detector_gathered_information:
                 objects.extend(object_detector_gathered_information["objects"])
-            if llm_provider_gather_information is not None and "objects" in llm_provider_gather_information:
-                objects.extend(llm_provider_gather_information["objects"])
+            if llm_description_gathered_information is not None and "objects" in llm_description_gathered_information:
+                objects.extend(llm_description_gathered_information["objects"])
 
             objects = list(set(objects))
 
-            llm_provider_gather_information["objects"] = objects
+            llm_description_gathered_information["objects"] = objects
             processed_response["objects"] = objects
 
             # merge the gathered_information_JSON to the processed_response
-            processed_response["gathered_information_JSON"] = gathered_information_JSON
+            processed_response["gathered_information_JSON"] = frame_extractor_gathered_information
 
-            res_dict = processed_response
-
-            # res_json = json.dumps(processed_response, indent=4)
 
         # Gather information by object detector, which is grounding dino.
-        if self.object_detector is not None:
-            try:
-                image_source, boxes, logits, phrases = self.object_detector.detect(image_path=image_files[0],
-                                                                                   text_prompt=processed_response[
-                                                                                       "target_object_name"].title(),
-                                                                                   box_threshold=0.4, device='cuda')
-                processed_response["boxes"] = boxes
-                processed_response["logits"] = logits
-                processed_response["phrases"] = phrases
-                # directory, filename = os.path.split(image_files[0])
-                # bb_image_path = os.path.join(directory, "bb_"+filename)
-                # self.object_detector.save_annotate_frame(image_source, boxes, logits, phrases, res_dict["target_object_name"].title(), bb_image_path)
-            except Exception as e:
-                logger.error(f"Error in gather information by object detector: {e}")
-                flag = False
+        if gather_infromation_configurations["object_detector"] is True:
+            logger.write(f"Using object detector to gather information")
+            if self.object_detector is not None:
+                try:
+                    image_source, boxes, logits, phrases = self.object_detector.detect(image_path=image_files[0],
+                                                                                       text_prompt=processed_response[
+                                                                                           "target_object_name"].title(),
+                                                                                       box_threshold=0.4, device='cuda')
+                    processed_response["boxes"] = boxes
+                    processed_response["logits"] = logits
+                    processed_response["phrases"] = phrases
+                    # directory, filename = os.path.split(image_files[0])
+                    # bb_image_path = os.path.join(directory, "bb_"+filename)
+                    # self.object_detector.save_annotate_frame(image_source, boxes, logits, phrases, res_dict["target_object_name"].title(), bb_image_path)
+                except Exception as e:
+                    logger.error(f"Error in gather information by object detector: {e}")
+                    flag = False
 
         success = self._check_success(data=processed_response)
 
