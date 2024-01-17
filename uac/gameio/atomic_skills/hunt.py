@@ -52,8 +52,9 @@ io_env = IOEnvironment()
 ahk = io_env.ahk
 
 def MouseMoveTo(x, y):
-    move_x = int(x - config.game_resolution[0] // 2)
-    move_y = int(y - config.game_resolution[1] // 2)
+    # first de-normalization, then relative pixel calculation
+    move_x = int(x*config.game_resolution[0] - config.game_resolution[0] / 2)
+    move_y = int(y*config.game_resolution[1] - config.game_resolution[1] / 2)
     
     extra = ctypes.c_ulong(0)
     ii_ = Input_I()
