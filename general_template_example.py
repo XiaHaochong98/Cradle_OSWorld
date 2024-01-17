@@ -19,6 +19,7 @@ from uac.gameio.atomic_skills.map import __all__ as map_skills
 from uac.gameio.atomic_skills.move import __all__ as move_skills
 from uac.gameio.composite_skills.follow import __all__ as follow_skills
 from uac import constants
+from uac.gameio.skill_registry import SkillRegistry
 
 from groundingdino.util.inference import load_image
 
@@ -337,6 +338,67 @@ def skill_library_test():
 
     gm.store_skills()
 
+def main_test_gather_information(image_path = ""):
+    
+    llm_provider_config_path = './conf/openai_config.json'
+
+    llm_provider = OpenAIProvider()
+    llm_provider.init_provider(llm_provider_config_path)
+
+    gd_detector = GdProvider()
+
+    frame_extractor = VideoFrameExtractor()
+
+    planner = Planner(llm_provider=llm_provider,
+                      planner_params=planner_params,
+                      frame_extractor=frame_extractor,
+                      object_detector=gd_detector,
+                      use_self_reflection=False,
+                      use_information_summary=False)
+
+
+    input = planner.gather_information_.input_map
+    text_input = planner.gather_information_.text_input_map
+
+    get_text_image_introduction = [
+        {
+            "introduction": input["image_introduction"][-1]["introduction"],
+            "path": image_path,
+            "assistant": input["image_introduction"][-1]["assistant"]
+        }
+    ]
+
+    #configure the gather_information module
+    gather_information_configurations = {
+        "frame_extractor": False, # extract text from the video clip
+        "marker_matcher": False,
+        "llm_description": True, # get the description of the current screenshot
+        "object_detector": False
+    }
+
+    input["gather_information_configurations"] = gather_information_configurations
+    # modify the general input for gather_information here
+    image_introduction=[get_text_image_introduction[-1]]
+    input["task_description"] = task_description
+    input["video_clip_path"] = ""
+    input["image_introduction"] = image_introduction
+    # Modify the input for get_text module in gather_information here
+    text_input["image_introduction"] = get_text_image_introduction
+    input["text_input"] = text_input
+
+    data = planner.gather_information(input=input)
+
+    image_description=data['res_dict'][constants.IMAGE_DESCRIPTION]
+    target_object_name=data['res_dict'][constants.TARGET_OBJECT_NAME]
+    object_name_reasoning=data['res_dict'][constants.GATHER_INFO_REASONING]
+    screen_classification=data['res_dict'][constants.SCREEN_CLASSIFICATION]
+
+    logger.write(f'Image Description: {image_description}')
+    logger.write(f'Object Name: {target_object_name}')
+    logger.write(f'Reasoning: {object_name_reasoning}')
+    logger.write(f'Screen Classification: {screen_classification}')
+
+
 def main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = False, use_information_summary = False):
 
     llm_provider_config_path = './conf/openai_config.json'
@@ -376,6 +438,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
     success = False
     pre_action = ""
+    pre_screen_classification = ""
     pre_decision_making_reasoning = ""
     pre_self_reflection_reasoning = ""
 
@@ -439,6 +502,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             image_description=data['res_dict'][constants.IMAGE_DESCRIPTION]
             target_object_name=data['res_dict'][constants.TARGET_OBJECT_NAME]
             object_name_reasoning=data['res_dict'][constants.GATHER_INFO_REASONING]
+            screen_classification=data['res_dict'][constants.SCREEN_CLASSIFICATION]
             
             if "boxes" in data['res_dict'].keys():
                 image_source, image = load_image(cur_screen_shot_path)
@@ -458,6 +522,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             logger.write(f'Image Description: {image_description}')
             logger.write(f'Object Name: {target_object_name}')
             logger.write(f'Reasoning: {object_name_reasoning}')
+            logger.write(f'Screen Classification: {screen_classification}')
 
             logger.write(f'Dialogue: {all_dialogue}')
             logger.write(f'Gathered Information: {gathered_information}')
@@ -534,6 +599,10 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             logger.write(f'Skill Steps: {skill_steps}')
 
             unpause_game()
+            # TODO: find a better name of the GENERAL_GAME_INTERFACE
+            if pre_screen_classification == constants.GENERAL_GAME_INTERFACE and screen_classification != constants.GENERAL_GAME_INTERFACE and pre_action:
+                exec_info = gm.execute_actions([pre_action])
+
             start_frame_id = videocapture.get_current_frame_id()
 
             exec_info = gm.execute_actions(skill_steps)
@@ -549,6 +618,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             if 'res_dict' in data.keys() and 'reasoning' in data['res_dict'].keys():
                 pre_decision_making_reasoning = data['res_dict']['reasoning']
 
+            pre_screen_classification = screen_classification
             memory.add_recent_history("action", pre_action)
             memory.add_recent_history("decision_making_reasoning", pre_decision_making_reasoning)
 
@@ -633,9 +703,10 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 input["previous_reasoning"] = pre_decision_making_reasoning
                 if pre_action:
                     input["previous_action"] = pre_action
-                    action_code, action_code_info = gm.get_skill_library_in_code(pre_action)
+                    pre_action_name, pre_action_params = gm.skill_registry.convert_expression_to_skill(pre_action)
+                    action_code, action_code_info = gm.get_skill_library_in_code(pre_action_name)
                     input['action_code'] = action_code if action_code is not None else action_code_info
-                else:
+                if exec_info["errors"]:
                     input['executing_action_error']  = exec_info["errors_info"]
 
                 data = planner.self_reflection(input = input)          
@@ -645,7 +716,6 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 logger.write(f'Self-reflection reason: {self_reflection_reasoning}')
 
                 #gm.delete_skill("action")
-
 
             #store memory
             memory.save()
@@ -725,9 +795,14 @@ if __name__ == '__main__':
     config.ocr_fully_ban = True # not use ocr
     config.ocr_enabled = False
     config.skill_retrieval = True
-    main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True, use_information_summary = True)
+    #main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True, use_information_summary = True)
 
     # skill_library_test()
 
     # video_path = ""
     # main_test_self_reflection(planner_params, task_description, skill_library, video_path)
+
+
+    # image_path = ""
+    # main_test_gather_information(image_path=image_path)
+    

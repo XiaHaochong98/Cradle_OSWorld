@@ -7,7 +7,7 @@ Assume you are a helpful AI assistant integrated with 'Red Dead Redemption 2' on
 Current task:
 <$task_description$>
 
-Target_object_name: Assume you can use the object detection model to detect the most relevant object for completing the task if needed, what object should be detected to complete the task based on the current screenshot and the current task? The object should be relevant to the current target or the intermediate target of the task. Just give one object name without any modifiers. If the object name belongs to the person type, replace it with person. If there is no need to detect an object, just output "".
+Target_object_name: Assume you can use an object detection model to detect the most relevant object for completing the task if needed, what object should be detected to complete the task based on the current screenshot and the current task? The object should be relevant to the current target or the intermediate target of the task. Just give one object name without any modifiers. If the object name belongs to the person type, replace it with person. If there is no need to detect an object, just output "".
 
 Reasoning: The reasons why this object is chosen or why there is no need to detect an object.
 
@@ -20,6 +20,8 @@ As for the minimap on the bottom-left corner, the semi-opaque circular map provi
 3. The player's character icon is in the center of the minimap, depicted as a white arrow, showing the current direction the character is facing.
 The surrounding context of the minimap is vital for in-game navigation and decision-making. Based on the minimap, the player seems to be in a campsite or has just exited one. They have a clear destination set to the northwest, and based on the surrounding icons, there are several amenities and potential interactions available to them within the camp.
 
+Screen_classification: Please select the class that best describes the screenshot among "Inventory", "Bag", "Map", "Trade" "Pause" and "General game interface without any menu". Output the class of the screenshot in the output of Screen_classification.
+
 You should only respond in the format as described below, and you should not output comments or other information.
 Target_object_name:
 Name
@@ -27,3 +29,5 @@ Reasoning:
 The reasons are...
 Description:
 The image shows...
+Screen_classification:
+Class of the screenshot

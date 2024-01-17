@@ -52,12 +52,12 @@
             "assistant": ""
         },
         {
-            "introduction": "This screenshot is three steps before the previous step of the game",
+            "introduction": "This screenshot is three steps before the current step of the game",
             "path": "",
             "assistant": ""
         },
         {
-            "introduction": "This screenshot is two steps before the previous step of the game",
+            "introduction": "This screenshot is two steps before the current step of the game",
             "path": "",
             "assistant": ""
         },

@@ -7,6 +7,8 @@ GATHER_TEXT_REASONING = 'reasoning'
 IMAGE_DESCRIPTION = 'description'
 TARGET_OBJECT_NAME = 'target_object_name'
 GATHER_INFO_REASONING = 'reasoning'
+SCREEN_CLASSIFICATION = 'screen_classification'
+GENERAL_GAME_INTERFACE = 'general game interface without any menu'
 
 #Local memory
 AUGMENTED_IMAGES_MEM_BUCKET = 'augmented_image'

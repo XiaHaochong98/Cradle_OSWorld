@@ -130,11 +130,11 @@ class GameManager:
                 else:
                     self.skill_registry.execute_skill(name=skill_name, params=skill_params)
 
-                exec_info["executed_skills"].append(skill_name)
-                exec_info["last_skill"] = skill_name
+                exec_info["executed_skills"].append(skill)
+                exec_info["last_skill"] = skill
 
                 self.post_action_wait()
-                logger.write(f"Finished executing skill: {skill_name} and wait.")
+                logger.write(f"Finished executing skill: {skill} and wait.")
 
         except Exception as e:
             logger.error(f"Error executing skill: {e}")
