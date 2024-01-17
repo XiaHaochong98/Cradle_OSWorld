@@ -10,13 +10,15 @@ from uac.gameio.skill_registry import register_skill
 config = Config()
 logger = Logger()
 
+MAX_FOLLOW_ITERATIONS = 300
+
 
 @register_skill("follow")
 def follow():
     """
     Follow target on the minimap.
     """
-    cv_follow_circles(500, debug=False)
+    cv_follow_circles(MAX_FOLLOW_ITERATIONS, debug=False)
 
 
 def cv_follow_circles(

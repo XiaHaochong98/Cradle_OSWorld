@@ -22,7 +22,7 @@ class GameManager:
         embedding_provider = None
     ):
         self.env_name = env_name
-        self.skill_registry = SkillRegistry(local_path = config.skill_local_path, 
+        self.skill_registry = SkillRegistry(local_path = config.skill_local_path,
                                             from_local = config.skill_from_local,
                                             store_path = config.work_dir,
                                             skill_scope = config.skill_scope,
@@ -102,13 +102,18 @@ class GameManager:
             "errors_info": ""
         }
 
-        if len(actions) == 0:
+        io_env.update_timeouts()
+
+        if actions is None or len(actions) == 0 or actions == '' or actions[0] == '':
             logger.warn(f"No actions to execute!")
             exec_info["errors"] = True
             exec_info["errors_info"] = "No actions to execute!"
             return exec_info
 
-        try: 
+        skill_name = '-'
+        skill_params = '-'
+
+        try:
             #switch_to_game()
             for skill in actions:
 
@@ -139,15 +144,16 @@ class GameManager:
         except Exception as e:
             logger.error(f"Error executing skill: {e}")
             exec_info["errors"] = True
-            exec_info["errors_info"] = f"Error executing skill: {e}"
+            exec_info["errors_info"] = f"Error executing skill {skill_name} with params {skill_params} (from actions: {actions}):\n{e}"
+
+        # @TODO re-add hold timeout check call
 
         return exec_info
 
 
     # Currently all actions have wait in them, if needed
     def post_action_wait(self):
-    #    time.sleep(config.POST_ACTION_WAIT_TIME)
-    #    time.sleep(0.5)
+        #time.sleep(config.DEFAULT_POST_ACTION_WAIT_TIME)
         time.sleep(1)
 
 
@@ -168,3 +174,6 @@ class GameManager:
     def store_skills(self):
         self.skill_registry.store_skills()
 
+
+    def cleanup_io(self):
+        io_env.release_held_keys()

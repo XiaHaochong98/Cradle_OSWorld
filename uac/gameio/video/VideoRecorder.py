@@ -2,6 +2,7 @@ import threading
 import os
 import time
 from typing import Tuple
+
 import spacy
 import numpy as np
 import cv2

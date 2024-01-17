@@ -1,19 +1,18 @@
-import aiohttp
-import asyncio
+import time
 import json
 import os
 from typing import Dict, Any, List
 import time
+import asyncio
 
 from uac.config import Config
 from uac.gameio.video.VideoFrameExtractor import JSONStructure
 from uac.log import Logger
 from uac.planner.base import BasePlanner
-from uac.provider import GdProvider
 from uac.provider.base_llm import LLMProvider
 from uac.utils.check import check_planner_params
 from uac.utils.file_utils import assemble_project_path, read_resource_file
-from uac.utils.json_utils import load_json, parse_semi_formatted_json, parse_semi_formatted_text
+from uac.utils.json_utils import load_json, parse_semi_formatted_text
 
 config = Config()
 logger = Logger()
@@ -24,6 +23,7 @@ JSON_EXT = ".json"
 
 async def gather_information_get_completion_parallel(llm_provider, text_input_map, current_frame_path, time_stamp,
                                                      text_input, get_text_template, i,video_prefix,gathered_information_JSON):
+
     logger.write(f"Start gathering text information from the {i + 1}th frame")
     text_input = text_input_map if text_input is None else text_input
     image_introduction = text_input["image_introduction"]
@@ -49,12 +49,14 @@ async def gather_information_get_completion_parallel(llm_provider, text_input_ma
         except Exception as e:
             logger.error(f"Response is not in the correct format: {e}, retrying...")
             success_flag = False
+
             # wait 2 seconds for the next request and retry
             await asyncio.sleep(2)
     # Convert the response to dict
     if processed_response is None or len(response) == 0:
         logger.warn('Empty response in gather text information call')
         logger.debug("response", response, "processed_response", processed_response)
+
     objects = processed_response
     objects_index = str(video_prefix) + '_' + time_stamp
     gathered_information_JSON.add_instance(objects_index, objects)
@@ -65,6 +67,7 @@ async def gather_information_get_completion_parallel(llm_provider, text_input_ma
 
 def gather_information_get_completion_sequence(llm_provider, text_input_map, current_frame_path, time_stamp,
                                                text_input, get_text_template, i,video_prefix,gathered_information_JSON):
+
     logger.write(f"Start gathering text information from the {i + 1}th frame")
     text_input = text_input_map if text_input is None else text_input
 
@@ -94,7 +97,10 @@ def gather_information_get_completion_sequence(llm_provider, text_input_map, cur
         except Exception as e:
             logger.error(f"Response is not in the correct format: {e}, retrying...")
             success_flag = False
-        # Convert the response to dict
+
+            time.sleep(2)
+
+    # Convert the response to dict
     if processed_response is None or len(response) == 0:
         logger.warn('Empty response in gather text information call')
         logger.debug("response", response, "processed_response", processed_response)
@@ -216,6 +222,7 @@ class GatherInformation():
         object_detector_gathered_information = None
         llm_description_gathered_information = None
 
+
         input = self.input_map if input is None else input
         input = self._pre(input=input)
 
@@ -229,22 +236,29 @@ class GatherInformation():
 
         # Gather information by frame extractor
         if gather_infromation_configurations["frame_extractor"] is True:
+
             logger.write(f"Using frame extractor to gather information")
+
             if self.frame_extractor is not None:
+
                 text_input = input["text_input"]
                 video_path = input["video_clip_path"]
+
                 # extract the text information of the whole video
                 # run the frame_extractor to get the key frames
                 extracted_frame_paths = self.frame_extractor.extract(video_path=video_path)
+
                 # for each key frame, use llm to get the text information
-                video_prefix = os.path.basename(video_path).split('.')[0].split('_')[
-                    -1]  # different video should have differen prefix for avoiding the same time stamp
+                video_prefix = os.path.basename(video_path).split('.')[0].split('_')[-1]  # different video should have differen prefix for avoiding the same time stamp
                 frame_extractor_gathered_information = JSONStructure()
+
                 if config.parallel_request_gather_information:
                     # create completion in parallel
                     logger.write(f"Start gathering text information from the whole video in parallel")
+
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
+
                     try:
                         loop.run_until_complete(
                             get_completion_in_parallel(self.llm_provider, self.text_input_map, extracted_frame_paths,
@@ -262,15 +276,23 @@ class GatherInformation():
                                                text_input,self.get_text_template,video_prefix,frame_extractor_gathered_information)
                 frame_extractor_gathered_information.sort_index_by_timestamp()
                 logger.write(f"Finish gathering text information from the whole video")
+
             else:
                 logger.warn('Frame extractor is not set, skipping gather information by frame extractor')
+                frame_extractor_gathered_information = None
+
             # get dialogue information from the gathered_information_JSON at the subfounder find the dialogue frames
-            dialogues = [item["values"] for item in frame_extractor_gathered_information.search_type_across_all_indices("dialogue")]
-            # TODO: summary the dialogues
+            if frame_extractor_gathered_information is not None:
+                dialogues = [item["values"] for item in frame_extractor_gathered_information.search_type_across_all_indices("dialogue")]
+            else:
+                if self.frame_extractor is not None:
+                    msg = "No gathered_information_JSON received, so no dialogue information is provided."
+                else:
+                    msg = "No gathered_information_JSON available, no Frame Extractor in use."
+                logger.warn(msg)
+                dialogues = []
 
-
-
-
+            # @TODO: summary the dialogue and use it
 
         # Gather information by marker matcher
         if gather_infromation_configurations["marker_matcher"] is True:
@@ -311,7 +333,6 @@ class GatherInformation():
             except Exception as e:
                 logger.error(f"Error in gather image description information: {e}")
                 flag = False
-
 
         # assemble the gathered_information_JSON
 
@@ -393,8 +414,10 @@ class DecisionMaking():
         self.template = template
         self.llm_provider = llm_provider
 
+
     def _pre(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return input
+
 
     def __call__(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
 
@@ -419,11 +442,7 @@ class DecisionMaking():
                 logger.debug(input)
 
             # Convert the response to dict
-            # processed_response = parse_semi_formatted_json(response)
-
             processed_response = parse_semi_formatted_text(response)
-
-            # res_json = json.dumps(processed_response, indent=4)
 
         except Exception as e:
             logger.error(f"Error in decision_making: {e}")
@@ -434,11 +453,11 @@ class DecisionMaking():
             flag=flag,
             input=input,
             res_dict=processed_response,
-            # res_json = res_json,
         )
 
         data = self._post(data=data)
         return data
+
 
     def _post(self, *args, data: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return data
@@ -454,8 +473,10 @@ class SuccessDetection():
         self.template = template
         self.llm_provider = llm_provider
 
+
     def _pre(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return input
+
 
     def __call__(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
 
@@ -464,7 +485,6 @@ class SuccessDetection():
 
         flag = True
         processed_response = {}
-        # res_json = None
 
         try:
 
@@ -478,11 +498,7 @@ class SuccessDetection():
             logger.debug(f'>> Downstream - A: {response}')
 
             # Convert the response to dict
-            # processed_response = parse_semi_formatted_json(response)
-
             processed_response = parse_semi_formatted_text(response)
-
-            # res_json = json.dumps(processed_response, indent=4)
 
         except Exception as e:
             logger.error(f"Error in success_detection: {e}")
@@ -491,18 +507,19 @@ class SuccessDetection():
         data = dict(
             flag=flag,
             input=input,
-            # res_json=res_json,
             res_dict=processed_response,
         )
 
         data = self._post(data=data)
         return data
 
+
     def _post(self, *args, data: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return data
 
 
 class SelfReflection():
+
     def __init__(self,
                  input_map: Dict = None,
                  template: Dict = None,
@@ -512,8 +529,10 @@ class SelfReflection():
         self.template = template
         self.llm_provider = llm_provider
 
+
     def _pre(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return input
+
 
     def __call__(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
 
@@ -522,7 +541,6 @@ class SelfReflection():
 
         flag = True
         processed_response = {}
-        # res_json = None
 
         try:
 
@@ -536,11 +554,7 @@ class SelfReflection():
             logger.debug(f'>> Downstream - A: {response}')
 
             # Convert the response to dict
-            # processed_response = parse_semi_formatted_json(response)
-
             processed_response = parse_semi_formatted_text(response)
-
-            # res_json = json.dumps(processed_response, indent=4)
 
         except Exception as e:
             logger.error(f"Error in self reflection: {e}")
@@ -549,18 +563,19 @@ class SelfReflection():
         data = dict(
             flag=flag,
             input=input,
-            # res_json=res_json,
             res_dict=processed_response,
         )
 
         data = self._post(data=data)
         return data
 
+
     def _post(self, *args, data: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return data
 
 
 class InformationSummary():
+
     def __init__(self,
                  input_map: Dict = None,
                  template: Dict = None,
@@ -571,8 +586,10 @@ class InformationSummary():
         self.template = template
         self.llm_provider = llm_provider
 
+
     def _pre(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return input
+
 
     def __call__(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
 
@@ -595,11 +612,7 @@ class InformationSummary():
             logger.debug(f'>> Downstream - A: {response}')
 
             # Convert the response to dict
-            # processed_response = parse_semi_formatted_json(response)
-
             processed_response = parse_semi_formatted_text(response)
-
-            # res_json = json.dumps(processed_response, indent=4)
 
         except Exception as e:
             logger.error(f"Error in information_summary: {e}")
@@ -615,11 +628,13 @@ class InformationSummary():
         data = self._post(data=data)
         return data
 
+
     def _post(self, *args, data: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return data
 
 
 class Planner(BasePlanner):
+
     def __init__(self,
                  llm_provider: Any = None,
                  planner_params: Dict = None,
@@ -680,6 +695,7 @@ class Planner(BasePlanner):
                                  use_screen_classification=use_screen_classification,
                                  use_information_summary=use_information_summary)
 
+
     # Allow re-configuring planner
     def set_internal_params(self,
                             planner_params: Dict = None,
@@ -731,6 +747,7 @@ class Planner(BasePlanner):
         else:
             self.information_summary_ = None
 
+
     def _init_inputs(self):
         input_examples = dict()
         prompt_paths = self.planner_params["prompt_paths"]
@@ -743,6 +760,7 @@ class Planner(BasePlanner):
                 input_examples[key] = load_json(path)
         return input_examples
 
+
     def _init_templates(self):
         templates = dict()
         prompt_paths = self.planner_params["prompt_paths"]
@@ -754,6 +772,7 @@ class Planner(BasePlanner):
             else:
                 templates[key] = load_json(path)
         return templates
+
 
     def gather_information(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
 
@@ -777,6 +796,7 @@ class Planner(BasePlanner):
 
         return data
 
+
     def decision_making(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
 
         if input is None:
@@ -785,6 +805,7 @@ class Planner(BasePlanner):
         data = self.decision_making_(input=input)
 
         return data
+
 
     def success_detection(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
 
@@ -795,6 +816,7 @@ class Planner(BasePlanner):
 
         return data
 
+
     def self_reflection(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
 
         if input is None:
@@ -803,6 +825,7 @@ class Planner(BasePlanner):
         data = self.self_reflection_(input=input)
 
         return data
+
 
     def information_summary(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
 

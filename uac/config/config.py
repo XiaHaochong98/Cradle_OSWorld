@@ -28,7 +28,7 @@ class Config(metaclass=Singleton):
     DEFAULT_FIXED_SEED_VALUE = 42
     DEFAULT_FIXED_TEMPERATURE_VALUE = 0.0
 
-    DEFAULT_POST_ACTION_WAIT_TIME = 3
+    DEFAULT_POST_ACTION_WAIT_TIME = 3 # Currently in use in multiple places with this value
 
     DEFAULT_MESSAGE_CONSTRUCTION_MODE = constants.MESSAGE_CONSTRUCTION_MODE_TRIPART
     DEFAULT_OCR_CROP_REGION = (380, 720, 1920, 1080) # x1, y1, x2, y2, from top left to bottom right

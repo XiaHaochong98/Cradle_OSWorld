@@ -1,20 +1,26 @@
 import time
 import argparse
 
+from uac.gameio import GameManager
 from uac.gameio.lifecycle.ui_control import switch_to_code, switch_to_game, take_screenshot, segment_minimap, pause_game, unpause_game, exit_back_to_game
 from uac.gameio.composite_skills.navigation import cv_navigation
 from uac.gameio.composite_skills.go_to_icon import go_to_horse
 from uac.utils.template_matching import match_template_image
 from uac.gameio.atomic_skills.map import open_map, open_index, close_index
-from uac.gameio.atomic_skills.move import turn, mount_horse
+from uac.gameio.atomic_skills.hunt import shoot
+from uac.gameio.atomic_skills.move import turn, mount_horse, move_forward
 from uac.gameio.composite_skills.follow import follow
 from uac.gameio.composite_skills.auto_shoot import shoot_wolves, shoot_people
 from uac.config import Config
 from uac.log import Logger
+from uac.gameio import IOEnvironment
 from uac.log.logger import shrink_log_message
+from uac.gameio.io_env import IOEnvironment
+
 
 config = Config()
 logger = Logger()
+io_env = IOEnvironment()
 
 
 class SwitchWindow(object):

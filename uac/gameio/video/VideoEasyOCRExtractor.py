@@ -1,23 +1,24 @@
 import os
 import numpy as np
 from typing import Any, List, Tuple
+import time
+import base64
+
+import cv2
+import easyocr
 import PIL
+from PIL import Image
 
 # Hack to avoid EasyOCR crash
 PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
 
-from PIL import Image
-import cv2
-import base64
-import easyocr
-
 from uac.log import Logger
 from uac.config import Config
 from uac.utils.file_utils import assemble_project_path
-import time
 
 logger = Logger()
 config = Config()
+
 
 class VideoEasyOCRExtractor():
 
@@ -25,6 +26,7 @@ class VideoEasyOCRExtractor():
 
         self.crop_region = config.DEFAULT_OCR_CROP_REGION
         self.reader = easyocr.Reader(['en'])
+
 
     def to_images(self, data: Any) -> Any:
 
@@ -58,15 +60,18 @@ class VideoEasyOCRExtractor():
             images.append(image)
         return images
 
+
     def extract_text(self, image: Any, return_full: int = 1) -> List[Any]:
         images = self.to_images(image)
         res = []
         for image in images:
             # if return full, return the (bounding box, text, prob) tuple
             # else, return the text only
+
             item = self.reader.readtext(image, detail=return_full)
             res.append(item)
         return res
+
 
     def extract_text_from_video(self, video_path: str, return_full: int = 1) -> List[Any]:
 
@@ -88,9 +93,11 @@ class VideoEasyOCRExtractor():
 
         return res
 
+
     def extract_text_from_frames(self, frames: List, return_full: int = 1) -> List[Any]:
         res = self.extract_text(frames, return_full=return_full)
         return res
+
 
     def detect_text(self, image: Any) -> Tuple[List[Any], List[bool]]:
         images = self.to_images(image)
@@ -102,6 +109,7 @@ class VideoEasyOCRExtractor():
 
         has_text_flag = [True if len(item) >0 else False for item in bounding_boxes ]
         return bounding_boxes, has_text_flag
+
 
     def detect_text_from_video(self, video_path: str) -> Tuple[List[Any], List[bool]]:
         cap = cv2.VideoCapture(video_path)
@@ -122,11 +130,10 @@ class VideoEasyOCRExtractor():
 
         return bounding_boxes, has_text_flag
 
+
     def detect_text_from_frames(self, frames: List) -> Tuple[List[Any], List[bool]]:
         bounding_boxes, has_text_flag = self.detect_text(frames)
         return bounding_boxes, has_text_flag
-
-
 
 
 if __name__ == '__main__':
@@ -141,4 +148,5 @@ if __name__ == '__main__':
         cost = time.time() - start
         times.append(cost)
         logger.write(cost)
+
     logger.write(np.mean(times))

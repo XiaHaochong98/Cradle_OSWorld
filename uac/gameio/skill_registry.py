@@ -3,19 +3,20 @@ import ast
 import time
 from typing import Dict, Any, List, Tuple
 import inspect
-import numpy as np
 import copy
 import os
 import base64
 
+import numpy as np
+
 from uac.config import Config
 from uac.log import Logger
 from uac.utils.json_utils import load_json, save_json
-import pydirectinput
-import pyautogui
+from uac.gameio import IOEnvironment
 
 config = Config()
 logger = Logger()
+io_env = IOEnvironment()
 
 SKILL_REGISTRY = {}
 SKILL_INDEX = []
@@ -36,8 +37,12 @@ def register_skill(name):
     def decorator(skill):
         SKILL_REGISTRY[name] = skill
         skill_code = inspect.getsource(skill)
+
+        # Remove unnecessary annotation in skill library
         if f"@register_skill(\"{name}\")\n" in skill_code:
             skill_code = skill_code.replace(f"@register_skill(\"{name}\")\n", "")
+
+
         SKILL_INDEX.append({SKILL_NAME_KEY:          name,
                             SKILL_EMBEDDING_KEY:     None,
                             SKILL_CODE_KEY:          skill_code})
@@ -61,7 +66,7 @@ class SkillRegistry:
         skill_scope = 'Full',
         embedding_provider = None
     ):
-        
+
         self.from_local = from_local
         if skill_scope == 'Basic':
             self.skill_library_filename = BASIC_SKILL_LIB_FILE
@@ -69,7 +74,7 @@ class SkillRegistry:
             self.skill_library_filename = EXPL_SKILL_LIB_FILE
         if skill_scope == None:
             self.from_local = False
-        
+
         self.skill_scope = skill_scope
         self.local_path = local_path
         self.store_path = store_path
@@ -77,7 +82,7 @@ class SkillRegistry:
         self.basic_skills = copy.deepcopy(BASIC_SKILLS)
         self.recent_skills = []
         self.necessary_skills = copy.deepcopy(NECESSARY_SKILLS)
-        
+
         if self.from_local:
             if not os.path.exists(os.path.join(self.local_path, self.skill_library_filename)):
                 logger.error(f"{os.path.join(self.local_path, self.skill_library_filename)} does not exist.")
@@ -87,6 +92,7 @@ class SkillRegistry:
                 self.load_skill_library(os.path.join(self.local_path, self.skill_library_filename))
         else:
             self.filter_skill_library()
+
 
     def extract_function_info(self, input_string: str = "open_map()"):
 
@@ -195,7 +201,7 @@ class SkillRegistry:
 
         def get_func_name(skill_code):
             return skill_code.split('def ')[-1].split('(')[0]
-        
+
         def check_param_description(skill) -> bool:
             docstring = inspect.getdoc(skill)
             if docstring:
@@ -209,7 +215,7 @@ class SkillRegistry:
                     return True
             else:
                 return True
-        
+
         def check_protection_conflict(skill):
             for word in ALLOW_LIST_TERMS:
                 if word in skill:
@@ -219,7 +225,7 @@ class SkillRegistry:
                     return False
             return True
 
-        
+
         info = None
 
         skill_code = lower_func_name(skill_code)
@@ -236,7 +242,7 @@ class SkillRegistry:
                 self.delete_skill(skill_name)
                 logger.write(f"Skill '{skill_name}' will be overwritten.")
                 
-        
+
         if skill_name in self.skill_registry:
             info = f"Skill '{skill_name}' already exists."
             logger.write(info)
@@ -249,7 +255,7 @@ class SkillRegistry:
             info = "The skill code is invalid."
             logger.error(info)
             return False, info
-        
+
         if check_param_description(skill) == False:
             info = "The format of parameter description is wrong."
             logger.error(info)
@@ -281,7 +287,7 @@ class SkillRegistry:
         if skill_name in self.recent_skills:
             position = self.recent_skills.index(skill_name)
             self.recent_skills.pop(position)
-            
+
 
     def retrieve_skills(self, query_task: str, skill_num: int) -> List[str]:
         skill_num = min(skill_num, len(self.skill_index))
@@ -296,7 +302,8 @@ class SkillRegistry:
                     target_skills.append(skill[SKILL_NAME_KEY])
         self.recent_skills = []
         return target_skills
-    
+
+
     def register_available_skills(self, candidates:List[str]) -> None:
         for skill_key in list(self.skill_registry.keys()):
             if skill_key not in candidates:
@@ -315,18 +322,19 @@ class SkillRegistry:
 
     def get_embedding(self, skill_name, skill_doc):
         return np.array(self.embedding_provider.embed_query('{}: {}'.format(skill_name, skill_doc)))
-        #return np.array(self.embedding_provider.embed_query(skill_doc))
 
 
     def convert_str_to_func(self, skill_name, skill_local):
         exec(skill_local[skill_name][SKILL_CODE_KEY])
         skill = eval(skill_name)
         return skill
-    
+
 
     def store_skills(self, file_path = None) -> None:
+
         if file_path == None:
             file_path = os.path.join(self.store_path, self.skill_library_filename)
+
         store_file = {}
         for skill in self.skill_index:
             store_file[skill[SKILL_NAME_KEY]] = {SKILL_CODE_KEY:skill[SKILL_CODE_KEY],
@@ -346,6 +354,7 @@ class SkillRegistry:
         for skill_name in skill_local.keys():
 
             if skill_name in SKILL_REGISTRY:
+
                 # the manually-designed skills follow the code in .py files
                 self.skill_registry[skill_name] = SKILL_REGISTRY[skill_name]
 
@@ -377,8 +386,10 @@ class SkillRegistry:
                     self.skill_index.append({SKILL_NAME_KEY:skill_name,
                                              SKILL_EMBEDDING_KEY:self.get_embedding(skill_name, inspect.getdoc(skill)),
                                              SKILL_CODE_KEY:skill_local[skill_name][SKILL_CODE_KEY]})
-    
+
+
     def filter_skill_library(self) -> None:
+
         if self.skill_scope == 'Basic':
             self.skill_registry = {}
             self.skill_index = []
@@ -386,11 +397,11 @@ class SkillRegistry:
                 if skill[SKILL_NAME_KEY] in self.basic_skills:
                     self.skill_registry[skill[SKILL_NAME_KEY]] = SKILL_REGISTRY[skill[SKILL_NAME_KEY]]
                     self.skill_index.append(skill)
-        
+
         if self.skill_scope == 'Full':
             self.skill_registry = copy.deepcopy(SKILL_REGISTRY)
             self.skill_index = copy.deepcopy(SKILL_INDEX)
-        
+
         if self.skill_scope == None:
             self.skill_registry = {}
             self.skill_index = []
@@ -401,4 +412,3 @@ class SkillRegistry:
 
         for skill in self.skill_index:
             skill[SKILL_EMBEDDING_KEY] = self.get_embedding(skill[SKILL_NAME_KEY], inspect.getdoc(SKILL_REGISTRY[skill[SKILL_NAME_KEY]]))
-

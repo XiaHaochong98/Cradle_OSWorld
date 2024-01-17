@@ -1,12 +1,12 @@
-import shutil, os
-import time, math
+import os
+import time
 
 import cv2
 import torch
 from torchvision.ops import box_convert
 from groundingdino.util.inference import load_model, load_image, predict, annotate
 
-from uac.gameio.atomic_skills.hunt import shoot
+from uac.gameio.atomic_skills.hunt import aim_and_shoot
 from uac.gameio.lifecycle.ui_control import switch_to_game, take_screenshot
 from uac.gameio.skill_registry import register_skill
 from uac.provider import GdProvider
@@ -17,13 +17,15 @@ config = Config()
 logger = Logger()
 gd_detector = GdProvider()
 
+DEFAULT_MAX_SHOOTING_ITERATIONS = 400
+
 
 @register_skill("shoot_people")
 def shoot_people():
     """
     Shoot at person-shaped targets, if necessary.
     """
-    keep_shooting_target(500, detect_target="person", debug=False)
+    keep_shooting_target(DEFAULT_MAX_SHOOTING_ITERATIONS, detect_target="person", debug=False)
 
 
 @register_skill("shoot_wolves")
@@ -31,7 +33,7 @@ def shoot_wolves():
     """
     Shoot at wolf targets, if necessary.
     """
-    keep_shooting_target(500, detect_target="wolf", debug=False)
+    keep_shooting_target(DEFAULT_MAX_SHOOTING_ITERATIONS, detect_target="wolf", debug=False)
 
 
 def keep_shooting_target(
@@ -56,8 +58,8 @@ def keep_shooting_target(
 
         timestep = time.time()
 
-        screen_image_filename, minimap_image_filename = take_screenshot(timestep, config.game_region,
-                                                                        config.minimap_region, draw_axis=False)
+        screen_image_filename, _ = take_screenshot(timestep, config.game_region, include_minimap=False, draw_axis=False)
+
         if not detect_target.endswith(' .'):
             detect_target += ' .'
 
@@ -86,6 +88,7 @@ def keep_shooting_target(
         if debug:
             annotated_frame = annotate(image_source=screen, boxes=boxes, logits=logits, phrases=phrases)
             cv2.imwrite(os.path.join(save_dir, f"annotated_{timestep}.jpg"), annotated_frame)
+
         h, w, _ = screen.shape
         xyxy = box_convert(boxes=boxes * torch.Tensor([w, h, w, h]), in_fmt="cxcywh", out_fmt="xyxy").numpy().astype(int)
 
@@ -97,13 +100,15 @@ def keep_shooting_target(
             if detect_object in detect_target:  # TODO: shoot confidence threshold
                 shoot_x = int((detect_xyxy[0] + detect_xyxy[2]) / 2)
                 shoot_y = int((detect_xyxy[1] + detect_xyxy[3]) / 2)
+
                 if debug:
                     cv2.arrowedLine(annotated_frame, (config.game_resolution[0] // 2, config.game_resolution[1] // 2), (
                         int((detect_xyxy[0] + detect_xyxy[2]) / 2), int((detect_xyxy[1] + detect_xyxy[3]) / 2)),
                                     (0, 255, 0), 2, tipLength=0.1)
                     cv2.imwrite(os.path.join(save_dir, f"annotated_{detect_object}_{timestep}.jpg"), annotated_frame)
+
                 logger.debug(f'pixel is {shoot_x},{shoot_y}')
-                shoot(int(shoot_x), int(shoot_y))
+                aim_and_shoot(int(shoot_x), int(shoot_y))
                 break
 
 __all__ = [

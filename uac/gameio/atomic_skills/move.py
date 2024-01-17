@@ -1,5 +1,4 @@
 import time
-import pydirectinput
 
 from uac.config import Config
 from uac.gameio import IOEnvironment
@@ -7,17 +6,7 @@ from uac.gameio.skill_registry import register_skill, post_skill_wait
 
 config = Config()
 io_env = IOEnvironment()
-ahk = io_env.ahk
 
-
-def _theta_calculation(theta):
-    """
-    Calculates the adjusted theta value based on the configured mouse move factor.
-
-    Parameters:
-    - theta: The original theta value to be adjusted.
-    """
-    return theta * config.mouse_move_factor
 
 @register_skill("turn_and_move_forward")
 def turn_and_move_forward(theta, duration):
@@ -29,13 +18,9 @@ def turn_and_move_forward(theta, duration):
     For example, if theta = 30, the character will turn right 30 degrees. If theta = -30, the character will turn left 30 degrees.
     - duration: The duration in seconds for which the character should move forward.
     """
-    theta = _theta_calculation(theta)
+    turn(theta)
 
-    ahk.mouse_move(theta, 0, speed=100, relative=True)
-
-    pydirectinput.keyDown('w')
-    time.sleep(duration)
-    pydirectinput.keyUp('w')
+    move_forward(duration)
 
 
 @register_skill("turn")
@@ -47,37 +32,7 @@ def turn(theta):
     - theta: The angle for the turn. Use a negative value to turn left and a positive value to turn right.
     For example, if theta = 30, the character will turn right 30 degrees. If theta = -30, the character will turn left 30 degrees.
     """
-    theta = _theta_calculation(theta)
-
-    ahk.mouse_move(theta, 0, speed=100, relative=True)
-
-
-@register_skill("turn_right")
-def turn_right(theta):
-    """
-    Continuous function to turn the in-game character to the right for the specified theta angle.
-
-    Parameters:
-    - theta: The angle in radians for the continuous right turn, theta must be a positive number.
-    """
-    theta = _theta_calculation(theta)
-    assert 0 < theta
-
-    ahk.mouse_move(theta, 0, speed=100, relative=True)
-
-
-@register_skill("turn_left")
-def turn_left(theta):
-    """
-    Continuous function to turn the in-game character to the left for the specified theta angle.
-
-    Parameters:
-    - theta: The angle in radians for the continuous left turn. theta must be a negative number.
-    """
-    theta = _theta_calculation(theta)
-    assert theta < 0
-
-    ahk.mouse_move(theta, 0, speed=100, relative=True)
+    io_env.mouse_move_horizontal_angle(theta)
 
 
 @register_skill("move_forward")
@@ -88,9 +43,7 @@ def move_forward(duration):
     Parameters:
     - duration: The duration in seconds for which the character should move forward.
     """
-    pydirectinput.keyDown('w')
-    time.sleep(duration)
-    pydirectinput.keyUp('w')
+    io_env.key_hold('w', duration)
 
 
 @register_skill("mount_horse")
@@ -98,7 +51,7 @@ def mount_horse():
     """
     Needs to be close to the horse. Mounts the horse by pressing the "e" key.
     """
-    pydirectinput.press("e")
+    io_env.key_press('e')
 
     post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
@@ -108,7 +61,7 @@ def dismount_horse():
     """
     Dismounts the horse by pressing the "e" key.
     """
-    pydirectinput.press("e")
+    io_env.key_press('e')
 
     post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
@@ -118,17 +71,14 @@ def stop_horse():
     """
     Stops the horse by pressing the "Ctrl" key.
     """
-    pydirectinput.keyDown("ctrl")
-    time.sleep(0.5)
-    pydirectinput.keyUp("ctrl")
+    io_env.key_press('ctrl', 0.5)
+
 
 __all__ = [
     "turn",
-    #"turn_right",
-    #"turn_left",
     "move_forward",
-    "mount_horse",
     "turn_and_move_forward",
+    "mount_horse",
     "dismount_horse",
     "stop_horse",
 ]

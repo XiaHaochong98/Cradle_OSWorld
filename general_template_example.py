@@ -27,6 +27,7 @@ config = Config()
 logger = Logger()
 
 
+
 def main_test_decision_making(planner_params, task_description, skill_library):
     llm_provider_config_path = './conf/openai_config.json'
 
@@ -339,7 +340,7 @@ def skill_library_test():
     gm.store_skills()
 
 def main_test_gather_information(image_path = ""):
-    
+
     llm_provider_config_path = './conf/openai_config.json'
 
     llm_provider = OpenAIProvider()
@@ -481,11 +482,18 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             text_input["image_introduction"] = get_text_image_introduction
             input["text_input"] = text_input
 
+            # >> Calling INFORMATION GATHERING
+            logger.write(f'>> Calling INFORMATION GATHERING')
             data = planner.gather_information(input=input)
 
             # you can extract any information from the gathered_information_JSON
             gathered_information_JSON=data['res_dict']['gathered_information_JSON']
-            gathered_information=gathered_information_JSON.data_structure
+
+            if gathered_information_JSON is not None:
+                gathered_information=gathered_information_JSON.data_structure
+            else:
+                logger.warn("NO data_structure in gathered_information_JSON")
+                gathered_information = dict()
 
             # sort the gathered_information by the time stamp
             gathered_information = dict(sorted(gathered_information.items(), key=lambda item: item[0]))
@@ -500,10 +508,17 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 last_task_guidance = max(all_task_guidance, key=lambda x: x['index'])['values']
 
             image_description=data['res_dict'][constants.IMAGE_DESCRIPTION]
-            target_object_name=data['res_dict'][constants.TARGET_OBJECT_NAME]
-            object_name_reasoning=data['res_dict'][constants.GATHER_INFO_REASONING]
+
             screen_classification=data['res_dict'][constants.SCREEN_CLASSIFICATION]
-            
+
+            if constants.TARGET_OBJECT_NAME in data['res_dict'].keys():
+                target_object_name=data['res_dict'][constants.TARGET_OBJECT_NAME]
+                object_name_reasoning=data['res_dict'][constants.GATHER_INFO_REASONING]
+            else:
+                logger.write("> No target object")
+                target_object_name = ""
+                object_name_reasoning=""
+
             if "boxes" in data['res_dict'].keys():
                 image_source, image = load_image(cur_screen_shot_path)
                 boxes = data['res_dict']["boxes"]
@@ -535,11 +550,14 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 task_description = last_task_guidance
 
             if config.skill_retrieval:
+
                 for extracted_skills in all_generated_actions:
                     extracted_skills=extracted_skills['values']
                     for extracted_skill in extracted_skills:
                         gm.add_new_skill(skill_code=extracted_skill['code'])
+
                 gm.store_skills()
+
                 skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
                 logger.write(f'skill_library: {skill_library}')
                 skill_library = gm.get_filtered_skills(skill_library)
@@ -587,6 +605,8 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             input["image_introduction"] = image_introduction
             input["task_description"] = task_description
 
+            # >> Calling DECISION MAKING
+            logger.write(f'>> Calling DECISION MAKING')
             data = planner.decision_making(input = input)
 
             skill_steps = data['res_dict']['actions']
@@ -638,13 +658,16 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 input["task_description"] = task_description
                 input["event_count"] = str(config.event_count)
 
+                # >> Calling INFORMATION SUMMARY
+                logger.write(f'>> Calling INFORMATION SUMMARY')
+
                 data = planner.information_summary(input = input)
                 info_summary = data['res_dict']['info_summary']
                 entities_and_behaviors = data['res_dict']['entities_and_behaviors']
                 logger.write(f'R: Summary: {info_summary}')
                 logger.write(f'R: entities_and_behaviors: {entities_and_behaviors}')
                 memory.add_summarization(info_summary)
-            
+
             memory.add_recent_history("image", cur_screen_shot_path)
 
             # for success detection
@@ -667,6 +690,8 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 input["previous_action"] = memory.get_recent_history("action", k=1)[-1]
                 input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
 
+                # >> Calling SUCCESS DETECTION
+                logger.write(f'>> Calling SUCCESS DETECTION')
                 data = planner.success_detection(input = input)
 
                 success = data['res_dict']['success']
@@ -709,23 +734,27 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 if exec_info["errors"]:
                     input['executing_action_error']  = exec_info["errors_info"]
 
-                data = planner.self_reflection(input = input)          
+                # >> Calling SELF REFLECTION
+                logger.write(f'>> Calling SELF REFLECTION')
+                data = planner.self_reflection(input = input)
+
                 self_reflection_reasoning = data['res_dict']['reasoning']
                 pre_self_reflection_reasoning = self_reflection_reasoning
                 memory.add_recent_history("self_reflection_reasoning", self_reflection_reasoning)
                 logger.write(f'Self-reflection reason: {self_reflection_reasoning}')
-
-                #gm.delete_skill("action")
 
             #store memory
             memory.save()
 
         except KeyboardInterrupt:
             logger.write('KeyboardInterrupt Ctrl+C detected, exiting.')
+            gm.cleanup_io()
             videocapture.finish_capture()
             break
 
+    gm.cleanup_io()
     videocapture.finish_capture()
+
 
 if __name__ == '__main__':
 
@@ -762,8 +791,7 @@ if __name__ == '__main__':
         }
     }
 
-
-    skill_library = ['turn', 'move_forward', 'turn_and_move_forward', 'follow']
+    skill_library = ['turn', 'move_forward', 'turn_and_move_forward', 'follow', 'shoot', 'shoot_people', 'shoot_wolves', 'choose_weapons_at']
     #skill_library = move_skills + follow_skills
     #task_description =  "Follow Dutch."
     #task_description =  "Hitch your horse."
@@ -795,6 +823,8 @@ if __name__ == '__main__':
     config.ocr_fully_ban = True # not use ocr
     config.ocr_enabled = False
     config.skill_retrieval = True
+
+    main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True, use_information_summary = False)
     #main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True, use_information_summary = True)
 
     # skill_library_test()
@@ -805,4 +835,4 @@ if __name__ == '__main__':
 
     # image_path = ""
     # main_test_gather_information(image_path=image_path)
-    
+

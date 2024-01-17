@@ -80,6 +80,7 @@ def parse_semi_formatted_json(json_string):
 
 
 def parse_semi_formatted_text(text):
+
     lines = text.split('\n')
 
     lines = [line.rstrip() for line in lines if line.rstrip()]
@@ -93,16 +94,21 @@ def parse_semi_formatted_text(text):
         # Check if the line indicates a new key
         if line.endswith(":") and in_code_flag == False:
             # If there's a previous key, process its values
-            if current_key and current_key.lower() == constants.ACTION_GUIDANCE:
-                result_dict[current_key.lower()] = parsed_data
+            if current_key and current_key == constants.ACTION_GUIDANCE:
+                result_dict[current_key] = parsed_data
             elif current_key:
-                result_dict[current_key.lower()] = '\n'.join(current_value).strip()
+                result_dict[current_key] = '\n'.join(current_value).strip()
 
-            current_key = line.rstrip(':')
+            try:
+                current_key = line.rstrip(':').lower()
+            except Exception as e:
+                logger.error(f"Response is not in the correct format: {e}\nReceived text was: {text}")
+                raise
+
             current_value = []
             parsed_data = []
         else:
-            if current_key.lower() == constants.ACTION_GUIDANCE:
+            if current_key == constants.ACTION_GUIDANCE:
                 in_code_flag = True
                 if line.strip() == '```':
                     if current_value:  # Process previous code block and description
@@ -118,13 +124,13 @@ def parse_semi_formatted_text(text):
                 current_value.append(line)
 
     # Process the last key
-    if current_key.lower() == constants.ACTION_GUIDANCE:
+    if current_key == constants.ACTION_GUIDANCE:
         if current_value:  # Process the last code block and description
             entry = {"code": '\n'.join(current_value[:-1]).strip()}
             parsed_data.append(entry)
-        result_dict[current_key.lower()] = parsed_data
+        result_dict[current_key] = parsed_data
     else:
-        result_dict[current_key.lower()] = '\n'.join(current_value).strip()
+        result_dict[current_key] = '\n'.join(current_value).strip()
 
     if "actions" in result_dict:
         actions = result_dict["actions"]

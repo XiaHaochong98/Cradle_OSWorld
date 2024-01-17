@@ -15,17 +15,20 @@ from uac.utils.file_utils import assemble_project_path
 config = Config()
 logger = Logger()
 
+DEFAULT_GO_TO_ICON_ITERATIONS = 20
+DEFAULT_GO_TO_HORSE_ITERATIONS = DEFAULT_GO_TO_ICON_ITERATIONS
+
 
 @register_skill("go_to_horse")
 def go_to_horse():
     """
     Best way to go to the closest horse. Uses the minimap. Horses are useful to travel mid to long distances.
     """
-    go_to_icon("horse", iterations=20, debug=False)
+    go_to_icon("horse", iterations=DEFAULT_GO_TO_HORSE_ITERATIONS, debug=False)
 
 
 # @register_skill("go_to_icon")
-def go_to_icon(target: str = "horse", iterations=20, debug: bool = False):
+def go_to_icon(target: str = "horse", iterations=DEFAULT_GO_TO_ICON_ITERATIONS, debug: bool = False):
     """
     Navigates to the closed icon of the target in the minimap.
 
@@ -98,14 +101,14 @@ def cv_go_to_icon(
         terminal_threshold=20,
         debug=False,
 ):
-    
+
     save_dir = config.work_dir
     terminal_threshold *= config.resolution_ratio
-        
+
     check_success, prev_dis, prev_theta, counter, ride_attempt, ride_mod, dis_stat = False, 0, 0, 0, 0, 10, []
 
     for step in range(iterations):
-        
+
         logger.write(f'Go to icon iter #{step}')
 
         if config.ocr_different_previous_text:
@@ -121,7 +124,7 @@ def cv_go_to_icon(
         theta, info = match_template(os.path.join(save_dir, f"minimap_{timestep}.jpg"), template_file, config.resolution_ratio, debug)
         dis, confidence = info['distance'], info['confidence']
 
-        if debug: 
+        if debug:
             cv2.imwrite(os.path.join(save_dir, f"minimap_{timestep}_detect.jpg"), info['vis'])
 
         # Control
@@ -136,7 +139,7 @@ def cv_go_to_icon(
         #         mount_horse()
         #     ride_attempt += 1
         #     dis_stat.append(dis)
-        
+
         if dis < terminal_threshold and abs(theta) < 90:  # begin to settle
             # check_success = True
             # if not dis_stat:  # first time
@@ -144,12 +147,12 @@ def cv_go_to_icon(
             # if debug: logger.debug('checking mode is on')
             logger.write('Success! Reached the icon.')
             return True
-        
+
         # 2. Check stuck
         if abs(prev_dis - dis) < 0.5 and abs(prev_theta - theta) < 0.5:
             counter += 1
             if counter >= 1:
-                if debug: 
+                if debug:
                     logger.debug('Move randomly to get unstuck')
                 for _ in range(2):
                     turn(np.random.randint(30, 60) if np.random.rand()<0.5 else -np.random.randint(30, 60))
@@ -163,7 +166,7 @@ def cv_go_to_icon(
         move_forward(1.5)
         time.sleep(0.5)
 
-        if debug: 
+        if debug:
             logger.debug(f"step {step:03d} | timestep {timestep} done | theta: {theta:.2f} | distance: {dis:.2f} | confidence: {confidence:.3f} {'below threshold' if confidence < 0.5 else ''}")
 
         prev_dis, prev_theta = dis, theta

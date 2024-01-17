@@ -23,6 +23,11 @@ logger = Logger()
 io_env = IOEnvironment()
 
 def pause_game():
+
+    if io_env.check_held_keys():
+        logger.warn("Not pausing because tab or B are held.")
+        return
+
     if not is_env_paused():
         pydirectinput.press('esc')
     else:
@@ -43,7 +48,7 @@ def unpause_game():
 
 
 def exit_back_to_pause():
-    
+
     max_steps = 10
 
     back_steps = 0
@@ -57,7 +62,7 @@ def exit_back_to_pause():
 
 
 def exit_back_to_game():
-    
+
     exit_back_to_pause()
 
     # Unpause the game, to keep the rest of the agent flow consistent
@@ -160,7 +165,7 @@ def take_screenshot(tid : float = 0.0,
 
 
 def segment_minimap(screenshot_path):
-    
+
     tid = time.time()
     output_dir = config.work_dir
     minimap_image_filename = output_dir + "/minimap_" + str(tid) + ".jpg"
@@ -179,6 +184,8 @@ def segment_minimap(screenshot_path):
         # Save the cropped image to a new file
         cropped_minimap.save(minimap_image_filename)
 
+    clip_minimap(minimap_image_filename)
+
     return minimap_image_filename
 
 
@@ -189,7 +196,7 @@ def is_env_paused():
 
     # Multiple-scale-template-matching example, decide whether the game is paused according to the confidence score
     pause_clock_template_file = './res/icons/clock.jpg'
-    
+
     screenshot = take_screenshot(time.time(), include_minimap=False)[0]
     match_info = match_template_image(screenshot, pause_clock_template_file, debug=True, output_bb=True, save_matches=True, scale='full')
 
@@ -226,7 +233,7 @@ def clip_minimap(minimap_image_filename):
 
     # Apply the mask to the image
     masked_image = cv2.bitwise_and(image, mask)
-    
+
     # Save the result
     cv2.imwrite(minimap_image_filename, masked_image)
 
@@ -238,13 +245,14 @@ def annotate_with_coordinates(image_source, boxes, logits, phrases):
     logger.debug(f"boxes: {boxes}, xyxy: {xyxy}")
 
     detections = sv.Detections(xyxy=xyxy)
-    # Coordinates normalization to percentages
+
+    # Without coordinates normalization
     labels = [
         f"{phrase} {' '.join(map(str, ['x=', round((xyxy_s[0]+xyxy_s[2])/(2*w), 2), 'y=', round((xyxy_s[1]+xyxy_s[3])/(2*h), 2)]))}"
         for phrase, xyxy_s
         in zip(phrases, xyxy)
     ]
-    
+
     # Without coordinates normalization
     # labels = [
     #     f"{phrase} {' '.join(map(str, ['x=', round((xyxy_s[0]+xyxy_s[2])/2), 'y=', round((xyxy_s[1]+xyxy_s[3])/2)]))}"

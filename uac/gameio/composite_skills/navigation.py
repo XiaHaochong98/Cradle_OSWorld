@@ -1,7 +1,6 @@
 import time
 import os
 import math
-import traceback as tb
 
 import cv2
 import numpy as np
@@ -16,9 +15,12 @@ from uac.gameio.composite_skills.go_to_icon import match_template
 config = Config()
 logger = Logger()
 
+DEFAULT_NAVIGATION_ITERATIONS = 100
+NAVIGATION_TERMINAL_THRESHOLD = 100
+
 
 @register_skill("navigate_path")
-def navigate_path(iterations = 100, debug = False):
+def navigate_path(iterations = DEFAULT_NAVIGATION_ITERATIONS, debug = False):
     """
     Navigates an existing waypoint path in the minimap.
 
@@ -31,7 +33,7 @@ def navigate_path(iterations = 100, debug = False):
     cv_navigation(iterations, debug)
 
 
-def cv_navigation(total_iterations, terminal_threshold=100, debug = False):
+def cv_navigation(total_iterations, terminal_threshold=NAVIGATION_TERMINAL_THRESHOLD, debug = False):
 
     game_screen_region = config.game_region
     minimap_region = config.minimap_region
@@ -66,7 +68,7 @@ def cv_navigation(total_iterations, terminal_threshold=100, debug = False):
                 else:
                     move_forward(0.3)
                 time.sleep(0.1) # avoid running too fast
-        
+
             game_image, minimap_image = take_screenshot(timestep, game_screen_region, minimap_region, draw_axis=False)
 
             theta, measure = match_template(os.path.join(save_dir, f"minimap_{timestep}.jpg"), waypoint_marker_filename, config.resolution_ratio, debug=False)
@@ -98,7 +100,7 @@ def calculate_turn_angle(tid, debug = False, show_image = False):
 
     minimap_path = output_dir + "/minimap_" + str(tid) + ".jpg"
     output_path = output_dir + "/direction_map_" + str(tid) + ".jpg"
-    image = cv2.imread(minimap_path)    
+    image = cv2.imread(minimap_path)
 
     # Convert the image to HSV space
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -106,7 +108,7 @@ def calculate_turn_angle(tid, debug = False, show_image = False):
     # Calculate image center
     image_center = np.array([image.shape[1] // 2, image.shape[0] // 2])
     width, height  = image_center
-    center_x = width 
+    center_x = width
     center_y = height
 
     # Define range for red color
@@ -123,7 +125,7 @@ def calculate_turn_angle(tid, debug = False, show_image = False):
     # Threshold the HSV image to get the red regions
     mask1 = cv2.inRange(hsv, lower_red_1, upper_red_1)
     #mask2 = cv2.inRange(hsv, lower_red_2, upper_red_2)
-    mask = mask1 
+    mask = mask1
 
     kernel = np.ones((3,3), np.uint8)
     mask_upper_bottom = cv2.dilate(mask, kernel, iterations = 2)
@@ -136,7 +138,7 @@ def calculate_turn_angle(tid, debug = False, show_image = False):
 
         # Sort contours by area and get the top 5
         contours = sorted(contours, key=cv2.contourArea, reverse=True)[:5]
-        
+
         # Find the minimum distance from each contour to the image center
         def min_distance_from_center(contour):
             return min([  np.linalg.norm(np.array(point[0]) - image_center) for point in contour])
@@ -157,7 +159,7 @@ def calculate_turn_angle(tid, debug = False, show_image = False):
         if threshold == 0:
             return None
         return lines
-    
+
     lines = get_contour(mask)
     lines_upper_bottom = get_contour(mask_upper_bottom)
 
@@ -212,7 +214,7 @@ def calculate_turn_angle(tid, debug = False, show_image = False):
     while not central_line_y:
         for line in lines_upper_bottom:
             cv2.line(upper_bottom_img, (x1, y1), (x2, y2), (255), 1)
-            
+
             x1, y1, x2, y2 = line[0]
             if (x1 - center_x)**2 + (y1 - center_y)**2 < distance_threshold**2 or (x2 - center_x)**2 + (y2 - center_y)**2 < distance_threshold**2:
                 if (x1 - center_x)**2 + (y1 - center_y)**2 > (x2 - center_x)**2 + (y2 - center_y)**2:
@@ -259,7 +261,7 @@ def calculate_turn_angle(tid, debug = False, show_image = False):
         else:
             real_turn_angle = turn_angle
         return real_turn_angle
-    
+
     red_line_turn_angle = cal_real_turn_angle(angle_degrees, is_upper)
     real_turn_angle = red_line_turn_angle
     if deviation_angle_degrees:
@@ -293,16 +295,16 @@ def calculate_turn_angle(tid, debug = False, show_image = False):
 
     end_x = center_x + offset
     start_x = center_x - offset
-    end_y = center_y - slope * offset  
-    start_y = center_y + slope * offset  
+    end_y = center_y - slope * offset
+    start_y = center_y + slope * offset
 
     cv2.line(image, (int(start_x), int(start_y)), (int(end_x), int(end_y)), (0, 255, 0), 2)
 
     if len(central_dots) > 0 and (average_dot[0] - center_x)**2 + (average_dot[1] - center_y)**2 > deviation_threshold**2:
-        point = (int(average_dot[0]), int(average_dot[1]))  
-        color = (0, 255, 255)  
+        point = (int(average_dot[0]), int(average_dot[1]))
+        color = (0, 255, 255)
         cv2.circle(image, point, 5, color, -1)
-    
+
     cv2.imwrite(output_path, image)
 
     if show_image:
