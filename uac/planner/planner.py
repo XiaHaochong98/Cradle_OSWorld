@@ -348,9 +348,7 @@ class GatherInformation():
 
             objects = list(set(objects))
 
-            llm_description_gathered_information["objects"] = objects
             processed_response["objects"] = objects
-
             # merge the gathered_information_JSON to the processed_response
             processed_response["gathered_information_JSON"] = frame_extractor_gathered_information
 
