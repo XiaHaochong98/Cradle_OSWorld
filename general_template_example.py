@@ -533,6 +533,8 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                     memory.add_recent_history(key=constants.AUGMENTED_IMAGES_MEM_BUCKET, info=bb_image_path)
                 else:
                     memory.add_recent_history(key=constants.AUGMENTED_IMAGES_MEM_BUCKET, info=constants.NO_IMAGE)
+            else:
+                memory.add_recent_history(key=constants.AUGMENTED_IMAGES_MEM_BUCKET, info=constants.NO_IMAGE)
 
             logger.write(f'Image Description: {image_description}')
             logger.write(f'Object Name: {target_object_name}')
