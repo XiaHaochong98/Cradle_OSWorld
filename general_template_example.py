@@ -423,6 +423,8 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
     gm = GameManager(env_name = config.env_name,
                      embedding_provider = llm_provider)
+    
+    img_prompt_decision_making = planner.decision_making_.input_map["image_introduction"]
 
     if config.skill_retrieval:
         gm.register_available_skills(skill_library)
@@ -588,20 +590,21 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             #@TODO Temporary solution with fake augmented entries if no bounding box exists. Ideally it should read images, then check for possible augmentation.
             image_memory = memory.get_recent_history("image", k=config.decision_making_image_num)
             augmented_image_memory = memory.get_recent_history(constants.AUGMENTED_IMAGES_MEM_BUCKET, k=config.decision_making_image_num)
+            image_introduction = []
             for i in range(len(image_memory), 0, -1):
                 if augmented_image_memory[-i] != constants.NO_IMAGE:
                     image_introduction.append(
                         {
-                            "introduction": input["image_introduction"][-i]["introduction"],
+                            "introduction": img_prompt_decision_making[-i]["introduction"],
                             "path":augmented_image_memory[-i],
-                            "assistant": input["image_introduction"][-i]["assistant"]
+                            "assistant": img_prompt_decision_making[-i]["assistant"]
                         })
                 else:
                     image_introduction.append(
                         {
-                            "introduction": input["image_introduction"][-i]["introduction"],
+                            "introduction": img_prompt_decision_making[-i]["introduction"],
                             "path":image_memory[-i],
-                            "assistant": input["image_introduction"][-i]["assistant"]
+                            "assistant": img_prompt_decision_making[-i]["assistant"]
                         })
 
             input["image_introduction"] = image_introduction
