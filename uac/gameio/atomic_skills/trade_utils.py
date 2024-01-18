@@ -46,8 +46,8 @@ def choose_products_at(x, y):
     """
     Move the mouse to a specific location to choose products in the game.
     Parameters:
-    - x: The abscissa of the pixel.
-    - y: The ordinate of the pixel.
+    - x: The normalized abscissa of the pixel.
+    - y: The normalized ordinate of the pixel.
     """
     io_env.mouse_move_normalized(x, y)
 
@@ -119,7 +119,7 @@ __all__ = [
     "shopkeeper_interaction",
     "cancel_shopkeeper_interaction",
     #"select_products_by_mouse",
-    # "choose_products_at",
+    "choose_products_at",
     #"select_upside_product",
     #"select_downside_product",
     "select_next_product",

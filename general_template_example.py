@@ -17,6 +17,8 @@ from uac.gameio.atomic_skills.trade_utils import __all__ as trade_skills
 from uac.gameio.atomic_skills.buy import __all__ as buy_skills
 from uac.gameio.atomic_skills.map import __all__ as map_skills
 from uac.gameio.atomic_skills.move import __all__ as move_skills
+from uac.gameio.atomic_skills.hunt import __all__ as hunt_skills
+from uac.gameio.composite_skills.auto_shoot import __all__ as auto_shoot_skills
 from uac.gameio.composite_skills.follow import __all__ as follow_skills
 from uac import constants
 from uac.gameio.skill_registry import SkillRegistry
@@ -423,7 +425,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
     gm = GameManager(env_name = config.env_name,
                      embedding_provider = llm_provider)
-    
+
     img_prompt_decision_making = planner.decision_making_.input_map["image_introduction"]
 
     if config.skill_retrieval:
@@ -796,7 +798,7 @@ if __name__ == '__main__':
         }
     }
 
-    skill_library = ['turn', 'move_forward', 'turn_and_move_forward', 'follow', 'shoot', 'shoot_people', 'shoot_wolves', 'choose_weapons_at']
+    skill_library = ['turn', 'move_forward', 'turn_and_move_forward', 'follow', 'shoot', 'shoot_people', 'shoot_wolves', 'choose_weapons_at', 'aim_and_shoot']
     #skill_library = move_skills + follow_skills
     #task_description =  "Follow Dutch."
     #task_description =  "Hitch your horse."

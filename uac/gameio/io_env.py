@@ -120,11 +120,11 @@ class IOEnvironment(metaclass=Singleton):
 
         result = False
 
-        for e in self.held_keys:
-            k = e[self.KEY_KEY]
-            if k in keys:
-                result = True
-                break
+        #for e in self.held_keys:
+        #    k = e[self.KEY_KEY]
+        #    if k in keys:
+        #        result = True
+        #        break
 
         return result
 

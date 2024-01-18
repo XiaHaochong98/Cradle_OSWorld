@@ -1,4 +1,5 @@
 import time
+from typing import Tuple
 
 from uac.config import Config
 from uac.gameio import IOEnvironment
@@ -6,8 +7,6 @@ from uac.log import Logger
 from uac.gameio.lifecycle.ui_control import take_screenshot, segment_minimap, switch_to_game, pause_game, unpause_game, exit_back_to_pause
 from uac.gameio.composite_skills.navigation import navigate_path
 from uac.gameio.skill_registry import SkillRegistry
-from typing import Tuple
-
 
 config = Config()
 logger = Logger()
