@@ -27,3 +27,10 @@ IMAGE_RESOLUTION_TAG_NAME = 'resolution'
 IMAGE_ASSISTANT_TAG_NAME = 'assistant'
 
 IMAGES_INPUT_TAG = f'<${IMAGES_INPUT_TAG_NAME}$>'
+
+# Minimap information
+MINIMAP_INFORMATION = 'minimap_information'
+RED_POINTS = 'red points'
+YELLOW_POINTS = 'yellow points'
+YELLOW_REGION = 'yellow region'
+GD_PROMPT = 'red points . yellow points . yellow region .'

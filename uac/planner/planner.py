@@ -13,6 +13,7 @@ from uac.provider.base_llm import LLMProvider
 from uac.utils.check import check_planner_params
 from uac.utils.file_utils import assemble_project_path, read_resource_file
 from uac.utils.json_utils import load_json, parse_semi_formatted_text
+from uac import constants
 
 config = Config()
 logger = Logger()
@@ -371,6 +372,15 @@ class GatherInformation():
                 except Exception as e:
                     logger.error(f"Error in gather information by object detector: {e}")
                     flag = False
+            
+                try:
+                    minimap_detection_objects = self.object_detector.process_minimap_targets(image_files[0])
+
+                    processed_response.update({constants.MINIMAP_INFORMATION:minimap_detection_objects})
+
+                except Exception as e:
+                    logger.error(f"Error in gather information by object detector for minimap: {e}")
+                    flag = False
 
         success = self._check_success(data=processed_response)
 
@@ -379,7 +389,6 @@ class GatherInformation():
             success=success,
             input=input,
             res_dict=processed_response,
-            # res_json = res_json
         )
 
         data = self._post(data=data)

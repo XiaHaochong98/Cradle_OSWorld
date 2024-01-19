@@ -488,7 +488,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
             # >> Calling INFORMATION GATHERING
             logger.write(f'>> Calling INFORMATION GATHERING')
-            data = planner.gather_information(input=input)
+            data = planner.gather_information(input=input)  
 
             # you can extract any information from the gathered_information_JSON
             gathered_information_JSON=data['res_dict']['gathered_information_JSON']
@@ -612,8 +612,19 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             input["image_introduction"] = image_introduction
             input["task_description"] = task_description
 
-            # >> Calling DECISION MAKING
-            logger.write(f'>> Calling DECISION MAKING')
+            # newly add dino detection for minimap
+            if constants.MINIMAP_INFORMATION in data["res_dict"].keys():
+                minimap_information = data["res_dict"][constants.MINIMAP_INFORMATION]
+                logger.write(f"{constants.MINIMAP_INFORMATION}: {minimap_information}")
+                minimap_info_str = ""
+                for key, value in minimap_information.items():
+                    if value:
+                        for index, item in enumerate(value):
+                            minimap_info_str = minimap_info_str + key + ' ' + str(index) + ': angle '  + str(int(item['theta'])) + ' degree' + '\n'
+                minimap_info_str = minimap_info_str.rstrip('\n')
+                logger.write(f'minimap_info_str: {minimap_info_str}')
+                input[constants.MINIMAP_INFORMATION] = minimap_info_str
+
             data = planner.decision_making(input = input)
 
             skill_steps = data['res_dict']['actions']
@@ -761,7 +772,6 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
     gm.cleanup_io()
     videocapture.finish_capture()
-
 
 if __name__ == '__main__':
 
