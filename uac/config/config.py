@@ -70,16 +70,15 @@ class Config(metaclass=Singleton):
         self.temperature = float(os.getenv("TEMPERATURE", self.temperature))
         self.max_tokens = int(os.getenv("MAX_TOKENS", "1024"))
 
-        # Sample framework parameters
+        # Memory parameters
         self.memory_backend = os.getenv("MEMORY_BACKEND", "local")
+        self.max_recent_steps = 5
+        self.event_count = 5
+        self.memory_load_path = None
 
         # Parallel request to LLM parameters
         self.parallel_request_gather_information = True
-
-        # Memory length
-        self.max_recent_steps = 5
-        self.event_count = 5
-
+        
         #Skill retrieval
         self.skill_from_local = True
         self.skill_local_path = './res/skills/'

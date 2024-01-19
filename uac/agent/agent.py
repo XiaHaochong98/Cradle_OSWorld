@@ -166,7 +166,7 @@ class Agent:
 
                 sub_task_description = decomposed_task_description[sub_task_index]
                 sub_task_skills = decomposed_task_skills[sub_task_index]
-                sub_task_skill_library = self.gm.get_filtered_skills(sub_task_skills)
+                sub_task_skill_library = self.gm.get_skill_information(sub_task_skills)
 
                 self.memory.add_recent_history("task_description", sub_task_description)
                 self.memory.add_recent_history("skill_library", sub_task_skill_library)

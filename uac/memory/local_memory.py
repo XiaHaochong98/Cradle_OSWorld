@@ -80,10 +80,16 @@ class LocalMemory(BaseMemory):
         return self.recent_history["summarization"]
 
 
-    def load(self) -> None:
+    def load(self, load_path = None) -> None:
         """Load the memory from the local file."""
         # @TODO load and store whole memory
-        self.recent_history = load_json(os.path.join(self.memory_path, self.storage_filename))
+        if load_path != None:
+            if os.path.exists(os.path.join(load_path, self.storage_filename)):
+                self.recent_history = load_json(os.path.join(load_path, self.storage_filename))
+                logger.write(f"{os.path.join(load_path, self.storage_filename)} has been loaded.")
+            else:
+                logger.error(f"{os.path.join(load_path, self.storage_filename)} does not exist.")
+
 
 
     def save(self) -> None:

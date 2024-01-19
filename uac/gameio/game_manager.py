@@ -50,7 +50,7 @@ class GameManager:
         return self.get_filtered_skills(all_skills)
 
 
-    def get_filtered_skills(self, skill_list):
+    def get_skill_information(self, skill_list):
 
         filtered_skill_library = []
 

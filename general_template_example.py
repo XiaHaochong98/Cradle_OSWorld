@@ -44,7 +44,7 @@ def main_test_decision_making(planner_params, task_description, skill_library):
 
     if config.skill_retrieval:
         skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
-    skill_library = gm.get_filtered_skills(skill_library)
+    skill_library = gm.get_skill_information(skill_library)
 
     image_introduction = [
         {
@@ -144,7 +144,7 @@ def main_test_information_summary(planner_params, task_description, skill_librar
 
     if config.skill_retrieval:
         skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
-    skill_library = gm.get_filtered_skills(skill_library)
+    skill_library = gm.get_skill_information(skill_library)
 
     switch_to_game()
 
@@ -326,7 +326,7 @@ def skill_library_test():
 
     returns_skills = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
     logger.write(str(returns_skills))
-    logger.write(str(gm.get_filtered_skills(returns_skills)))
+    logger.write(str(gm.get_skill_information(returns_skills)))
 
 
     returns_skills = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
@@ -422,6 +422,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
     memory = LocalMemory(memory_path=config.work_dir,
                          max_recent_steps=config.max_recent_steps)
+    memory.load(config.memory_load_path)
 
     gm = GameManager(env_name = config.env_name,
                      embedding_provider = llm_provider)
@@ -431,7 +432,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
     if config.skill_retrieval:
         gm.register_available_skills(skill_library)
         skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
-    skill_library = gm.get_filtered_skills(skill_library)
+    skill_library = gm.get_skill_information(skill_library)
 
     switch_to_game()
     videocapture=VideoRecorder(os.path.join(config.work_dir, 'video.mp4'))
@@ -561,12 +562,9 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                     extracted_skills=extracted_skills['values']
                     for extracted_skill in extracted_skills:
                         gm.add_new_skill(skill_code=extracted_skill['code'])
-
-                gm.store_skills()
-
                 skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
                 logger.write(f'skill_library: {skill_library}')
-                skill_library = gm.get_filtered_skills(skill_library)
+                skill_library = gm.get_skill_information(skill_library)
 
             # for decision making
             input = planner.decision_making_.input_map
@@ -761,7 +759,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 memory.add_recent_history("self_reflection_reasoning", self_reflection_reasoning)
                 logger.write(f'Self-reflection reason: {self_reflection_reasoning}')
 
-            #store memory
+            gm.store_skills()
             memory.save()
 
         except KeyboardInterrupt:

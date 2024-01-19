@@ -197,7 +197,13 @@ class SkillRegistry:
 
         def lower_func_name(skill_code):
             skill_name = get_func_name(skill_code)
-            return skill_code.replace(skill_name, skill_name.lower())
+            replaced_name = skill_name.lower()
+            # To make sure the skills in .py files will not be overwritten. 
+            # The skills not in .py files can still be overwritten.
+            # Don't worry, this operator rarely happends.
+            if replaced_name in SKILL_REGISTRY:
+                replaced_name = replaced_name+'_generated'
+            return skill_code.replace(skill_name, replaced_name)
 
         def get_func_name(skill_code):
             return skill_code.split('def ')[-1].split('(')[0]
@@ -305,6 +311,10 @@ class SkillRegistry:
 
 
     def register_available_skills(self, candidates:List[str]) -> None:
+        for skill_key in candidates:
+            if skill_key not in self.skill_registry:
+                logger.error(f"Skill '{skill_key}' does not exist.")
+
         for skill_key in list(self.skill_registry.keys()):
             if skill_key not in candidates:
                 del self.skill_registry[skill_key]
