@@ -24,9 +24,9 @@ io_env = IOEnvironment()
 
 def pause_game():
 
-    if io_env.check_held_keys():
-        logger.warn("Not pausing because tab or B are held.")
-        return
+    # if io_env.check_held_keys():
+    #    logger.warn("Not pausing because tab or B are held.")
+    #    return
 
     if not is_env_paused():
         pydirectinput.press('esc')

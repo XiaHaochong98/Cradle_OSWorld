@@ -75,6 +75,15 @@ class IOEnvironment(metaclass=Singleton):
     KEY_KEY = 'key'
     EXPIRATION_KEY = 'expiration'
 
+    # Key actions
+    # All key interactions are now tracked and use the same calling structure
+    # - Release is equivalent to keyUp. I.e., release a key that was pressed or held.
+    # - Hold is equivalent to keyDown. I.e., hold a key for a certain duration, probably while something else happens.
+    # - Press is equivalent to keyDown followed by keyUp, after a delay. I.e., press a key for a short duration.
+    ACTION_PRESS = 'press'
+    ACTION_HOLD = 'hold'
+    ACTION_RELEASE = 'release'
+
     # List of keys currently held. To be either released by specific calls or after timeout (max iterations).
     held_keys = []
 
@@ -92,9 +101,9 @@ class IOEnvironment(metaclass=Singleton):
             self.held_keys.pop()
         else:
             pydirectinput.keyUp(key) # Just as a guarantee to up an untracked key
-            logger.warn(f'Key {key} was not being help.')
+            logger.warn(f'Key {key} was not being held at top.')
 
-        self._to_message(self.held_keys, "release")
+        self._to_message(self.held_keys, self.ACTION_RELEASE)
 
 
     def put_held_keys(self, key):
@@ -113,18 +122,18 @@ class IOEnvironment(metaclass=Singleton):
 
             time.sleep(self.HOLD_DEFAULT_BLOCK_TIME)
 
-            self._to_message(self.held_keys, "press")
+            self._to_message(self.held_keys, self.ACTION_HOLD)
 
 
     def check_held_keys(self, keys = ['tab', 'b']):
 
         result = False
 
-        #for e in self.held_keys:
-        #    k = e[self.KEY_KEY]
-        #    if k in keys:
-        #        result = True
-        #        break
+        for e in self.held_keys:
+            k = e[self.KEY_KEY]
+            if k in keys:
+                result = True
+                break
 
         return result
 
@@ -223,6 +232,8 @@ class IOEnvironment(metaclass=Singleton):
 
                 if len(keys) == 0:
                     return (False, None)
+                elif len(keys) == 1:
+                    return (False, keys[0])
                 else:
                     return (True, keys)
 
@@ -230,45 +241,69 @@ class IOEnvironment(metaclass=Singleton):
             return (False, None)
 
 
+    # Special function to facilitate multi-key combos from GPT-4V like "io_env.key_hold('w,space')", which are commonly generated
     def _multi_key_action(self, keys, action, duration = 2):
-        actions = ['press', 'hold', 'release']
+
+        actions = [self.ACTION_PRESS, self.ACTION_HOLD, self.ACTION_RELEASE]
+
         if action not in actions:
             logger.warn(f'Invalid action: {action}. Ignoring it.')
 
         # Act in order, release in reverse
         for key in keys:
-            if action == 'press':
+
+            # Special case to facilitate multi-key combos
+            if key != keys[-1]:
+                action = self.ACTION_HOLD
+
+            if action == self.ACTION_PRESS:
                 self.key_press(key)
-            elif action == 'hold':
+            elif action == self.ACTION_HOLD:
                 self.key_hold(key)
+
+        if duration is None:
+            duration = 0.3
 
         time.sleep(duration)
 
         for key in reversed(keys):
-            if action == 'release':
-                self.key_release(key)
+            self.key_release(key)
 
 
     def key_press(self, key, duration=None):
 
         key = self.map_key(key)
 
-        if duration is None:
-            pydirectinput.press(key)
+        f, keys = self._check_multi_key(key)
+        if f == True:
+            self._multi_key_action(keys, self.ACTION_PRESS, duration)
         else:
-            pydirectinput.press(key, interval = duration)
+
+            if duration is None:
+                pydirectinput.keyDown(key)
+                #time.sleep(.3)
+                pydirectinput.keyUp(key)
+            else:
+                pydirectinput.keyDown(key)
+                time.sleep(duration)
+                pydirectinput.keyUp(key)
 
 
     def key_hold(self, key, duration=None):
 
         key = self.map_key(key)
 
-        if duration is not None:
-            pydirectinput.keyDown(key)
-            time.sleep(duration)
-            pydirectinput.keyUp(key)
+        f, keys = self._check_multi_key(key)
+        if f == True:
+            self._multi_key_action(keys, self.ACTION_HOLD, duration)
         else:
-            self.put_held_keys(key)
+
+            if duration is not None:
+                pydirectinput.keyDown(key)
+                time.sleep(duration)
+                pydirectinput.keyUp(key)
+            else:
+                self.put_held_keys(key)
 
 
     def key_release(self, key):
@@ -298,16 +333,21 @@ class IOEnvironment(metaclass=Singleton):
             return 'shift'
         elif key in ['rshift', 'right shift', 'rightshift', 'shift right', 'shiftright']:
             return 'shift'
+
         if key in ['lalt', 'left alt', 'leftalt', 'alt left', 'altleft']:
             return 'alt'
         elif key in ['ralt', 'right alt', 'rightalt', 'alt right', 'altright']:
             return 'alt'
+
         if key in ['lctrl', 'left ctrl', 'leftctrl', 'ctrl left', 'ctrlleft', 'lcontrol', 'left control', 'leftcontrol', 'control left', 'contorlleft']:
             return 'ctrl'
         elif key in ['rctrl', 'right ctrl', 'rightctrl', 'ctrl right', 'ctrlright', 'rcontrol', 'right control', 'rightcontrol', 'control right', 'contorlright']:
             return 'ctrl'
-        else:
-            return key
+
+        if key in [' ', 'whitespace', 'spacebar', 'space bar']:
+            return 'space'
+
+        return key
 
 
 def _theta_calculation(theta):
