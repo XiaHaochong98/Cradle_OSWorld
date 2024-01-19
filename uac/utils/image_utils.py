@@ -5,6 +5,7 @@ from uac.config import Config
 
 config = Config()
 
+
 def show_image(img):
     if isinstance(img, str):
         img = cv2.imread(img)
@@ -41,11 +42,9 @@ def minimap_movement_detection(image_path1, image_path2, threshold = 30):
     matches = sorted(matches, key = lambda x:x.distance)
 
     img_matches = cv2.drawMatches(img1, keypoints1, img2, keypoints2, matches[:20], None, flags=2)
-
     best_matches = matches[:20]
 
     average_distance = np.mean([m.distance for m in best_matches])
 
-    change_detected = average_distance > threshold * config.resolution_ratio
-
-    return change_detected, img_matches
+    change_detected = average_distance > (threshold * config.resolution_ratio)
+    return change_detected, img_matches, average_distance

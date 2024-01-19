@@ -488,7 +488,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
             # >> Calling INFORMATION GATHERING
             logger.write(f'>> Calling INFORMATION GATHERING')
-            data = planner.gather_information(input=input)  
+            data = planner.gather_information(input=input)
 
             # you can extract any information from the gathered_information_JSON
             gathered_information_JSON=data['res_dict']['gathered_information_JSON']
@@ -852,4 +852,3 @@ if __name__ == '__main__':
 
     # image_path = ""
     # main_test_gather_information(image_path=image_path)
-

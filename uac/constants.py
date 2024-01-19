@@ -34,3 +34,6 @@ RED_POINTS = 'red points'
 YELLOW_POINTS = 'yellow points'
 YELLOW_REGION = 'yellow region'
 GD_PROMPT = 'red points . yellow points . yellow region .'
+
+# follow skill
+DISTANCE_TYPE = 'distance'
