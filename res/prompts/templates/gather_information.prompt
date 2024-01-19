@@ -7,9 +7,14 @@ Assume you are a helpful AI assistant integrated with 'Red Dead Redemption 2' on
 Current task:
 <$task_description$>
 
-Target_object_name: Assume you can use an object detection model to detect the most relevant object for completing the task if needed, what object should be detected to complete the task based on the current screenshot and the current task? The object should be relevant to the current target or the intermediate target of the task. Just give one object name without any modifiers. If the object name belongs to the person type, replace it with person. If there is no need to detect an object, just output "".
+Target_object_name: Assume you can use an object detection model to detect the most relevant object on general game interface or item on the menu for completing the current task if needed, what object should be detected to complete the task based on the current screenshot and the current task? You need to obey the following rules: 
+1. The object or item should be relevant to the current target or the intermediate target of the current task. Just give one name without any modifiers. 
+2. If you are on the menu, you should detect the most relevant explicit item that can be selected on the meun. 
+3. If no explicit weapon is specified, prioritize choosing the gun as weapon. 
+4. If the object name belongs to the person type, replace it with person. 
+5. If there is no need to detect an object, just output "". 
 
-Reasoning: The reasons why this object is chosen or why there is no need to detect an object.
+Reasoning: The reasons why this object is chosen or why there is no need to detect an object. 
 
 Description: Please describe the screenshot image in detail. Pay attention to any maps in the image, if any, especially key icons, red paths to follow, or created waypoints. If there are more than one images, please focus on the first one. Here is an example:
 The image shows a scene from the video game Red Dead Redemption 2. It presents a third-person perspective of a character, presumably the protagonist Arthur Morgan, riding a horse. The character is dressed in typical cowboy attire, including a hat, and is equipped with what appears to be a revolver holstered on his right hip, and a satchel slung across his left shoulder. The environment is sunny and seems to be an idyllic forest clearing with a variety of trees, including pines and others with more broad leaves. The atmosphere is serene and there are several horses scattered around the area, suggesting a temporary camp or resting spot for a group.
@@ -26,7 +31,9 @@ You should only respond in the format as described below, and you should not out
 Target_object_name:
 Name
 Reasoning:
-The reasons are...
+1. ...
+2. ...
+...
 Description:
 The image shows...
 Screen_classification:
