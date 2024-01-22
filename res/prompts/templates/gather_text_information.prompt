@@ -15,57 +15,57 @@ Task_guidance: The game will give guidance on what should be done to proceed wit
 Action_guidance: The game will give guidance on how to perform a task with keys in the keyboard or mouse, you must write a code based on the on-screen text. The content of the code should obey the following rules:
 The code rules are as follows:
 1. You should refer to different examples strictly based on the word used to control the key, such as 'use', 'hold', 'release', and 'press'.
-2. If 'use' or 'press' is in the prompt to control the key, io_env.key_press must be used to act on it and specify a press duration argument (in seconds). Refer to Examples 1, 2, and 3.
+2. If 'use' or 'press' is in the prompt to control the key, io_env.key_press must be used to act on it. If it should be a short press, do not specify any duration argument. If it's a long press, a press duration argument (in seconds). Refer to Examples 1, 2, and 3.
 3. If 'hold' is in the prompt to control the key, it means keeping the key pressed (maybe indefinitely). Each io_env.key_hold must specify a press duration argument for the hold (if not indefinitely). Refer to Example 4.
 4. All durations are set to a minimum of 2 seconds by default. You can choose a longer or shorter duration. If it should be indefinite, do not specify a duration argument.
 5. The name of the created function should only use phrasal verbs, verbs, nouns, or adverbs shown in the prompt and should be in the verb+noun or verb+adverb format, such as drink_water, slow_down_car, ride_faster. Note that words that do not show in the prompt are prohibited.
 
-This is Example 1. If "use" is in the prompt and the text prompt on the screenshot is "use E to drink water", your output should be:
-```python
-def drink_water():
-    """
-    use "e" to drink water
-    """
-    io_env.key_press('e', 2)
-```
-This is Example 2. If "press" is in the prompt and the text prompt on the screenshot is "press E to play the card", your output should be:
+This is Example 1. If "press" is in the prompt and the text prompt on the screenshot is "press X to play the card", your output should be:
 ```python
 def play_card():
     """
-    press "e" to play the card
+    press "x" to play the card
     """
-    io_env.key_press('e')
+    io_env.key_press('x')
 ```
-This is Example 3. If "use" is in the prompt and the text prompt on the screenshot is "use E and Q to jump the barrier", your output should be:
+This is Example 2. If "use" is in the prompt and the text prompt on the screenshot is "use ENTER to drink water", your output should be:
+```python
+def drink_water():
+    """
+    use "enter" to drink water
+    """
+    io_env.key_press('enter', 2)
+```
+This is Example 3. If "use" is in the prompt and the text prompt on the screenshot is "use W and J to jump the barrier", your output should be:
 ```python
 def jump_barrier():
     """
-    use "e" and "q" to jump the barrier
+    use "w" and "j" to jump the barrier
     """
-    io_env.key_press('e,q', 3)
+    io_env.key_press('w,j', 3)
 ```
-This is Example 4. If "hold" is in the prompt and the text prompt on the screenshot is "hold E to run", your output should be:
+This is Example 4. If "hold" is in the prompt and the text prompt on the screenshot is "hold H to run", your output should be:
 ```python
 def run():
     """
-    hold "e" to run
+    hold "h" to run
     """
-    io_env.key_hold('e')
+    io_env.key_hold('h')
 ```
-This is Example 5. If "release" is in the prompt and the text prompt on the screenshot is "release E to drop the items", your output should be:
+This is Example 5. If "release" is in the prompt and the text prompt on the screenshot is "release Q to drop the items", your output should be:
 ```python
 def drop_items():
     """
-    release "e" to drop the items
+    release "q" to drop the items
     """
-    io_env.key_release('e')
+    io_env.key_release('q')
 ```
 
 Dialogue: Conversations between game characters. The content of this should be in the format of "character name: dialogue". For example "Arthur: I'm fine".
 
 Other: Other information that does not belong to the above categories.
 
-Reasoning: The reasons for classification for each piece of information. 
+Reasoning: The reasons for classification for each piece of information.
 For Action Guidance, based on the word used to prompt to control the key, such as press, hold, release, what code rules should it follow?
 
 The information should be in the following categories, you should output the following content without adding any other explanation or information. If there is no content for some categories, do not output anything for these categories:

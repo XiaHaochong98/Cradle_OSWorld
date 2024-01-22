@@ -6,7 +6,7 @@ config = Config()
 io_env = IOEnvironment()
 
 
-@register_skill("aim_and_shoot")
+#@register_skill("aim_and_shoot")
 def aim_and_shoot(x, y):
     """
     Aim and shoots the weapon in the game.
@@ -19,7 +19,7 @@ def aim_and_shoot(x, y):
     io_env.mouse_click_button(button=io_env.LEFT_MOUSE_BUTTON, clicks=2)
 
 
-@register_skill("aim")
+#@register_skill("aim")
 def aim(x, y):
     """
     Aim the weapon in the game.
@@ -42,7 +42,7 @@ def choose_weapons_at(x, y):
     io_env.mouse_move_normalized(x, y)
 
 
-@register_skill("shoot")
+#@register_skill("shoot")
 def shoot(x, y):
     """
     Shoot the weapon at a specific location in view.
@@ -74,8 +74,8 @@ def view_weapons():
 
 
 __all__ = [
-    "aim_and_shoot",
-    "shoot",
+    #"aim_and_shoot",
+    #"shoot",
     "choose_weapons_at",
     "view_weapons",
     #"call_animals",

@@ -70,9 +70,9 @@ class SkillRegistry:
         self.from_local = from_local
         if skill_scope == 'Basic':
             self.skill_library_filename = BASIC_SKILL_LIB_FILE
-        if skill_scope == 'Full':
+        elif skill_scope == 'Full':
             self.skill_library_filename = EXPL_SKILL_LIB_FILE
-        if skill_scope == None:
+        elif skill_scope == None:
             self.from_local = False
 
         self.skill_scope = skill_scope
@@ -137,6 +137,10 @@ class SkillRegistry:
             raise ValueError(f"Function '{name}' not found in the registry.")
 
 
+    def execute_nop_skill():
+        time.sleep(2)
+
+
     def convert_expression_to_skill(self, expression: str = "open_map()"):
         skill_name, skill_params = self.extract_function_info(expression)
         return skill_name, skill_params
@@ -198,15 +202,19 @@ class SkillRegistry:
         def lower_func_name(skill_code):
             skill_name = get_func_name(skill_code)
             replaced_name = skill_name.lower()
-            # To make sure the skills in .py files will not be overwritten. 
+
+            # To make sure the skills in .py files will not be overwritten.
             # The skills not in .py files can still be overwritten.
             # Don't worry, this operator rarely happends.
             if replaced_name in SKILL_REGISTRY:
                 replaced_name = replaced_name+'_generated'
+
             return skill_code.replace(skill_name, replaced_name)
+
 
         def get_func_name(skill_code):
             return skill_code.split('def ')[-1].split('(')[0]
+
 
         def check_param_description(skill) -> bool:
             docstring = inspect.getdoc(skill)
@@ -222,15 +230,17 @@ class SkillRegistry:
             else:
                 return True
 
+
         def check_protection_conflict(skill):
             for word in ALLOW_LIST_TERMS:
                 if word in skill:
                     return True
+
             for word in DENY_LIST_TERMS:
                 if word in skill:
                     return False
-            return True
 
+            return True
 
         info = None
 
@@ -247,7 +257,7 @@ class SkillRegistry:
             if skill_name in self.skill_registry:
                 self.delete_skill(skill_name)
                 logger.write(f"Skill '{skill_name}' will be overwritten.")
-                
+
 
         if skill_name in self.skill_registry:
             info = f"Skill '{skill_name}' already exists."

@@ -212,8 +212,10 @@ class GatherInformation():
         self.get_text_template = get_text_template
         self.frame_extractor = frame_extractor
 
+
     def _pre(self, *args, input: Dict[str, Any] = None, **kwargs) -> Dict[str, Any]:
         return input
+
 
     def __call__(self, *args, input: Dict[str, Any] = None, class_=None, **kwargs) -> Dict[str, Any]:
         gather_infromation_configurations = input["gather_information_configurations"]

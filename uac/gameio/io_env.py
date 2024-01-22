@@ -75,7 +75,6 @@ class IOEnvironment(metaclass=Singleton):
     KEY_KEY = 'key'
     EXPIRATION_KEY = 'expiration'
 
-    # Key actions
     # All key interactions are now tracked and use the same calling structure
     # - Release is equivalent to keyUp. I.e., release a key that was pressed or held.
     # - Hold is equivalent to keyDown. I.e., hold a key for a certain duration, probably while something else happens.
@@ -85,7 +84,14 @@ class IOEnvironment(metaclass=Singleton):
     ACTION_RELEASE = 'release'
 
     # List of keys currently held. To be either released by specific calls or after timeout (max iterations).
+    # {
+    #     self.KEY_KEY: key,
+    #     self.EXPIRATION_KEY: self.MAX_ITERATIONS
+    # }
     held_keys = []
+
+    # Used currently due to an issue with pause in RDR2
+    backup_held_keys = []
 
 
     def __init__(self) -> None:
@@ -171,6 +177,23 @@ class IOEnvironment(metaclass=Singleton):
 
         self.held_keys = tmp_list.copy()
         del tmp_list
+
+
+    def handle_hold_in_pause(self):
+        self.backup_held_keys = self.held_keys.copy()
+        if self.backup_held_keys is not None and self.backup_held_keys != []:
+            for e in self.backup_held_keys:
+                pydirectinput.keyUp(e[self.KEY_KEY])
+
+        self.held_keys = []
+
+
+    def handle_hold_in_unpause(self):
+        if self.backup_held_keys is not None and self.backup_held_keys != []:
+            for e in self.backup_held_keys:
+                pydirectinput.keyDown(e[self.KEY_KEY])
+
+            self.held_keys = self.backup_held_keys.copy()
 
 
     def list_session_screenshots(self, session_dir: str = config.work_dir):

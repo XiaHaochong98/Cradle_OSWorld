@@ -17,10 +17,12 @@ from uac.log import Logger
 from uac.gameio import IOEnvironment
 from uac.utils.template_matching import match_template_image
 
-
 config = Config()
 logger = Logger()
 io_env = IOEnvironment()
+
+PAUSE_SCREEN_WAIT = 1
+
 
 def pause_game():
 
@@ -36,7 +38,9 @@ def pause_game():
     # While game is paused, quickly re-center mouse location on x axis to avoid clipping at game window border with time
     io_env.ahk.mouse_move(config.game_resolution[0] // 2, config.game_resolution[1] // 2, speed=1, relative=False)
 
-    time.sleep(1)
+    io_env.handle_hold_in_pause()
+
+    time.sleep(PAUSE_SCREEN_WAIT)
 
 
 def unpause_game():
@@ -44,7 +48,9 @@ def unpause_game():
         pydirectinput.press('esc')
     else:
         logger.debug("The environment is not paused!")
-    time.sleep(1)
+    time.sleep(PAUSE_SCREEN_WAIT)
+
+    io_env.handle_hold_in_unpause()
 
 
 def exit_back_to_pause():
@@ -55,7 +61,7 @@ def exit_back_to_pause():
     while not is_env_paused() and back_steps < max_steps:
         back_steps += 1
         pydirectinput.press('esc')
-        time.sleep(1)
+        time.sleep(PAUSE_SCREEN_WAIT)
 
     if back_steps >= max_steps:
         logger.warn("The environment fails to pause!")

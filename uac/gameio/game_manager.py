@@ -44,12 +44,6 @@ class GameManager:
         exit_back_to_pause()
 
 
-    def list_bootstrap_skills(self):
-
-        all_skills = self.skill_registry.get_all_skills()
-        return self.get_filtered_skills(all_skills)
-
-
     def get_skill_information(self, skill_list):
 
         filtered_skill_library = []
@@ -88,7 +82,7 @@ class GameManager:
 
         if action == "navigate_path":
 
-            time.sleep(3)
+            time.sleep(2)
             navigate_path(total_time_step)
 
 
@@ -104,7 +98,9 @@ class GameManager:
         io_env.update_timeouts()
 
         if actions is None or len(actions) == 0 or actions == '' or actions[0] == '':
-            logger.warn(f"No actions to execute!")
+            logger.warn(f"No actions to execute! Executing nop.")
+            self.skill_registry.execute_nop_skill()
+
             exec_info["errors"] = True
             exec_info["errors_info"] = "No actions to execute!"
             return exec_info

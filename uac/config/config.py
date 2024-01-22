@@ -78,7 +78,7 @@ class Config(metaclass=Singleton):
 
         # Parallel request to LLM parameters
         self.parallel_request_gather_information = True
-        
+
         #Skill retrieval
         self.skill_from_local = True
         self.skill_local_path = './res/skills/'

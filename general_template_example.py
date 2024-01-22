@@ -10,7 +10,7 @@ from uac.planner.planner import Planner
 from uac.memory import LocalMemory
 from uac.provider.openai import OpenAIProvider
 from uac.provider import GdProvider
-from uac.gameio.lifecycle.ui_control import switch_to_game, pause_game, unpause_game
+from uac.gameio.lifecycle.ui_control import switch_to_game
 from uac.gameio.video.VideoRecorder import VideoRecorder
 from uac.gameio.video.VideoFrameExtractor import VideoFrameExtractor
 from uac.gameio.atomic_skills.trade_utils import __all__ as trade_skills
@@ -27,7 +27,6 @@ from groundingdino.util.inference import load_image
 
 config = Config()
 logger = Logger()
-
 
 
 def main_test_decision_making(planner_params, task_description, skill_library):
@@ -341,6 +340,7 @@ def skill_library_test():
 
     gm.store_skills()
 
+
 def main_test_gather_information(image_path = ""):
 
     llm_provider_config_path = './conf/openai_config.json'
@@ -450,7 +450,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
     time.sleep(2)
     end_frame_id = videocapture.get_current_frame_id()
-    pause_game()
+    gm.pause_game()
 
     while not success:
 
@@ -473,16 +473,18 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             #configure the gather_information module
             gather_information_configurations = {
                 "frame_extractor": True, # extract text from the video clip
-                "marker_matcher": True,
+                "marker_matcher": False,
                 "llm_description": True, # get the description of the current screenshot
                 "object_detector": True
             }
             input["gather_information_configurations"] = gather_information_configurations
+
             # modify the general input for gather_information here
             image_introduction=[get_text_image_introduction[-1]]
             input["task_description"] = task_description
             input["video_clip_path"] = video_clip_path
             input["image_introduction"] = image_introduction
+
             # Modify the input for get_text module in gather_information here
             text_input["image_introduction"] = get_text_image_introduction
             input["text_input"] = text_input
@@ -593,6 +595,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             #@TODO Temporary solution with fake augmented entries if no bounding box exists. Ideally it should read images, then check for possible augmentation.
             image_memory = memory.get_recent_history("image", k=config.decision_making_image_num)
             augmented_image_memory = memory.get_recent_history(constants.AUGMENTED_IMAGES_MEM_BUCKET, k=config.decision_making_image_num)
+
             image_introduction = []
             for i in range(len(image_memory), 0, -1):
                 if augmented_image_memory[-i] != constants.NO_IMAGE:
@@ -639,7 +642,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             skill_steps = skill_steps[:number_of_execute_skills]
             logger.write(f'Skill Steps: {skill_steps}')
 
-            unpause_game()
+            gm.unpause_game()
             # TODO: find a better name of the GENERAL_GAME_INTERFACE
             if pre_screen_classification == constants.GENERAL_GAME_INTERFACE and screen_classification != constants.GENERAL_GAME_INTERFACE and pre_action:
                 exec_info = gm.execute_actions([pre_action])
@@ -651,7 +654,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             cur_screen_shot_path, _ = gm.capture_screen()
 
             end_frame_id = videocapture.get_current_frame_id()
-            pause_game()
+            gm.pause_game()
 
             pre_action = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
 
@@ -707,6 +710,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                     }
                 ]
                 input["image_introduction"] = image_introduction
+
                 input["task_description"] = task_description
                 input["previous_action"] = memory.get_recent_history("action", k=1)[-1]
                 input["previous_reasoning"] = memory.get_recent_history("decision_making_reasoning", k=1)[-1]
@@ -718,7 +722,9 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 success = data['res_dict']['success']
                 success_reasoning = data['res_dict']['reasoning']
                 success_criteria = data['res_dict']['criteria']
+
                 memory.add_recent_history("success_detection_reasoning", success_reasoning)
+
                 logger.write(f'Success: {success}')
                 logger.write(f'Success criteria: {success_criteria}')
                 logger.write(f'Success reason: {success_reasoning}')
@@ -747,11 +753,13 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 input["task_description"] = task_description
                 input['skill_library'] = skill_library
                 input["previous_reasoning"] = pre_decision_making_reasoning
+
                 if pre_action:
                     input["previous_action"] = pre_action
                     pre_action_name, pre_action_params = gm.skill_registry.convert_expression_to_skill(pre_action)
                     action_code, action_code_info = gm.get_skill_library_in_code(pre_action_name)
                     input['action_code'] = action_code if action_code is not None else action_code_info
+
                 if exec_info["errors"]:
                     input['executing_action_error']  = exec_info["errors_info"]
 
@@ -811,7 +819,7 @@ if __name__ == '__main__':
         }
     }
 
-    skill_library = ['turn', 'move_forward', 'turn_and_move_forward', 'follow', 'shoot', 'shoot_people', 'shoot_wolves', 'choose_weapons_at', 'aim_and_shoot']
+    skill_library = ['turn', 'move_forward', 'turn_and_move_forward', 'follow', 'shoot_people', 'shoot_wolves', 'choose_weapons_at']
     #skill_library = move_skills + follow_skills
     #task_description =  "Follow Dutch."
     #task_description =  "Hitch your horse."
