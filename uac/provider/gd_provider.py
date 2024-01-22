@@ -21,6 +21,8 @@ def unique_predict(
         device: str = "cuda",
 ):
     caption = caption.lower().strip()
+    if not caption.endswith("."):
+        caption = caption + "."
 
     model = model.to(device)
     image = image.to(device)
