@@ -137,7 +137,7 @@ class SkillRegistry:
             raise ValueError(f"Function '{name}' not found in the registry.")
 
 
-    def execute_nop_skill():
+    def execute_nop_skill(self):
         time.sleep(2)
 
 
