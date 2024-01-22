@@ -507,16 +507,18 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             all_generated_actions = gathered_information_JSON.search_type_across_all_indices(constants.ACTION_GUIDANCE)
             classification_reasons = gathered_information_JSON.search_type_across_all_indices(constants.GATHER_TEXT_REASONING)
 
-            if len(all_task_guidance) == 0:
-                last_task_guidance = ""
+            response_keys = data['res_dict'].keys()
+
+            if constants.LAST_TASK_GUIDANCE in response_keys:
+                last_task_guidance = data['res_dict'][constants.LAST_TASK_GUIDANCE]
             else:
-                last_task_guidance = max(all_task_guidance, key=lambda x: x['index'])['values']
+                logger.warn(f"No {constants.LAST_TASK_GUIDANCE} in response.")
+                last_task_guidance = ""
 
             image_description=data['res_dict'][constants.IMAGE_DESCRIPTION]
-
             screen_classification=data['res_dict'][constants.SCREEN_CLASSIFICATION]
 
-            if constants.TARGET_OBJECT_NAME in data['res_dict'].keys():
+            if constants.TARGET_OBJECT_NAME in response_keys:
                 target_object_name=data['res_dict'][constants.TARGET_OBJECT_NAME]
                 object_name_reasoning=data['res_dict'][constants.GATHER_INFO_REASONING]
             else:
@@ -524,7 +526,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 target_object_name = ""
                 object_name_reasoning=""
 
-            if "boxes" in data['res_dict'].keys():
+            if "boxes" in response_keys:
                 image_source, image = load_image(cur_screen_shot_path)
                 boxes = data['res_dict']["boxes"]
                 logits = data['res_dict']["logits"]
@@ -562,6 +564,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                     extracted_skills=extracted_skills['values']
                     for extracted_skill in extracted_skills:
                         gm.add_new_skill(skill_code=extracted_skill['code'])
+
                 skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
                 logger.write(f'skill_library: {skill_library}')
                 skill_library = gm.get_skill_information(skill_library)
@@ -581,7 +584,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             input['skill_library'] = skill_library
             input['info_summary'] = memory.get_summarization()
 
-            if not "boxes" in data['res_dict'].keys():
+            if not "boxes" in response_keys:
                 input['few_shots'] = []
             else:
                 if boxes is None or boxes.numel() == 0:
@@ -611,15 +614,17 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             input["task_description"] = task_description
 
             # newly add dino detection for minimap
-            if constants.MINIMAP_INFORMATION in data["res_dict"].keys():
+            if constants.MINIMAP_INFORMATION in response_keys:
                 minimap_information = data["res_dict"][constants.MINIMAP_INFORMATION]
                 logger.write(f"{constants.MINIMAP_INFORMATION}: {minimap_information}")
+
                 minimap_info_str = ""
                 for key, value in minimap_information.items():
                     if value:
                         for index, item in enumerate(value):
                             minimap_info_str = minimap_info_str + key + ' ' + str(index) + ': angle '  + str(int(item['theta'])) + ' degree' + '\n'
                 minimap_info_str = minimap_info_str.rstrip('\n')
+
                 logger.write(f'minimap_info_str: {minimap_info_str}')
                 input[constants.MINIMAP_INFORMATION] = minimap_info_str
 

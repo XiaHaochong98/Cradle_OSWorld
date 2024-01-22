@@ -293,6 +293,16 @@ class GatherInformation():
                 logger.warn(msg)
                 dialogues = []
 
+            # Update the <$task_description$> in the gather_information template with the latest task_description
+            all_task_guidance = frame_extractor_gathered_information.search_type_across_all_indices(constants.TASK_GUIDANCE)
+            if len(all_task_guidance) == 0:
+                # no task guidance is found, use the default one in the input
+                processed_response[constants.LAST_TASK_GUIDANCE]= ""  # this is for the return of the module
+            else:
+                # new task guidance is found, use the latest one
+                last_task_guidance = max(all_task_guidance, key=lambda x: x['index'])['values']
+                input[constants.TASK_DESCRIPTION] = last_task_guidance # this is for the input of the gather_information
+                processed_response[constants.LAST_TASK_GUIDANCE] = last_task_guidance # this is for the return of the module
             # @TODO: summary the dialogue and use it
 
         # Gather information by marker matcher
@@ -307,9 +317,9 @@ class GatherInformation():
             else:
                 logger.warn('Marker matcher is not set, skipping gather information by marker matcher')
 
+        # Gather information by LLM provider
         if gather_infromation_configurations["llm_description"] is True:
             logger.write(f"Using llm description to gather information")
-            # Gather information by LLM provider
             try:
                 # Call the LLM provider for gather information json
                 message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
@@ -372,7 +382,7 @@ class GatherInformation():
                 except Exception as e:
                     logger.error(f"Error in gather information by object detector: {e}")
                     flag = False
-            
+
                 try:
                     minimap_detection_objects = self.object_detector.process_minimap_targets(image_files[0])
 
