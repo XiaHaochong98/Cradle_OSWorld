@@ -37,7 +37,7 @@ def minimap_movement_detection(image_path1, image_path2, threshold = 30):
         bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
         matches = bf.match(descriptors1, descriptors2)
     else:
-        return True, None
+        return True, None, None
 
     matches = sorted(matches, key = lambda x:x.distance)
 

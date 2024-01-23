@@ -59,7 +59,7 @@ def cv_follow_circles(
 
         timestep = time.time()
 
-        _, minimap_image_filename = take_screenshot(timestep, config.game_region,config.minimap_region, draw_axis=False)
+        _, minimap_image_filename = take_screenshot(timestep, config.game_region, config.minimap_region, draw_axis=False)
         q.append(minimap_image_filename)
 
         adjacent_minimaps = list(q)[::max_q_size-1] if len(q)>=max_q_size else None
@@ -74,6 +74,7 @@ def cv_follow_circles(
         if debug:
             logger.debug(
                 f"step {step:03d} | timestep {timestep} done | follow theta: {follow_theta:.2f} | follow distance: {follow_dis:.2f} | follow confidence: {follow_info['confidence']:.3f}")
+
             cv2.circle(follow_info['vis'], follow_info['center'], 1, (0, 255, 0), 2)
             cv2.imwrite(os.path.join(save_dir, f"minimap_{timestep}_follow_template.jpg"), follow_info['vis'])
 
@@ -102,9 +103,11 @@ def cv_follow_circles(
         if condition:
             if debug:
                 logger.debug('Move randomly to get unstuck')
+
             turn(180),move_forward(np.random.randint(6))
             time.sleep(1)  # improve stability
             turn(90),move_forward(np.random.randint(6))
+
         previous_distance, previous_theta = follow_dis, follow_theta
 
 
