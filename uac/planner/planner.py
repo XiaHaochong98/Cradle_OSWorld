@@ -297,14 +297,10 @@ class GatherInformation():
 
             # Update the <$task_description$> in the gather_information template with the latest task_description
             all_task_guidance = frame_extractor_gathered_information.search_type_across_all_indices(constants.TASK_GUIDANCE)
-            if len(all_task_guidance) == 0:
-                # no task guidance is found, use the default one in the input
-                processed_response[constants.LAST_TASK_GUIDANCE]= ""  # this is for the return of the module
-            else:
+            if len(all_task_guidance) != 0:
                 # new task guidance is found, use the latest one
                 last_task_guidance = max(all_task_guidance, key=lambda x: x['index'])['values']
                 input[constants.TASK_DESCRIPTION] = last_task_guidance # this is for the input of the gather_information
-                processed_response[constants.LAST_TASK_GUIDANCE] = last_task_guidance # this is for the return of the module
             # @TODO: summary the dialogue and use it
 
         # Gather information by marker matcher
@@ -365,6 +361,11 @@ class GatherInformation():
             # merge the gathered_information_JSON to the processed_response
             processed_response["gathered_information_JSON"] = frame_extractor_gathered_information
 
+            # this is for the return of the module
+            if len(all_task_guidance) == 0:
+                processed_response[constants.LAST_TASK_GUIDANCE] = ""
+            else:
+                processed_response[constants.LAST_TASK_GUIDANCE] = last_task_guidance
 
         # Gather information by object detector, which is grounding dino.
         if gather_infromation_configurations["object_detector"] is True:
