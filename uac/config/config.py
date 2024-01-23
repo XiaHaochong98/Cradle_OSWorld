@@ -109,6 +109,11 @@ class Config(metaclass=Singleton):
             "navigate_path"
         ]
 
+        # Just for convenience of testing, will be removed in final version.
+        self.use_latest_memory_path = False
+        if self.use_latest_memory_path:
+            self._set_latest_memory_path()
+
         self._set_dirs()
         self._set_game_window_info()
 
@@ -172,3 +177,11 @@ class Config(metaclass=Singleton):
     def _config_warn(self, message):
         colours_on()
         print(Fore.RED + f' >>> WARNING: {message} ' + Style.RESET_ALL)
+    
+    
+    def _set_latest_memory_path(self):
+        path_list = os.listdir(self.work_dir)
+        path_list.sort()
+        if len(path_list) != 0:
+            self.skill_local_path = os.path.join(self.work_dir, path_list[-1])
+            self.memory_load_path = os.path.join(self.work_dir, path_list[-1])
