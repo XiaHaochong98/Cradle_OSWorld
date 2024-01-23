@@ -172,3 +172,4 @@ class GameManager:
 
     def cleanup_io(self):
         io_env.release_held_keys()
+        io_env.release_held_buttons()

@@ -9,45 +9,45 @@
     ],
     "few_shots": [
         {
-            "introduction": "Here are some examples of the icons, representing keyboard & mouse keys, shown in the in-game instructions and prompts.",
+            "introduction": "Here are some examples of the icons representing keyboard & mouse keys, shown in the in-game instructions and prompts.",
             "path": "",
             "assistant": ""
         },
         {
-            "introduction": "This icon refers to the keyboard key, enter.",
+            "introduction": "This icon refers to the keyboard key: enter.",
             "path": "./res/icons/keys/enter.jpg",
-            "assistant": "Yes. That is correct!"
+            "assistant": "Yes. That is correct! This means using the enter key. Not a letter key like 'e' or 'r'."
         },
         {
-            "introduction": "This icon refers to the keyboard key, shift.",
+            "introduction": "This icon refers to the keyboard key: shift.",
             "path": "./res/icons/keys/leftshift.jpg",
             "assistant": "Yes. That is correct!"
         },
         {
-            "introduction": "This icon refers to the keyboard key, ctrl.",
+            "introduction": "This icon refers to the keyboard key: ctrl.",
             "path": "./res/icons/keys/leftctrl.jpg",
             "assistant": "Yes. That is correct!"
         },
         {
-            "introduction": "This icon refers to the keyboard key, space.",
+            "introduction": "This icon refers to the keyboard key: space.",
             "path": "./res/icons/keys/space.jpg",
             "assistant": "Yes. That is correct!"
         },
         {
-            "introduction": "This icon refers to the mouse movement.",
+            "introduction": "This icon refers to a mouse movement.",
             "path": "./res/icons/keys/mouse.jpg",
             "assistant": "Yes. That is correct!"
         },
         {
-            "introduction": "This icon refers to the mouse operation, click right mouse button.",
+            "introduction": "This icon refers to the mouse operation: click the right mouse button. Not press a keyboard key.",
             "path": "./res/icons/keys/mouse_right_click.jpg",
-            "assistant": "Yes. That is correct!"
+            "assistant": "Yes. That is correct! This means click the right mouse button. Not press 'e'."
         },
         {
-            "introduction": "This icon refers to the mouse operation, click left mouse button.",
+            "introduction": "This icon refers to the mouse operation: click the left mouse button. Not press a keyboard key.",
             "path": "./res/icons/keys/mouse_left_click.jpg",
-            "assistant": "Yes. That is correct!"
+            "assistant": "Yes. That is correct! This means click the left mouse button. Not press 'e'."
         }
     ],
     "information_type": ["Item_status", "Notifications", "Environment_information", "Action_guidance", "Task_guidance", "Dialogue", "Others"]
-}                                                              
+}

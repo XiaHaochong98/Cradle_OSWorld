@@ -112,7 +112,7 @@ def select_mouse_index_object():
     """
     Selects the index object at the current mouse position by clicking the left mouse button once.
     """
-    io_env.mouse_click_button_and_hold('left', duration=0.2)
+    io_env.mouse_hold_button('left', duration=0.2)
 
 
 #@register_skill("adjust_map_position")

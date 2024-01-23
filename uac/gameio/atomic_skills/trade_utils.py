@@ -13,7 +13,7 @@ def shopkeeper_interaction():
     This action opens the transaction menu.
     Note: The transaction type must be determined and the interaction closed afterward.
     """
-    io_env.mouse_click_button_and_hold(button=io_env.RIGHT_MOUSE_BUTTON)
+    io_env.mouse_hold_button(button=io_env.RIGHT_MOUSE_BUTTON)
 
     post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 

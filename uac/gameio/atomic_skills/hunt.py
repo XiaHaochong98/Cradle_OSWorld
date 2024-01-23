@@ -28,7 +28,7 @@ def aim(x, y):
     - y: The normalized ordinate of the pixel.
     """
     io_env.mouse_move_normalized(x, y)
-    io_env.mouse_click_button_and_hold(button=io_env.RIGHT_MOUSE_BUTTON, clicks=1)
+    io_env.mouse_hold_button(button=io_env.RIGHT_MOUSE_BUTTON)
 
 
 @register_skill("choose_weapons_at")

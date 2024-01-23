@@ -13,7 +13,7 @@ def zoom():
     """
     Enables zoom after opening the catalog.
     """
-    io_env.mouse_click_button_and_hold(io_env.RIGHT_MOUSE_BUTTON)
+    io_env.mouse_hold_button(io_env.RIGHT_MOUSE_BUTTON)
 
 
 @register_skill("cancel_zoom")
@@ -243,7 +243,7 @@ def browse_shelf(duration=1):
     Parameters:
      - duration: The duration for which the right mouse button is held down (default is 1 second).
     """
-    io_env.mouse_click_button_and_hold(io_env.RIGHT_MOUSE_BUTTON, duration)
+    io_env.mouse_hold_button(io_env.RIGHT_MOUSE_BUTTON, duration)
 
 
 # @register_skill("select_product_type")

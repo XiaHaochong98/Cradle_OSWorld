@@ -125,10 +125,11 @@ class GdProvider(metaclass=Singleton):
             annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes[:,:], logits=logits[:], phrases=phrases)
             cv2.imwrite(cur_screen_shot_path, annotated_frame)
 
+
     def process_minimap_targets(self, image_path):
         # process current minimap for detect red points, yellow points and yellow region. return the angle to turn.
 
-        minimap_image, boxes, logits, phrases = self.detect(image_path=segment_minimap(image_path), 
+        minimap_image, boxes, logits, phrases = self.detect(image_path=segment_minimap(image_path),
                                                                 text_prompt=constants.GD_PROMPT,
                                                                 box_threshold=0.29, device='cuda')
         get_theta = lambda x0, y0, x, y:math.degrees(math.atan2(x - x0, y0 - y))
@@ -153,6 +154,6 @@ class GdProvider(metaclass=Singleton):
             minimap_detection_objects[detect_object].append(dict(
                 theta=theta,
             ))
-        
+
         return minimap_detection_objects
 
