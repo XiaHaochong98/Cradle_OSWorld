@@ -55,7 +55,7 @@ class GameManager:
         return filtered_skill_library
 
 
-    def add_new_skill(self, skill_code, overwrite = False):
+    def add_new_skill(self, skill_code, overwrite = True):
         return self.skill_registry.register_skill_from_code(skill_code = skill_code, overwrite = overwrite)
 
 

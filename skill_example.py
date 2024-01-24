@@ -36,7 +36,6 @@ if __name__ == "__main__":
 
     # c_text = shrink_log_message(text)
     # logger.write(c_text)
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--skill_chosen",type=str,default="following",help="['navigation', 'go_to_horse', 'map_operation', 'shooting', 'following']"

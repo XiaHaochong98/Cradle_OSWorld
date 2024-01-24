@@ -117,6 +117,8 @@ class IOEnvironment(metaclass=Singleton):
 
         time.sleep(self.RELEASE_DEFAULT_BLOCK_TIME)
 
+        self._to_message(self.held_keys, self.ACTION_RELEASE)
+
 
     def put_held_button(self, button):
 
@@ -135,6 +137,8 @@ class IOEnvironment(metaclass=Singleton):
             self._mouse_button_down(button)
 
             time.sleep(self.HOLD_DEFAULT_BLOCK_TIME)
+
+            self._to_message(self.held_keys, self.ACTION_HOLD)
 
 
     def _mouse_button_down(self, button):
@@ -196,7 +200,11 @@ class IOEnvironment(metaclass=Singleton):
         vals = ', '.join(f'{e[self.KEY_KEY]}:{e[self.EXPIRATION_KEY]}' for e in list)
         msg = f'Held keys after {purpose}: {vals}'
 
-        logger.debug(msg)
+        logger.write(msg)
+
+        vals = ', '.join(f'{e[self.BUTTON_KEY]}:{e[self.EXPIRATION_KEY]}' for e in list)
+        msg = f'Held button after {purpose}: {vals}'
+        logger.write(msg)
 
         return msg
 

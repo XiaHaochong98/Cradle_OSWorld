@@ -852,8 +852,8 @@ if __name__ == '__main__':
     config.ocr_enabled = False
     config.skill_retrieval = True
 
-    main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True, use_information_summary = False)
-    #main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True, use_information_summary = True)
+    # main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True, use_information_summary = False)
+    main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True, use_information_summary = True)
 
     # skill_library_test()
 
