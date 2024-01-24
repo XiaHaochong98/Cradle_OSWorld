@@ -43,8 +43,9 @@ def cv_follow_circles(
     move_forward(3)
 
     previous_distance, previous_theta, counter = 0, 0, 0
-    max_q_size = 4
-    q = deque(maxlen=max_q_size)
+    max_q_size = 2
+    minimap_image_filename_q = deque(maxlen=max_q_size)
+    condition_q = deque(maxlen=max_q_size)
 
     for step in range(iterations):
 
@@ -60,9 +61,9 @@ def cv_follow_circles(
         timestep = time.time()
 
         _, minimap_image_filename = take_screenshot(timestep, config.game_region, config.minimap_region, draw_axis=False)
-        q.append(minimap_image_filename)
+        minimap_image_filename_q.append(minimap_image_filename)
 
-        adjacent_minimaps = list(q)[::max_q_size-1] if len(q)>=max_q_size else None
+        adjacent_minimaps = list(minimap_image_filename_q)[::max_q_size-1] if len(minimap_image_filename_q)>=max_q_size else None
         # print(f'\n{list(q)}\n{adjacent_minimaps}\n')
 
         # prev_minimap_image_filename = minimap_image_filename
@@ -96,7 +97,8 @@ def cv_follow_circles(
             condition, img_matches, average_distance = minimap_movement_detection(*adjacent_minimaps, threshold = 5)
             if debug:
                 cv2.imwrite(os.path.join(save_dir, f"minimap_{timestep}_bfmatch.jpg"),img_matches)
-            condition = ~condition
+            condition_q.append(~condition)
+            condition = all(condition_q)
         else:
             condition = abs(previous_distance - follow_dis) < 0.5 and abs(previous_theta - follow_theta) < 0.5
 
@@ -104,11 +106,15 @@ def cv_follow_circles(
             if debug:
                 logger.debug('Move randomly to get unstuck')
 
-            turn(180),move_forward(np.random.randint(6))
+            turn(180),move_forward(np.random.randint(1, 6))
             time.sleep(1)  # improve stability
-            turn(90),move_forward(np.random.randint(6))
+            turn(90),move_forward(np.random.randint(1, 6))
 
         previous_distance, previous_theta = follow_dis, follow_theta
+
+        if (step+1) % 50 == 0:
+            pause_game()
+            unpause_game()
 
 
 __all__ = [
