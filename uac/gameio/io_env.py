@@ -337,7 +337,7 @@ class IOEnvironment(metaclass=Singleton):
 
             logger.debug(f'windows x {x} y {y}')
 
-        ii_.mi = MouseInput(x, y, 0, event_flag, 0, ctypes.pointer(extra))
+        ii_.mi = MouseInput(int(x), int(y), 0, event_flag, 0, ctypes.pointer(extra))
 
         command = Input(ctypes.c_ulong(0), ii_)
         ctypes.windll.user32.SendInput(1, ctypes.pointer(command), ctypes.sizeof(command))
@@ -345,7 +345,7 @@ class IOEnvironment(metaclass=Singleton):
 
     def mouse_move_horizontal_angle(self, theta):
         distance = _theta_calculation(theta)
-        self.ahk.mouse_move(distance, 0, speed=100, relative=True)
+        self.mouse_move(distance, 0, relative=True)
 
 
     def mouse_click(self, button, duration = None, clicks=1):
@@ -581,7 +581,7 @@ def _theta_calculation(theta):
     Parameters:
     - theta: The original theta value to be adjusted.
     """
-    return theta * config.mouse_move_factor
+    return theta * (150 / 9)
 
 
 def _safe_list_get(list, idx, key = None, default = None):
