@@ -1,10 +1,13 @@
 import time
 
 from uac.config import Config
+from uac.log import Logger
 from uac.gameio import IOEnvironment
 from uac.gameio.skill_registry import register_skill, post_skill_wait
+from uac.gameio.lifecycle.ui_control import pause_game, unpause_game
 
 config = Config()
+logger = Logger()
 io_env = IOEnvironment()
 
 
@@ -32,6 +35,12 @@ def turn(theta):
     - theta: The angle for the turn. Use a negative value to turn left and a positive value to turn right.
     For example, if theta = 30, the character will turn right 30 degrees. If theta = -30, the character will turn left 30 degrees.
     """
+
+    # We may need to check the game screen boundaries, before moving the mouse and re-center it, if necessary.
+    if io_env.clip_check_horizonal_angle(theta):
+        pause_game()
+        unpause_game()
+
     io_env.mouse_move_horizontal_angle(theta)
 
 

@@ -299,7 +299,9 @@ class CircleDetector:
         detect_mode='yellow & gray',
         debug=False
     ): 
+
         image = cv2.imread(img_file)
+
         # super resolution according to resolution ratio
         if self.sr_model is not None:
             image = self.sr_model.upsample(image)
@@ -314,7 +316,9 @@ class CircleDetector:
 
         circles_info = []
         if circles is not None:
+
             circles = np.round(circles[0, :]).astype("int")
+
             for (x, y, r) in circles:
                 # Crop the circle from the original image
                 circle_img = np.zeros_like(image)

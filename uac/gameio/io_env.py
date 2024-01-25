@@ -1,3 +1,10 @@
+from typing import (
+    Any,
+    Dict,
+    List,
+    Tuple,
+)
+
 import os
 import time
 import ctypes
@@ -5,7 +12,6 @@ import math
 
 from ahk import AHK
 import pydirectinput
-import pyautogui
 from uac.utils import Singleton
 from uac.config import Config
 from uac.log import Logger
@@ -59,6 +65,11 @@ class IOEnvironment(metaclass=Singleton):
     Wrapper for resources to interact with the game to make sure they're available where needed and multiple instances are not created.
     """
 
+    # Windows API constants
+    MOUSEEVENTF_MOVE = 0x0001
+    MOUSEEVENTF_ABSOLUT = 0x8000
+    WIN_NORM_MAX = 65536 # int max val
+
     # Constants
     RIGHT_MOUSE_BUTTON = 'R'
     LEFT_MOUSE_BUTTON = 'L'
@@ -105,7 +116,6 @@ class IOEnvironment(metaclass=Singleton):
 
     def pop_held_button(self, button):
 
-        # pyautogui.mouseUp(button=button)
         self._mouse_button_up(button)
 
         # Remove from held list
@@ -132,7 +142,6 @@ class IOEnvironment(metaclass=Singleton):
             }
             self.held_buttons.append(entry)
 
-            # pyautogui.mouseDown(button=button)
             self._mouse_button_down(button)
 
             time.sleep(self.HOLD_DEFAULT_BLOCK_TIME)
@@ -292,24 +301,14 @@ class IOEnvironment(metaclass=Singleton):
 
 
     def mouse_move_normalized(self, x, y):
-        offset = 1 # @TODO To disappear once turn resets mouse to center
 
         w, h = config.game_resolution
 
-        x = int((x-.5)*w)
-        y = int((y-.5)*h)
-
-        curx, cury = self.ahk.get_mouse_position()
-
-        posx, posy = curx + x, cury + y
-        x, y = np.clip(posx, offset, w - offset) - curx, np.clip(posy, offset, h - offset) - cury
+        x = int((x - .5) * w)
+        y = int((y - .5) * h)
 
         self.mouse_move(x, y)
 
-
-    MOUSEEVENTF_MOVE = 0x0001
-    MOUSEEVENTF_ABSOLUT = 0x8000
-    WIN_NORM_MAX = 65536
 
     def _mouse_coord_to_abs_win(self, coord, width_or_height):
         abs_coord = ((self.WIN_NORM_MAX * coord) / width_or_height) + (-1 if coord < 0 else 1)
@@ -321,7 +320,7 @@ class IOEnvironment(metaclass=Singleton):
         extra = ctypes.c_ulong(0)
         ii_ = Input_I()
 
-        logger.write(f'game coord x {x} y {y} relative {relative}')
+        logger.debug(f'game coord x {x} y {y} relative {relative}')
 
         event_flag = self.MOUSEEVENTF_MOVE
 
@@ -331,12 +330,12 @@ class IOEnvironment(metaclass=Singleton):
             x = x + corner[0]
             y = y + corner[1]
 
-            logger.write(f'screen x {x} y {y}')
+            logger.debug(f'screen x {x} y {y}')
 
             x = self._mouse_coord_to_abs_win(x, config.screen_resolution[0])
             y = self._mouse_coord_to_abs_win(y, config.screen_resolution[1])
 
-            logger.write(f'windows x {x} y {y}')
+            logger.debug(f'windows x {x} y {y}')
 
         ii_.mi = MouseInput(x, y, 0, event_flag, 0, ctypes.pointer(extra))
 
@@ -391,6 +390,24 @@ class IOEnvironment(metaclass=Singleton):
         button = self.map_button(button)
 
         self.pop_held_button(button)
+
+
+    def get_mouse_position(self) -> Tuple[int, int]:
+        return self.ahk.get_mouse_position()
+
+
+    def clip_check_horizonal_angle(self, theta):
+        result = False
+
+        pixels = _theta_calculation(theta)
+        mx, _ = self.get_mouse_position()
+
+        if pixels > 0 and mx + pixels > config.game_resolution[0]:
+            result = True
+        elif pixels < 0 and mx + pixels < 0:
+            result = True
+
+        return result
 
 
     def _check_multi_key(self, input):

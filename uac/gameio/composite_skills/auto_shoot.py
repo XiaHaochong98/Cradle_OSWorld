@@ -53,8 +53,11 @@ def keep_shooting_target(
     '''
     save_dir = config.work_dir
     circle_detector = CircleDetector(config.resolution_ratio)
+
     aim()  # aim before detection
+
     for step in range(1,1+iterations):
+
         if debug:
             logger.debug(f'Go for hunting #{step}')
 
@@ -68,14 +71,14 @@ def keep_shooting_target(
 
         screen_image_filename, minimap_image_filename = take_screenshot(timestep, config.game_region, config.minimap_region, draw_axis=False)
 
-        pause_game()
-        unpause_game()
-
         if not detect_target.endswith(' .'):
             detect_target += ' .'
+
         screen, boxes, logits, phrases = gd_detector.detect(screen_image_filename, detect_target, box_threshold=0.4)
+
         # sort according to areas
         if not phrases:
+
             follow_theta, follow_info = circle_detector.detect(minimap_image_filename,detect_mode='red', debug=debug)
             logger.debug(f'turn: {follow_theta}')
             if abs(follow_theta)<=360:
@@ -86,7 +89,6 @@ def keep_shooting_target(
                 cv2.imwrite(os.path.join(save_dir, f"red_detect_{timestep}.jpg"), follow_info['vis'])
             continue
 
-
         areas = [(b[2]*b[3]).item() for b in boxes]
         area_ascend_index = np.argsort(areas)
         boxes = torch.stack([boxes[i] for i in area_ascend_index])
@@ -94,15 +96,20 @@ def keep_shooting_target(
         phrases = [phrases[i] for i in area_ascend_index]
 
         if SHOOT_PEOPLE_TARGET_NAME in detect_target.lower():
+
             if len(boxes) > 1:
+
                 index = 0
                 dis = 1.5
+
                 for i in range(len(boxes)):
                     down_mid = (boxes[i, 0], boxes[i, 1] + boxes[i, 3] / 2)
                     distance = torch.sum(torch.abs(torch.tensor(down_mid) - torch.tensor((0.5, 1.0))))
+
                     if distance < dis:
                         dis = distance
                         index = i
+
                 boxes = torch.cat([boxes[:index], boxes[index + 1:]])
                 logits = torch.cat([logits[:index], logits[index + 1:]])
                 phrases.pop(index)
@@ -133,6 +140,7 @@ def keep_shooting_target(
                 continue
 
             if detect_object in detect_target:  # TODO: shoot confidence threshold
+
                 shoot_x = boxes[j][0]#((detect_xyxy[0] + detect_xyxy[2]) / 2) / w
                 shoot_y = boxes[j][1]#((detect_xyxy[1] + detect_xyxy[3]) / 2) / h
 
@@ -148,9 +156,6 @@ def keep_shooting_target(
                 break
 
         if not is_shoot or (is_shoot and np.random.uniform(0,1) < .2): # turn
-
-            pause_game()
-            unpause_game()
 
             follow_theta, follow_info = circle_detector.detect(minimap_image_filename,detect_mode='red', debug=debug)
             logger.debug(f'turn: {follow_theta}')

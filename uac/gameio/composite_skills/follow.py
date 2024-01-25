@@ -83,7 +83,9 @@ def cv_follow_circles(
             logger.write('Keep with the companion')
 
         if abs(follow_theta) <= 360:
+
             turn(follow_theta)
+
             if not is_move:
                 move_forward(0.8)
                 is_move = True
@@ -94,9 +96,12 @@ def cv_follow_circles(
 
         # Check stuck
         if adjacent_minimaps:
+
             condition, img_matches, average_distance = minimap_movement_detection(*adjacent_minimaps, threshold = 5)
+
             if debug:
                 cv2.imwrite(os.path.join(save_dir, f"minimap_{timestep}_bfmatch.jpg"),img_matches)
+
             condition_q.append(~condition)
             condition = all(condition_q)
         else:
@@ -113,10 +118,9 @@ def cv_follow_circles(
         previous_distance, previous_theta = follow_dis, follow_theta
 
         # Avoid mouse drifting
-        if (step+1) % 50 == 0:
-            pause_game()
-            unpause_game()
-
+        #if (step+1) % 50 == 0:
+        #    pause_game()
+        #    unpause_game()
 
 __all__ = [
     "follow",
