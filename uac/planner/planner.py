@@ -297,6 +297,9 @@ class GatherInformation():
 
             # Update the <$task_description$> in the gather_information template with the latest task_description
             all_task_guidance = frame_extractor_gathered_information.search_type_across_all_indices(constants.TASK_GUIDANCE)
+
+            # remove the content of "task is none" 
+            all_task_guidance = [task_guidance for task_guidance in all_task_guidance if constants.NONE_TASK_OUTPUT not in task_guidance["values"].lower()]
             if len(all_task_guidance) != 0:
                 # new task guidance is found, use the latest one
                 last_task_guidance = max(all_task_guidance, key=lambda x: x['index'])['values']
@@ -374,7 +377,7 @@ class GatherInformation():
                 try:
                     image_source, boxes, logits, phrases = self.object_detector.detect(image_path=image_files[0],
                                                                                        text_prompt=processed_response[
-                                                                                           "target_object_name"].title(),
+                                                                                           constants.TARGET_OBJECT_NAME].lower(),
                                                                                        box_threshold=0.4, device='cuda')
                     processed_response["boxes"] = boxes
                     processed_response["logits"] = logits

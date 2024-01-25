@@ -38,3 +38,7 @@ NO_IMAGE = '[None]'
 # LLM message type constants
 MESSAGE_CONSTRUCTION_MODE_TRIPART = 'tripartite'
 MESSAGE_CONSTRUCTION_MODE_PARAGRAPH = 'paragraph'
+
+# Prompts when output is None
+NONE_TASK_OUTPUT = "null"
+NONE_TARGET_OBJECT_OUTPUT = ""

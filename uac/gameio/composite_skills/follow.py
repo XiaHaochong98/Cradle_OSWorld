@@ -112,6 +112,7 @@ def cv_follow_circles(
 
         previous_distance, previous_theta = follow_dis, follow_theta
 
+        # Avoid mouse drifting
         if (step+1) % 50 == 0:
             pause_game()
             unpause_game()

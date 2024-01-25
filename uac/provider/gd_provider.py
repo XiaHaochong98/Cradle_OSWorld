@@ -89,7 +89,7 @@ class GdProvider(metaclass=Singleton):
     def save_annotate_frame(self, image_source, boxes, logits, phrases, text_prompt, cur_screen_shot_path):
 
         # remove the main character itself from the boxes
-        if "Person" in text_prompt:
+        if "person" in text_prompt.lower():
             if len(boxes) > 1:
                 index = 0
                 dis = 1.5

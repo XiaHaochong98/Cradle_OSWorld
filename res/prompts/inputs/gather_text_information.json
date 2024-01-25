@@ -49,5 +49,5 @@
             "assistant": "Yes. That is correct! This means click the left mouse button. Not press 'e'."
         }
     ],
-    "information_type": ["Item_status", "Notifications", "Environment_information", "Action_guidance", "Task_guidance", "Dialogue", "Others"]
+    "information_type": ["Item_status", "Notification", "Environment_information", "Action_guidance", "Task_guidance", "Dialogue", "Others"]
 }
