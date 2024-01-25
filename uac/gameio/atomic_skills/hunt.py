@@ -6,28 +6,15 @@ config = Config()
 io_env = IOEnvironment()
 
 
-#@register_skill("aim_and_shoot")
-def aim_and_shoot(x, y):
-    """
-    Aim and shoots the weapon in the game.
-    Parameters:
-    - x: The normalized abscissa of the pixel.
-    - y: The normalized ordinate of the pixel.
-    """
-    io_env.mouse_move_normalized(x, y)
-    io_env.mouse_click_button(button=io_env.RIGHT_MOUSE_BUTTON, clicks=1)
-    io_env.mouse_click_button(button=io_env.LEFT_MOUSE_BUTTON, clicks=2)
 
-
-#@register_skill("aim")
-def aim(x, y):
+@register_skill("aim")
+def aim():
     """
     Aim the weapon in the game.
     Parameters:
     - x: The normalized abscissa of the pixel.
     - y: The normalized ordinate of the pixel.
     """
-    io_env.mouse_move_normalized(x, y)
     io_env.mouse_hold_button(button=io_env.RIGHT_MOUSE_BUTTON)
 
 
@@ -74,8 +61,8 @@ def view_weapons():
 
 
 __all__ = [
-    #"aim_and_shoot",
-    #"shoot",
+    "aim",
+    # "shoot",
     "choose_weapons_at",
     "view_weapons",
     #"call_animals",

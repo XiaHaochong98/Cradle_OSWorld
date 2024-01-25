@@ -6,14 +6,13 @@ import math
 from ahk import AHK
 import pydirectinput
 import pyautogui
-
 from uac.utils import Singleton
 from uac.config import Config
 from uac.log import Logger
+import numpy as np
 
 config = Config()
 logger = Logger()
-
 
 PUL = ctypes.POINTER(ctypes.c_ulong)
 
@@ -293,20 +292,53 @@ class IOEnvironment(metaclass=Singleton):
 
 
     def mouse_move_normalized(self, x, y):
-        x = int(x*config.game_resolution[0] - config.game_resolution[0] / 2)
-        y = int(y*config.game_resolution[1] - config.game_resolution[1] / 2)
-        # logger.debug(f"x {x} y {y}")
+        offset = 1 # @TODO To disappear once turn resets mouse to center
+
+        w, h = config.game_resolution
+
+        x = int((x-.5)*w)
+        y = int((y-.5)*h)
+
+        curx, cury = self.ahk.get_mouse_position()
+
+        posx, posy = curx + x, cury + y
+        x, y = np.clip(posx, offset, w - offset) - curx, np.clip(posy, offset, h - offset) - cury
 
         self.mouse_move(x, y)
 
 
     MOUSEEVENTF_MOVE = 0x0001
     MOUSEEVENTF_ABSOLUT = 0x8000
+    WIN_NORM_MAX = 65536
 
-    def mouse_move(self, x, y):
+    def _mouse_coord_to_abs_win(self, coord, width_or_height):
+        abs_coord = ((self.WIN_NORM_MAX * coord) / width_or_height) + (-1 if coord < 0 else 1)
+        return int(abs_coord)
+
+
+    # If either relative or not, always pass in-game coordinates
+    def mouse_move(self, x, y, relative=True):
         extra = ctypes.c_ulong(0)
         ii_ = Input_I()
-        ii_.mi = MouseInput(x, y, 0, self.MOUSEEVENTF_MOVE, 0, ctypes.pointer(extra))
+
+        logger.write(f'game coord x {x} y {y} relative {relative}')
+
+        event_flag = self.MOUSEEVENTF_MOVE
+
+        if relative is False:
+            event_flag = self.MOUSEEVENTF_ABSOLUT | self.MOUSEEVENTF_MOVE
+            corner = config.game_region
+            x = x + corner[0]
+            y = y + corner[1]
+
+            logger.write(f'screen x {x} y {y}')
+
+            x = self._mouse_coord_to_abs_win(x, config.screen_resolution[0])
+            y = self._mouse_coord_to_abs_win(y, config.screen_resolution[1])
+
+            logger.write(f'windows x {x} y {y}')
+
+        ii_.mi = MouseInput(x, y, 0, event_flag, 0, ctypes.pointer(extra))
 
         command = Input(ctypes.c_ulong(0), ii_)
         ctypes.windll.user32.SendInput(1, ctypes.pointer(command), ctypes.sizeof(command))

@@ -296,8 +296,9 @@ class CircleDetector:
         yellow_range=np.array([[140, 230, 230], [170, 255, 255]]),
         gray_range=np.array([[165, 165, 165], [175, 175, 175]]),
         red_range=np.array([[0, 0, 170], [30, 30, 240]]),
+        detect_mode='yellow & gray',
         debug=False
-    ):
+    ): 
         image = cv2.imread(img_file)
         # super resolution according to resolution ratio
         if self.sr_model is not None:
@@ -306,8 +307,7 @@ class CircleDetector:
                 image = cv2.resize(image, (0, 0), fx=0.5, fy=0.5)
 
         origin = (image.shape[0] // 2, image.shape[1] // 2)
-        circles = cv2.HoughCircles(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), cv2.HOUGH_GRADIENT, 1, 10, param1=300,
-                                   param2=15, minRadius=5 * 2, maxRadius=8 * 2)
+        circles = cv2.HoughCircles(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), cv2.HOUGH_GRADIENT, 1, 10, param1=200,param2=10, minRadius=5 * 2, maxRadius=8 * 2)
         theta = 0x3f3f3f3f
         measure = {'theta': theta, 'distance': theta, 'color': np.array([0, 0, 0]), 'confidence': 0, 'vis': image,
                    'center': origin}
@@ -341,11 +341,16 @@ class CircleDetector:
                 })
 
             # Sort the circles based on yellow_count, gray_count, and red_count
-            circles_info.sort(key=lambda c: (c['yellow_count'], c['gray_count'], c['red_count']), reverse=True)
+            if 'red' in detect_mode:
+                circles_info.sort(key=lambda c: (c['red_count'], c['yellow_count'], c['gray_count']), reverse=True)
+                detect_criterion = lambda circle: circle["red_count"] >= 5
+            else:
+                circles_info.sort(key=lambda c: (c['yellow_count'], c['gray_count'], c['red_count']), reverse=True)
+                detect_criterion = lambda circle: circle["gray_count"] >= 5 or circle["yellow_count"] >= 5
 
             for circle in circles_info:
                 center_x, center_y, radius = circle["center"][0], circle["center"][1], circle["radius"]
-                if circle["gray_count"] >= 5 or circle["yellow_count"] >= 5:
+                if detect_criterion(circle):
                     theta = self.get_theta(*origin, center_x, center_y)
                     dis = np.sqrt((center_x - origin[0]) ** 2 + (center_y - origin[1]) ** 2)
                     measure = {'theta': theta, 'distance': dis,

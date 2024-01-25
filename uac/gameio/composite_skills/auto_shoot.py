@@ -1,23 +1,30 @@
 import os
 import time
 
+import numpy as np
 import cv2
 import torch
 from torchvision.ops import box_convert
 from groundingdino.util.inference import load_model, load_image, predict, annotate
 
-from uac.gameio.atomic_skills.hunt import aim_and_shoot
+from uac.gameio.lifecycle.ui_control import take_screenshot, CircleDetector, unpause_game,pause_game
+from uac.gameio.atomic_skills.hunt import aim,shoot
 from uac.gameio.lifecycle.ui_control import switch_to_game, take_screenshot
+from uac.gameio.atomic_skills.move import turn
 from uac.gameio.skill_registry import register_skill
 from uac.provider import GdProvider
 from uac.config import Config
 from uac.log import Logger
+from uac.gameio import IOEnvironment
 
 config = Config()
 logger = Logger()
+io_env = IOEnvironment()
 gd_detector = GdProvider()
 
 DEFAULT_MAX_SHOOTING_ITERATIONS = 400
+SHOOT_PEOPLE_TARGET_NAME = "person"
+SHOOT_WOLVES_TARGET_NAME = "wolf"
 
 
 @register_skill("shoot_people")
@@ -25,7 +32,7 @@ def shoot_people():
     """
     Shoot at person-shaped targets, if necessary.
     """
-    keep_shooting_target(DEFAULT_MAX_SHOOTING_ITERATIONS, detect_target="person", debug=False)
+    keep_shooting_target(DEFAULT_MAX_SHOOTING_ITERATIONS, detect_target=SHOOT_PEOPLE_TARGET_NAME, debug=False)
 
 
 @register_skill("shoot_wolves")
@@ -33,7 +40,7 @@ def shoot_wolves():
     """
     Shoot at wolf targets, if necessary.
     """
-    keep_shooting_target(DEFAULT_MAX_SHOOTING_ITERATIONS, detect_target="wolf", debug=False)
+    keep_shooting_target(DEFAULT_MAX_SHOOTING_ITERATIONS, detect_target=SHOOT_WOLVES_TARGET_NAME, debug=False)
 
 
 def keep_shooting_target(
@@ -45,8 +52,9 @@ def keep_shooting_target(
     Keep shooting the 'detect_target' detected by object detector automatically.
     '''
     save_dir = config.work_dir
-
-    for step in range(iterations):
+    circle_detector = CircleDetector(config.resolution_ratio)
+    aim()  # aim before detection
+    for step in range(1,1+iterations):
         if debug:
             logger.debug(f'Go for hunting #{step}')
 
@@ -58,14 +66,34 @@ def keep_shooting_target(
 
         timestep = time.time()
 
-        screen_image_filename, _ = take_screenshot(timestep, config.game_region, include_minimap=False, draw_axis=False)
+        screen_image_filename, minimap_image_filename = take_screenshot(timestep, config.game_region, config.minimap_region, draw_axis=False)
+
+        pause_game()
+        unpause_game()
 
         if not detect_target.endswith(' .'):
             detect_target += ' .'
-
         screen, boxes, logits, phrases = gd_detector.detect(screen_image_filename, detect_target, box_threshold=0.4)
+        # sort according to areas
+        if not phrases:
+            follow_theta, follow_info = circle_detector.detect(minimap_image_filename,detect_mode='red', debug=debug)
+            logger.debug(f'turn: {follow_theta}')
+            if abs(follow_theta)<=360:
+                follow_theta = np.sign(follow_theta) * np.clip(abs(follow_theta),0,90)
+                turn(follow_theta)
 
-        if "Person" in detect_target:
+            if debug:
+                cv2.imwrite(os.path.join(save_dir, f"red_detect_{timestep}.jpg"), follow_info['vis'])
+            continue
+
+
+        areas = [(b[2]*b[3]).item() for b in boxes]
+        area_ascend_index = np.argsort(areas)
+        boxes = torch.stack([boxes[i] for i in area_ascend_index])
+        logits = torch.stack([logits[i] for i in area_ascend_index])
+        phrases = [phrases[i] for i in area_ascend_index]
+
+        if SHOOT_PEOPLE_TARGET_NAME in detect_target.lower():
             if len(boxes) > 1:
                 index = 0
                 dis = 1.5
@@ -91,29 +119,51 @@ def keep_shooting_target(
 
         h, w, _ = screen.shape
         xyxy = box_convert(boxes=boxes * torch.Tensor([w, h, w, h]), in_fmt="cxcywh", out_fmt="xyxy").numpy().astype(int)
+        is_shoot = False
 
-        for detect_xyxy, detect_object, detect_confidence in zip(xyxy, phrases, logits):
+        for j, (detect_xyxy, detect_object, detect_confidence) in enumerate(zip(xyxy, phrases, logits)):
+
+            # print(f'timestep: {step} | area: {boxes[j][2] * boxes[j][3] :.3f}')
             if debug:
-                logger.debug(
-                    f'detect_xyxy is {detect_xyxy},detect_object is {detect_object},shoot_xy is {int((detect_xyxy[0] + detect_xyxy[2]) / 2)},{int((detect_xyxy[1] + detect_xyxy[3]) / 2)}')
+                logger.debug(f'detect_xyxy is {detect_xyxy},detect_object is {detect_object},shoot_xy is {int((detect_xyxy[0] + detect_xyxy[2]) / 2)},{int((detect_xyxy[1] + detect_xyxy[3]) / 2)}')
+
+            # exclude the person occupied large area (threshold: 0.1)
+            s_w = SHOOT_PEOPLE_TARGET_NAME in detect_object.lower()  # true represents shoot wolves
+            if s_w and boxes[j][2] * boxes[j][3] > 0.06:
+                continue
 
             if detect_object in detect_target:  # TODO: shoot confidence threshold
-                shoot_x = int((detect_xyxy[0] + detect_xyxy[2]) / 2)
-                shoot_y = int((detect_xyxy[1] + detect_xyxy[3]) / 2)
+                shoot_x = boxes[j][0]#((detect_xyxy[0] + detect_xyxy[2]) / 2) / w
+                shoot_y = boxes[j][1]#((detect_xyxy[1] + detect_xyxy[3]) / 2) / h
 
                 if debug:
                     cv2.arrowedLine(annotated_frame, (config.game_resolution[0] // 2, config.game_resolution[1] // 2), (
-                        int((detect_xyxy[0] + detect_xyxy[2]) / 2), int((detect_xyxy[1] + detect_xyxy[3]) / 2)),
-                                    (0, 255, 0), 2, tipLength=0.1)
+                        int((detect_xyxy[0] + detect_xyxy[2]) / 2), int((detect_xyxy[1] + detect_xyxy[3]) / 2)),(0, 255, 0), 2, tipLength=0.1)
                     cv2.imwrite(os.path.join(save_dir, f"annotated_{detect_object}_{timestep}.jpg"), annotated_frame)
 
                 logger.debug(f'pixel is {shoot_x},{shoot_y}')
-                aim_and_shoot(int(shoot_x), int(shoot_y))
+                shoot(shoot_x, shoot_y)
+
+                is_shoot = True
                 break
+
+        if not is_shoot or (is_shoot and np.random.uniform(0,1) < .2): # turn
+
+            pause_game()
+            unpause_game()
+
+            follow_theta, follow_info = circle_detector.detect(minimap_image_filename,detect_mode='red', debug=debug)
+            logger.debug(f'turn: {follow_theta}')
+
+            # print(f'turn: {follow_theta}')
+            if abs(follow_theta)<=360:
+                follow_theta = np.sign(follow_theta) * np.clip(abs(follow_theta),0,90)
+                turn(follow_theta)
+
+            if debug:
+                cv2.imwrite(os.path.join(save_dir, f"red_detect_{timestep}.jpg"), follow_info['vis'])
 
 __all__ = [
     "shoot_people",
     "shoot_wolves"
 ]
-
-
