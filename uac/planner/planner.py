@@ -388,7 +388,7 @@ class GatherInformation():
                 except Exception as e:
                     logger.error(f"Error in gather information by object detector: {e}")
                     flag = False
-
+            
                 try:
                     minimap_detection_objects = self.object_detector.process_minimap_targets(image_files[0])
 

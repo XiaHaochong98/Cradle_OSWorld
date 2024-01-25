@@ -147,9 +147,6 @@ class GdProvider(metaclass=Singleton):
             tgt_x = int((detect_xyxy[0] + detect_xyxy[2]) / 2)  # center of the box
             tgt_y = int((detect_xyxy[1] + detect_xyxy[3]) / 2)
 
-            # remove duplication
-            if any(abs(entry['center'][0] - tgt_x) + abs(entry['center'][1] - tgt_y) < 5 for entry in minimap_detection_objects[detect_object]):
-                continue
             theta = get_theta(h // 2, w // 2, tgt_x, tgt_y)
             minimap_detection_objects[detect_object].append(dict(
                 theta=theta,
