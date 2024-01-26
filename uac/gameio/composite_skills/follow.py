@@ -50,7 +50,7 @@ def cv_follow_circles(
     for step in range(iterations):
 
         if debug:
-            logger.write(f'Go for hunting #{step}')
+            logger.write(f'Go into combat #{step}')
 
         if config.ocr_different_previous_text:
             logger.write("The text is different from the previous one.")

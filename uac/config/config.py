@@ -177,8 +177,8 @@ class Config(metaclass=Singleton):
     def _config_warn(self, message):
         colours_on()
         print(Fore.RED + f' >>> WARNING: {message} ' + Style.RESET_ALL)
-    
-    
+
+
     def _set_latest_memory_path(self):
         path_list = os.listdir(self.work_dir)
         path_list.sort()

@@ -137,9 +137,10 @@ class GameManager:
                 logger.write(f"Finished executing skill: {skill} and wait.")
 
         except Exception as e:
-            logger.error(f"Error executing skill: {e}")
+            msg = f'Error executing skill {skill_name} with params {skill_params} (from actions: {actions}):\n{e}'
+            logger.error(msg)
             exec_info["errors"] = True
-            exec_info["errors_info"] = f"Error executing skill {skill_name} with params {skill_params} (from actions: {actions}):\n{e}"
+            exec_info["errors_info"] = msg
 
         # @TODO re-add hold timeout check call
 

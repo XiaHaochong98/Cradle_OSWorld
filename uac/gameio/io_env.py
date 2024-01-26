@@ -74,6 +74,9 @@ class IOEnvironment(metaclass=Singleton):
     RIGHT_MOUSE_BUTTON = 'R'
     LEFT_MOUSE_BUTTON = 'L'
     MIDDLE_MOUSE_BUTTON = 'M'
+    right_mouse_button = RIGHT_MOUSE_BUTTON
+    left_mouse_button = LEFT_MOUSE_BUTTON = 'L'
+    middle_mouse_button = MIDDLE_MOUSE_BUTTON = 'M'
     WHEEL_UP_MOUSE_BUTTON = 'WU'
     WHEEL_DOWN_MOUSE_BUTTON = 'WD'
 
@@ -95,6 +98,8 @@ class IOEnvironment(metaclass=Singleton):
     ACTION_PRESS = 'press' # Equivalent to click on the mouse
     ACTION_HOLD = 'hold'
     ACTION_RELEASE = 'release'
+    MOUSE_TYPE = 'is_mouse'
+    KEY_TYPE = 'is_keyboard'
 
     # List of keys currently held. To be either released by specific calls or after timeout (max iterations).
     # {
@@ -126,7 +131,7 @@ class IOEnvironment(metaclass=Singleton):
 
         time.sleep(self.RELEASE_DEFAULT_BLOCK_TIME)
 
-        self._to_message(self.held_keys, self.ACTION_RELEASE)
+        self._to_message(self.held_buttons, self.ACTION_RELEASE, self.MOUSE_TYPE)
 
 
     def put_held_button(self, button):
@@ -146,7 +151,7 @@ class IOEnvironment(metaclass=Singleton):
 
             time.sleep(self.HOLD_DEFAULT_BLOCK_TIME)
 
-            self._to_message(self.held_keys, self.ACTION_HOLD)
+            self._to_message(self.held_buttons, self.ACTION_HOLD, self.MOUSE_TYPE)
 
 
     def _mouse_button_down(self, button):
@@ -167,7 +172,7 @@ class IOEnvironment(metaclass=Singleton):
             pydirectinput.keyUp(key) # Just as a guarantee to up an untracked key
             logger.warn(f'Key {key} was not being held at top.')
 
-        self._to_message(self.held_keys, self.ACTION_RELEASE)
+        self._to_message(self.held_keys, self.ACTION_RELEASE, self.KEY_TYPE)
 
 
     def put_held_keys(self, key):
@@ -186,7 +191,7 @@ class IOEnvironment(metaclass=Singleton):
 
             time.sleep(self.HOLD_DEFAULT_BLOCK_TIME)
 
-            self._to_message(self.held_keys, self.ACTION_HOLD)
+            self._to_message(self.held_keys, self.ACTION_HOLD, self.KEY_TYPE)
 
 
     def check_held_keys(self, keys):
@@ -203,15 +208,15 @@ class IOEnvironment(metaclass=Singleton):
         return result
 
 
-    def _to_message(self, list, purpose):
+    def _to_message(self, list, purpose, type):
 
-        vals = ', '.join(f'{e[self.KEY_KEY]}:{e[self.EXPIRATION_KEY]}' for e in list)
-        msg = f'Held keys after {purpose}: {vals}'
+        if type == self.KEY_TYPE:
+            vals = ', '.join(f'{e[self.KEY_KEY]}:{e[self.EXPIRATION_KEY]}' for e in list)
+            msg = f'Held keys after {purpose}: {vals}'
+        elif type == self.MOUSE_TYPE:
+            vals = ', '.join(f'{e[self.BUTTON_KEY]}:{e[self.EXPIRATION_KEY]}' for e in list)
+            msg = f'Held button after {purpose}: {vals}'
 
-        logger.write(msg)
-
-        vals = ', '.join(f'{e[self.BUTTON_KEY]}:{e[self.EXPIRATION_KEY]}' for e in list)
-        msg = f'Held button after {purpose}: {vals}'
         logger.write(msg)
 
         return msg
@@ -466,6 +471,9 @@ class IOEnvironment(metaclass=Singleton):
 
     def key_press(self, key, duration=None):
 
+        if key in self.ALIASES_MOUSE_REDIRECT:
+            self.mouse_click_button(key, duration)
+
         key = self.map_key(key)
 
         f, keys = self._check_multi_key(key)
@@ -475,7 +483,7 @@ class IOEnvironment(metaclass=Singleton):
 
             if duration is None:
                 pydirectinput.keyDown(key)
-                #time.sleep(.3)
+                time.sleep(.2)
                 pydirectinput.keyUp(key)
             else:
                 pydirectinput.keyDown(key)
@@ -484,6 +492,9 @@ class IOEnvironment(metaclass=Singleton):
 
 
     def key_hold(self, key, duration=None):
+
+        if key in self.ALIASES_MOUSE_REDIRECT:
+            self.mouse_hold_button(key, duration)
 
         key = self.map_key(key)
 
@@ -506,6 +517,9 @@ class IOEnvironment(metaclass=Singleton):
 
     def key_release(self, key):
 
+        if key in self.ALIASES_MOUSE_REDIRECT:
+            self.mouse_release_button(key)
+
         key = self.map_key(key)
 
         self.pop_held_keys(key)
@@ -523,6 +537,11 @@ class IOEnvironment(metaclass=Singleton):
             self._mouse_button_up(self.held_buttons[i][self.BUTTON_KEY])
 
 
+    ALIASES_RIGHT_MOUSE = ['right', 'rightbutton', 'rightmousebutton', 'r', 'rbutton', 'rmouse', 'rightmouse', 'rm', 'mouseright', 'mouserightbutton']
+    ALIASES_LEFT_MOUSE = ['left', 'leftbutton', 'leftmousebutton', 'l', 'lbutton', 'lmouse', 'leftmouse', 'lm', 'mouseleft', 'mouseleftbutton']
+    ALIASES_CENTER_MOUSE = ['middle', 'middelbutton', 'middlemousebutton', 'm', 'mbutton', 'mmouse', 'middlemouse', 'center', 'c', 'centerbutton', 'centermouse', 'cm', 'mousecenter', 'mousecenterbutton']
+    ALIASES_MOUSE_REDIRECT = set(ALIASES_RIGHT_MOUSE + ALIASES_LEFT_MOUSE + ALIASES_CENTER_MOUSE) - set(['r', 'l', 'm', 'c'])
+
     # @TODO mapping can be improved
     def map_button(self, button):
 
@@ -533,15 +552,29 @@ class IOEnvironment(metaclass=Singleton):
         if len(button) > 1:
             button = button.lower().replace('_', '').replace(' ', '')
 
-        if button in ['right', 'rightbutton', 'rightmousebutton', 'r', 'rbutton', 'rmouse', 'rightmouse']:
+        if button in self.ALIASES_RIGHT_MOUSE:
             return self.RIGHT_MOUSE_BUTTON
-        elif button in ['left', 'leftbutton', 'leftmousebutton', 'l', 'lbutton', 'lmouse', 'leftmouse']:
+        elif button in self.ALIASES_LEFT_MOUSE:
             return self.LEFT_MOUSE_BUTTON
-        elif button in ['middle', 'middelbutton', 'middlemousebutton', 'm', 'mbutton', 'mmouse', 'middlemouse', 'center', 'centerbutton', 'centermouse']:
+        elif button in self.ALIASES_CENTER_MOUSE:
             return self.MIDDLE_MOUSE_BUTTON
 
         return button
 
+
+    ALIASES_RIGHT_SHIFT_KEY = ['rshift', 'right shift', 'rightshift', 'shift right', 'shiftright']
+    ALIASES_LEFT_SHIFT_KEY = ['lshift', 'left shift', 'leftshift', 'shift left', 'shiftleft']
+    ALIASES_SHIFT_KEY = ALIASES_RIGHT_SHIFT_KEY + ALIASES_LEFT_SHIFT_KEY
+
+    ALIASES_RIGHT_ALT_KEY = ['ralt', 'right alt', 'rightalt', 'alt right', 'altright']
+    ALIASES_LEFT_ALT_KEY = ['lalt', 'left alt', 'leftalt', 'alt left', 'altleft']
+    ALIASES_ALT_KEY = ALIASES_RIGHT_ALT_KEY + ALIASES_LEFT_ALT_KEY
+
+    ALIASES_RIGHT_CONTROL_KEY = ['rctrl', 'right ctrl', 'rightctrl', 'ctrl right', 'ctrlright', 'rcontrol', 'right control', 'rightcontrol', 'control right', 'contorlright']
+    ALIASES_LEFT_CONTROL_KEY = ['lctrl', 'left ctrl', 'leftctrl', 'ctrl left', 'ctrlleft', 'lcontrol', 'left control', 'leftcontrol', 'control left', 'contorlleft']
+    ALIASES_CONTROL_KEY = ALIASES_RIGHT_CONTROL_KEY + ALIASES_LEFT_CONTROL_KEY
+
+    ALIASES_SPACE_KEY = [' ', 'whitespace', 'spacebar', 'space bar']
 
     # @TODO mapping can be improved
     def map_key(self, key):
@@ -553,22 +586,22 @@ class IOEnvironment(metaclass=Singleton):
         if len(key) > 1:
             key = key.lower().replace('_', '').replace('-', '')
 
-        if key in ['lshift', 'left shift', 'leftshift', 'shift left', 'shiftleft']:
+        if key in self.ALIASES_LEFT_SHIFT_KEY:
             return 'shift'
-        elif key in ['rshift', 'right shift', 'rightshift', 'shift right', 'shiftright']:
+        elif key in self.ALIASES_RIGHT_SHIFT_KEY:
             return 'shift'
 
-        if key in ['lalt', 'left alt', 'leftalt', 'alt left', 'altleft']:
+        if key in self.ALIASES_LEFT_ALT_KEY:
             return 'alt'
-        elif key in ['ralt', 'right alt', 'rightalt', 'alt right', 'altright']:
+        elif key in self.ALIASES_RIGHT_ALT_KEY:
             return 'alt'
 
-        if key in ['lctrl', 'left ctrl', 'leftctrl', 'ctrl left', 'ctrlleft', 'lcontrol', 'left control', 'leftcontrol', 'control left', 'contorlleft']:
+        if key in self.ALIASES_LEFT_CONTROL_KEY:
             return 'ctrl'
-        elif key in ['rctrl', 'right ctrl', 'rightctrl', 'ctrl right', 'ctrlright', 'rcontrol', 'right control', 'rightcontrol', 'control right', 'contorlright']:
+        elif key in self.ALIASES_RIGHT_CONTROL_KEY:
             return 'ctrl'
 
-        if key in [' ', 'whitespace', 'spacebar', 'space bar']:
+        if key in self.ALIASES_SPACE_KEY:
             return 'space'
 
         return key

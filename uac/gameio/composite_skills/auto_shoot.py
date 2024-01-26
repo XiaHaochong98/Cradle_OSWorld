@@ -8,7 +8,7 @@ from torchvision.ops import box_convert
 from groundingdino.util.inference import load_model, load_image, predict, annotate
 
 from uac.gameio.lifecycle.ui_control import take_screenshot, CircleDetector, unpause_game,pause_game
-from uac.gameio.atomic_skills.hunt import aim,shoot
+from uac.gameio.atomic_skills.combat import aim,shoot
 from uac.gameio.lifecycle.ui_control import switch_to_game, take_screenshot
 from uac.gameio.atomic_skills.move import turn, move_forward
 from uac.gameio.skill_registry import register_skill
@@ -51,8 +51,8 @@ def keep_shooting_target(
     '''
     Keep shooting the 'detect_target' detected by object detector automatically.
     '''
-    if detect_target == SHOOT_WOLVES_TARGET_NAME: 
-        move_forward(15) 
+    if detect_target == SHOOT_WOLVES_TARGET_NAME:
+        move_forward(15)
         POST_WAIT_TIME = 0.1
     else:
         POST_WAIT_TIME = 0.5
@@ -63,7 +63,7 @@ def keep_shooting_target(
     for step in range(1,1+iterations):
 
         if debug:
-            logger.debug(f'Go for hunting #{step}')
+            logger.debug(f'Go into combat #{step}')
 
         if config.ocr_different_previous_text:
             logger.write("The text is different from the previous one.")
@@ -136,7 +136,7 @@ def keep_shooting_target(
             annotated_frame = annotate(image_source=screen, boxes=boxes, logits=logits, phrases=phrases)
             cv2.imwrite(os.path.join(save_dir, f"annotated_{timestep}.jpg"), annotated_frame)
 
-        
+
         xyxy = box_convert(boxes=boxes * torch.Tensor([w, h, w, h]), in_fmt="cxcywh", out_fmt="xyxy").numpy().astype(int)
         is_shoot = False
 
@@ -150,7 +150,7 @@ def keep_shooting_target(
             if s_w and boxes[j][2] * boxes[j][3] > 0.06:
                 continue
 
-            if detect_object in detect_target:  
+            if detect_object in detect_target:
 
                 shoot_x = boxes[j][0]
                 shoot_y = boxes[j][1]

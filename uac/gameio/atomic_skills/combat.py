@@ -49,6 +49,14 @@ def view_weapons():
     io_env.key_hold('tab')
 
 
+@register_skill("fight")
+def fight():
+    """
+    Fight agains another person.
+    """
+    io_env.key_press('f,f,f,f,f,f')
+
+
 # def call_animals():
 #     """
 #     Call animals in the game.
@@ -65,5 +73,6 @@ __all__ = [
     # "shoot",
     "choose_weapons_at",
     "view_weapons",
+    "fight",
     #"call_animals",
 ]

@@ -8,8 +8,8 @@ from uac.gameio.composite_skills.navigation import cv_navigation
 from uac.gameio.composite_skills.go_to_icon import go_to_horse
 from uac.utils.template_matching import match_template_image
 from uac.gameio.atomic_skills.map import open_map, open_index, close_index
-from uac.gameio.lifecycle.ui_control import unpause_game,pause_game
-from uac.gameio.atomic_skills.hunt import shoot,aim
+from uac.gameio.lifecycle.ui_control import unpause_game, pause_game
+from uac.gameio.atomic_skills.combat import shoot, aim
 from uac.gameio.atomic_skills.move import turn, mount_horse, move_forward
 from uac.gameio.composite_skills.follow import follow
 from uac.gameio.composite_skills.auto_shoot import shoot_wolves, shoot_people
@@ -65,11 +65,11 @@ if __name__ == "__main__":
             # prompt: "Protect Dutch"
             while True:
                 shoot_people()
-                
+
         elif skill_chosen == 'shoot_wolves':  # shoot example
             # prompt: "Keep the wolves away from Javier and John"
             shoot_wolves()
-                
+
         elif skill_chosen == 'following':  # follow companion against wolves example
             # prompt: "Follow Javier"
             # prompt: "Catch up to Javier"
