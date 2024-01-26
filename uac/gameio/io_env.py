@@ -136,9 +136,9 @@ class IOEnvironment(metaclass=Singleton):
 
     def put_held_button(self, button):
 
-        for b in self.held_buttons:
-            if b == button:
-                logger.warn(f'Button {b} already being held.')
+        for e in self.held_buttons:
+            if e[self.BUTTON_KEY] == button:
+                logger.warn(f'Button {button} already being held.')
                 return
         else:
             entry = {

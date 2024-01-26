@@ -118,6 +118,8 @@ def parse_semi_formatted_text(text):
                     in_code_flag = False
                 else:
                     current_value.append(line)
+                    if line.strip().lower() == 'null':
+                        in_code_flag = False
             else:
                 in_code_flag = False
                 line = line.strip()

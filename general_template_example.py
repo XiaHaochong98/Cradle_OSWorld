@@ -601,8 +601,16 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 last_task_guidance = ""
                 long_horizon = False
 
-            image_description=data['res_dict'][constants.IMAGE_DESCRIPTION]
-            screen_classification=data['res_dict'][constants.SCREEN_CLASSIFICATION]
+            if constants.IMAGE_DESCRIPTION in response_keys:
+                image_description=data['res_dict'][constants.IMAGE_DESCRIPTION]
+                if constants.SCREEN_CLASSIFICATION in response_keys:
+                    screen_classification=data['res_dict'][constants.SCREEN_CLASSIFICATION]
+                else:
+                    screen_classification="None"
+            else:
+                logger.warn(f"No {constants.IMAGE_DESCRIPTION} in response.")
+                image_description="No description"
+                screen_classification="None"
 
             if constants.TARGET_OBJECT_NAME in response_keys:
                 target_object_name=data['res_dict'][constants.TARGET_OBJECT_NAME]
@@ -724,6 +732,11 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 skill_steps = []
 
             logger.write(f'R: {skill_steps}')
+
+            # Filter nop actions in list
+            skill_steps = [ i for i in skill_steps if i != '']
+            if len(skill_steps) == 0:
+                skill_steps = ['']
 
             skill_steps = skill_steps[:number_of_execute_skills]
             logger.write(f'Skill Steps: {skill_steps}')

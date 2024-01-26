@@ -9,7 +9,7 @@ from uac.gameio.composite_skills.go_to_icon import go_to_horse
 from uac.utils.template_matching import match_template_image
 from uac.gameio.atomic_skills.map import open_map, open_index, close_index
 from uac.gameio.lifecycle.ui_control import unpause_game, pause_game
-from uac.gameio.atomic_skills.combat import shoot, aim
+from uac.gameio.atomic_skills.combat import shoot, aim, fight
 from uac.gameio.atomic_skills.move import turn, mount_horse, move_forward
 from uac.gameio.composite_skills.follow import follow
 from uac.gameio.composite_skills.auto_shoot import shoot_wolves, shoot_people
@@ -35,6 +35,7 @@ class SwitchWindow(object):
 
 
 if __name__ == "__main__":
+
     gm = GameManager(config.env_name)
 
     parser = argparse.ArgumentParser()
