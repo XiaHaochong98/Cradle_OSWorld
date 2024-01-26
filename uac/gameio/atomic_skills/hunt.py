@@ -29,7 +29,7 @@ def choose_weapons_at(x, y):
     io_env.mouse_move_normalized(x, y)
 
 
-#@register_skill("shoot")
+# @register_skill("shoot")
 def shoot(x, y):
     """
     Shoot the weapon at a specific location in view.

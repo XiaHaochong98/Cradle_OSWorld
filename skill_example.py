@@ -35,51 +35,11 @@ class SwitchWindow(object):
 
 
 if __name__ == "__main__":
-
     gm = GameManager(config.env_name)
-
-#### This will be removed soon. For now, don't delete it. ####
-#
-#    max = io_env.WIN_NORM_MAX
-#    game_w = config.game_resolution[0]
-#    game_h = config.game_resolution[1]
-#
-#    screen_w = config.screen_resolution[0]
-#    screen_h = config.screen_resolution[1]
-#
-#    logger.write("move mid")
-#    io_env.mouse_move(0, 0, relative=True)
-#    time.sleep(2)
-#
-#    io_env.mouse_move(config.game_resolution[0]/2, config.game_resolution[1]/2, relative=False)
-#    time.sleep(2)
-#
-#    io_env.mouse_move(0, config.game_resolution[1]/2, relative=False)
-#    time.sleep(2)
-#
-#    io_env.mouse_move(config.game_resolution[0]/2, config.game_resolution[1]/2, relative=False)
-#    time.sleep(2)
-#
-#    y_factor = 0.01
-#    iterations_up = 2
-#    for i in range(iterations_up):
-#
-#        q,w = io_env.ahk.mouse_position
-#         io_env.ahk.mouse_move(config.game_resolution[0]/2, (0.5*config.game_resolution[1]) - (y_factor*(i+1)*config.game_resolution[1]), speed=0, relative=False)
-#        time.sleep(2)
-#
-#    y_delta = y_factor
-#    iterations_down = 10 * iterations_up
-#
-#    for i in range(iterations_down):
-#        i_delta = ((y_delta * config.game_resolution[1]) * (i+1)) / iterations_down
-#        io_env.ahk.mouse_move(config.game_resolution[0]/2, (0.5*config.game_resolution[1]) - (y_factor*config.game_resolution[1]) + i_delta, speed=0, relative=False)#
-#
-#    time.sleep(2)
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-s',"--skill_chosen",type=str,default="following",help="['navigation', 'go_to_horse', 'map_operation', 'shooting', 'following']"
+        '-s',"--skill_chosen",type=str,default="following",help="['navigation', 'go_to_horse', 'map_operation', 'shoot_people', 'shoot_wolves', 'following']"
     )
     args = parser.parse_args()
     skill_chosen = args.skill_chosen
@@ -101,13 +61,15 @@ if __name__ == "__main__":
             time.sleep(1)
             close_index()
             time.sleep(1)
-        elif skill_chosen == 'shooting':  # shoot example
+        elif skill_chosen == 'shoot_people':  # shoot example
             # prompt: "Protect Dutch"
             while True:
                 shoot_people()
-
+                
+        elif skill_chosen == 'shoot_wolves':  # shoot example
             # prompt: "Keep the wolves away from Javier and John"
-            # shoot_wolves()
+            shoot_wolves()
+                
         elif skill_chosen == 'following':  # follow companion against wolves example
             # prompt: "Follow Javier"
             # prompt: "Catch up to Javier"

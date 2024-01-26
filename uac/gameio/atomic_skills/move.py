@@ -36,11 +36,6 @@ def turn(theta):
     For example, if theta = 30, the character will turn right 30 degrees. If theta = -30, the character will turn left 30 degrees.
     """
 
-    # We may need to check the game screen boundaries, before moving the mouse and re-center it, if necessary.
-    if io_env.clip_check_horizonal_angle(theta):
-        pause_game()
-        unpause_game()
-
     io_env.mouse_move_horizontal_angle(theta)
 
 

@@ -824,6 +824,7 @@ if __name__ == '__main__':
     #task_description =  "Follow Dutch."
     #task_description =  "Hitch your horse."
     #task_description =  "Go to the shed and press Q to take cover"
+    #task_description =  "Hold right mouse to shoot"
     task_description =  ""
 
     # map_create_waypoint

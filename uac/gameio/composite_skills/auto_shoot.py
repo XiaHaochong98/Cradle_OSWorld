@@ -10,7 +10,7 @@ from groundingdino.util.inference import load_model, load_image, predict, annota
 from uac.gameio.lifecycle.ui_control import take_screenshot, CircleDetector, unpause_game,pause_game
 from uac.gameio.atomic_skills.hunt import aim,shoot
 from uac.gameio.lifecycle.ui_control import switch_to_game, take_screenshot
-from uac.gameio.atomic_skills.move import turn
+from uac.gameio.atomic_skills.move import turn, move_forward
 from uac.gameio.skill_registry import register_skill
 from uac.provider import GdProvider
 from uac.config import Config
@@ -22,7 +22,7 @@ logger = Logger()
 io_env = IOEnvironment()
 gd_detector = GdProvider()
 
-DEFAULT_MAX_SHOOTING_ITERATIONS = 400
+DEFAULT_MAX_SHOOTING_ITERATIONS = 100
 SHOOT_PEOPLE_TARGET_NAME = "person"
 SHOOT_WOLVES_TARGET_NAME = "wolf"
 
@@ -51,9 +51,13 @@ def keep_shooting_target(
     '''
     Keep shooting the 'detect_target' detected by object detector automatically.
     '''
+    if detect_target == SHOOT_WOLVES_TARGET_NAME: 
+        move_forward(15) 
+        POST_WAIT_TIME = 0.1
+    else:
+        POST_WAIT_TIME = 0.5
     save_dir = config.work_dir
     circle_detector = CircleDetector(config.resolution_ratio)
-
     aim()  # aim before detection
 
     for step in range(1,1+iterations):
@@ -70,21 +74,29 @@ def keep_shooting_target(
         timestep = time.time()
 
         screen_image_filename, minimap_image_filename = take_screenshot(timestep, config.game_region, config.minimap_region, draw_axis=False)
+        screen = cv2.imread(screen_image_filename)
+        h, w, _ = screen.shape
+
+        pointer = np.array([h // 2,  w // 2])
+        red_range=np.array([[0, 0, 150], [100, 100, 255]])
+        is_red = cv2.countNonZero(cv2.inRange(screen[pointer[0],pointer[1]].reshape(1,1,3), red_range[0], red_range[1]))
+        if is_red:
+            shoot(0.5,0.5)
+            time.sleep(POST_WAIT_TIME)
+            continue
 
         if not detect_target.endswith(' .'):
             detect_target += ' .'
-
-        screen, boxes, logits, phrases = gd_detector.detect(screen_image_filename, detect_target, box_threshold=0.4)
+        _, boxes, logits, phrases = gd_detector.detect(screen_image_filename, detect_target, box_threshold=0.4)
 
         # sort according to areas
         if not phrases:
-
             follow_theta, follow_info = circle_detector.detect(minimap_image_filename,detect_mode='red', debug=debug)
             logger.debug(f'turn: {follow_theta}')
             if abs(follow_theta)<=360:
-                follow_theta = np.sign(follow_theta) * np.clip(abs(follow_theta),0,90)
+                follow_theta = np.sign(follow_theta) * np.clip(abs(follow_theta),0,180)
                 turn(follow_theta)
-
+                time.sleep(POST_WAIT_TIME)
             if debug:
                 cv2.imwrite(os.path.join(save_dir, f"red_detect_{timestep}.jpg"), follow_info['vis'])
             continue
@@ -124,13 +136,12 @@ def keep_shooting_target(
             annotated_frame = annotate(image_source=screen, boxes=boxes, logits=logits, phrases=phrases)
             cv2.imwrite(os.path.join(save_dir, f"annotated_{timestep}.jpg"), annotated_frame)
 
-        h, w, _ = screen.shape
+        
         xyxy = box_convert(boxes=boxes * torch.Tensor([w, h, w, h]), in_fmt="cxcywh", out_fmt="xyxy").numpy().astype(int)
         is_shoot = False
 
         for j, (detect_xyxy, detect_object, detect_confidence) in enumerate(zip(xyxy, phrases, logits)):
 
-            # print(f'timestep: {step} | area: {boxes[j][2] * boxes[j][3] :.3f}')
             if debug:
                 logger.debug(f'detect_xyxy is {detect_xyxy},detect_object is {detect_object},shoot_xy is {int((detect_xyxy[0] + detect_xyxy[2]) / 2)},{int((detect_xyxy[1] + detect_xyxy[3]) / 2)}')
 
@@ -139,10 +150,10 @@ def keep_shooting_target(
             if s_w and boxes[j][2] * boxes[j][3] > 0.06:
                 continue
 
-            if detect_object in detect_target:  # TODO: shoot confidence threshold
+            if detect_object in detect_target:  
 
-                shoot_x = boxes[j][0]#((detect_xyxy[0] + detect_xyxy[2]) / 2) / w
-                shoot_y = boxes[j][1]#((detect_xyxy[1] + detect_xyxy[3]) / 2) / h
+                shoot_x = boxes[j][0]
+                shoot_y = boxes[j][1]
 
                 if debug:
                     cv2.arrowedLine(annotated_frame, (config.game_resolution[0] // 2, config.game_resolution[1] // 2), (
@@ -151,7 +162,7 @@ def keep_shooting_target(
 
                 logger.debug(f'pixel is {shoot_x},{shoot_y}')
                 shoot(shoot_x, shoot_y)
-
+                time.sleep(POST_WAIT_TIME)
                 is_shoot = True
                 break
 
@@ -160,11 +171,10 @@ def keep_shooting_target(
             follow_theta, follow_info = circle_detector.detect(minimap_image_filename,detect_mode='red', debug=debug)
             logger.debug(f'turn: {follow_theta}')
 
-            # print(f'turn: {follow_theta}')
             if abs(follow_theta)<=360:
-                follow_theta = np.sign(follow_theta) * np.clip(abs(follow_theta),0,90)
+                follow_theta = np.sign(follow_theta) * np.clip(abs(follow_theta),0,180)
                 turn(follow_theta)
-
+                time.sleep(POST_WAIT_TIME)
             if debug:
                 cv2.imwrite(os.path.join(save_dir, f"red_detect_{timestep}.jpg"), follow_info['vis'])
 
