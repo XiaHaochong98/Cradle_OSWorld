@@ -32,12 +32,12 @@ Minimap information:
 
 Based on the above information, you should first analyze the current situation and provide the reasoning for what you should do for the next step to complete the task. Then you should output the exact action you want to execute in the game. You should respond to me with:
 
-Reasoning: You should think step by step and provide detailed reasoning to determine the next action executed on the current state for the task. You need to answer the following questions step by step. You cannot miss the question 10:
+Reasoning: You should think step by step and provide detailed reasoning to determine the next action executed on the current state for the task. You need to answer the following questions step by step. You cannot miss the question number 12:
     1. Only answer this question when the catalogue or menu or map or inventory is open, you should first describe each item in the screen line by line, from the top left and moving right. Is the target item in the current screen?
     2. Only answer this question when the catalogue or menu or map or inventory is open, which item is selected currently?
     3. Only answer this question when the character is visible in the screenshot of the current step, where is the character in the screenshot of the current step?
     4. Where is the target in the screenshot of the current step based on the task description, on the left side or on the right side? Does it appear in the previous screenshots?
-    5. Are there any bounding boxes with coordination values and object labels shown in the screenshot from the current step of the game? The bounding boxes from screenshots from previous steps do not count. If the answer is no, ignore the questions 6-8.
+    5. Are there any bounding boxes with coordinates values shown in the screenshot from the current step of the game? The bounding boxes from screenshots from previous steps do not count. If the answer is no, ignore the questions 6 to 8.
     6. You should first describe each bounding boxed from left to the right. Which bounding box is more relevant to the target, or none of them is relevant to the target?
     7. What is the value x of the most relevant bounding box only in the current screenshot? The value is the central coordination (x,y) of the central point of the box.
     8. Based on the image examples and the value A, where is the relevant bounding box in the current screenshot? Clearly on the left side, slightly on the left side, in the centre, slightly on the right side, or clearly on the right side?
@@ -56,9 +56,9 @@ Actions: The best action, or short sequence of actions without gaps, to execute 
     7. When you decide to control the character to move, if minimap information does not exist, the 'theta' you use to turn MUST be more than 10 degrees and less than 60 degrees.
     8. When you decide to control the character to move, if you are in a normal road condition, the 'duration' you use to move forward should be 1 second. If you have bad road conditions such as snow and grass, especially when riding, that can slow you down, the "duration" of your progress should be longer.
     9. When you are exploring or searching a place, if you are leaving the place, you MUST make a sharp turn to face the inside of the place. Any values for degrees are allowed.
-    10. If the self-refection thinks the last action was not available at the current place, you MUST move to another place.
-    11. You MUST ignore the angle information provided by the minimap in the following situations: when on self-refection you think you were blocked; when you were inside the target area in the minimap.
-    12. If upon self-refection you thinks you were blocked, you MUST make a moderate turn in the same direction as the previous turn action and move forward so that you can pass obstacles.
+    10. If upon self-refection you think the last action was not available at the current place, you MUST move to another place.
+    11. You MUST ignore the angle information provided by the minimap in one of the following situations: when on self-refection you think you were blocked; when you were inside the target area in the minimap; when there is a bounding box on the screenshot.
+    12. If upon self-refection you think you were blocked, you MUST make a moderate turn in the same direction as the previous turn action and move forward so that you can pass obstacles.
     13. When you are indoors, you MUST not use any follow action.
     14. When you are outdoors and the current task implies following, you MUST follow.
 

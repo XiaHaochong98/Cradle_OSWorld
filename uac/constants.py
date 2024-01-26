@@ -42,4 +42,4 @@ MESSAGE_CONSTRUCTION_MODE_PARAGRAPH = 'paragraph'
 
 # Prompts when output is None
 NONE_TASK_OUTPUT = "null"
-NONE_TARGET_OBJECT_OUTPUT = ""
+NONE_TARGET_OBJECT_OUTPUT = "null"

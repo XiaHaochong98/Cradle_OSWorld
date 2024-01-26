@@ -381,9 +381,10 @@ class GatherInformation():
             logger.write(f"Using object detector to gather information")
             if self.object_detector is not None:
                 try:
+                    target_object_name = processed_response[constants.TARGET_OBJECT_NAME].lower() \
+                        if constants.NONE_TARGET_OBJECT_OUTPUT not in processed_response[constants.TARGET_OBJECT_NAME].lower() else ""       
                     image_source, boxes, logits, phrases = self.object_detector.detect(image_path=image_files[0],
-                                                                                       text_prompt=processed_response[
-                                                                                           constants.TARGET_OBJECT_NAME].lower(),
+                                                                                       text_prompt= target_object_name,
                                                                                        box_threshold=0.4, device='cuda')
                     processed_response["boxes"] = boxes
                     processed_response["logits"] = logits

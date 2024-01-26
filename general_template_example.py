@@ -854,13 +854,19 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 input["previous_reasoning"] = pre_decision_making_reasoning
 
                 if pre_action:
-                    input["previous_action"] = pre_action
                     pre_action_name, pre_action_params = gm.skill_registry.convert_expression_to_skill(pre_action)
+                    # only input the pre_action name
+                    input["previous_action"] = pre_action_name
                     action_code, action_code_info = gm.get_skill_library_in_code(pre_action_name)
                     input['action_code'] = action_code if action_code is not None else action_code_info
+                else:
+                    input["previous_action"] = ""
+                    input['action_code'] = ""
 
                 if exec_info["errors"]:
                     input['executing_action_error']  = exec_info["errors_info"]
+                else:
+                    input['executing_action_error']  = ""
 
                 # >> Calling SELF REFLECTION
                 logger.write(f'>> Calling SELF REFLECTION')
