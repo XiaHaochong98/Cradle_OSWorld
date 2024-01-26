@@ -29,6 +29,7 @@ class LocalMemory(BaseMemory):
 
         self.max_recent_steps = max_recent_steps
         self.memory_path = memory_path
+        self.task_duration = 3
 
         self.recent_history = {"image": [],
                                constants.AUGMENTED_IMAGES_MEM_BUCKET:[],
@@ -41,7 +42,10 @@ class LocalMemory(BaseMemory):
                                "dialogue":[],
                                "task_description":[],
                                "skill_library":[],
-                               "summarization":"The player is playing the game Red Dead Redemption for the PC."}
+                               "summarization":"The player is playing the game Red Dead Redemption for the PC.",
+                               "long_horizon_task":"",
+                               "last_task_guidance":"",
+                               "last_task_duration": self.task_duration}
 
 
     def add_recent_history(
@@ -78,6 +82,24 @@ class LocalMemory(BaseMemory):
 
     def get_summarization(self) -> str:
         return self.recent_history["summarization"]
+
+
+    def add_task_guidance(self, task_description: str, long_horizon: bool) -> None:
+        self.recent_history['last_task_guidance'] = task_description
+        self.recent_history['last_task_duration'] = self.task_duration
+        if long_horizon:
+            self.recent_history['long_horizon_task'] = task_description
+    
+    
+    def get_task_guidance(self, use_last = True) -> str:
+        if use_last:
+            return self.recent_history['last_task_guidance']
+        else:
+            self.recent_history['last_task_duration'] -= 1
+            if self.recent_history['last_task_duration']>=0:
+                return self.recent_history['last_task_guidance']
+            else:
+                return self.recent_history['long_horizon_task']
 
 
     def load(self, load_path = None) -> None:

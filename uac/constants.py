@@ -10,6 +10,7 @@ GATHER_INFO_REASONING = 'reasoning'
 SCREEN_CLASSIFICATION = 'screen_classification'
 GENERAL_GAME_INTERFACE = 'general game interface without any menu'
 LAST_TASK_GUIDANCE = 'last_task_guidance'
+LAST_TASK_HORIZON = 'task_horizon'
 TASK_DESCRIPTION = 'task_description'
 
 # Tags used in prompt templates

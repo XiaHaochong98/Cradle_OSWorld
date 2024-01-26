@@ -461,6 +461,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             text_input = planner.gather_information_.text_input_map
             video_clip_path = videocapture.get_video(start_frame_id,end_frame_id)
             videocapture.clear_frame_buffer()
+            task_description = memory.get_task_guidance(use_last=True)
 
             get_text_image_introduction = [
                 {
@@ -513,9 +514,14 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
             if constants.LAST_TASK_GUIDANCE in response_keys:
                 last_task_guidance = data['res_dict'][constants.LAST_TASK_GUIDANCE]
+                if constants.LAST_TASK_HORIZON in response_keys:
+                    long_horizon = bool(int(data['res_dict'][constants.LAST_TASK_HORIZON]))
+                else:
+                    long_horizon = False
             else:
                 logger.warn(f"No {constants.LAST_TASK_GUIDANCE} in response.")
                 last_task_guidance = ""
+                long_horizon = False
 
             image_description=data['res_dict'][constants.IMAGE_DESCRIPTION]
             screen_classification=data['res_dict'][constants.SCREEN_CLASSIFICATION]
@@ -555,10 +561,12 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             logger.write(f'Classification Reasons: {classification_reasons}')
             logger.write(f'All Task Guidance: {all_task_guidance}')
             logger.write(f'Last Task Guidance: {last_task_guidance}')
+            logger.write(f'Long Horizon: {long_horizon}')
             logger.write(f'Generated Actions: {all_generated_actions}')
 
             if last_task_guidance:
                 task_description = last_task_guidance
+                memory.add_task_guidance(last_task_guidance, long_horizon)
 
             if config.skill_retrieval:
 

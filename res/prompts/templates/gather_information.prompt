@@ -28,6 +28,26 @@ The surrounding context of the minimap is vital for in-game navigation and decis
 
 Screen_classification: Please select the class that best describes the screenshot among "Inventory", "Bag", "Map", "Trade" "Pause" and "General game interface without any menu". Output the class of the screenshot in the output of Screen_classification.
 
+Task_horizon: Please make a judgment of the horizon of the current task, i.e., whether this task needs multiple interactions or only one interaction.
+There are two horizon types: long-horizon and short-horizon. For long-horizon tasks, the output should be 1. For short-horizon tasks, the output should be 0.
+First check the noun and verb in the current task:
+    If the task contains only noun without verb, it is short-horizon.
+    If the task contains more than one verbs, it is long-horizon.
+Then check whether the task is related to movement. If it requires the player to go to somewhere, it is long-horizon.
+Short-horizon tasks are sub-goals during a long-horizon task, which only need one interaction. I will give you some examples of short-horizon tasks:
+    1.pick up something: The player just needs to do the action "pick up" only once to complete this task. So it is short-horizon.
+    2.use [B] key: The player just needs to press the key [B] only once to talk. So it is short-horizon.
+    3.talk to somebody: The player just needs to press a certain button once to complete this task. So it is short-horizon.
+Long-horizon tasks are long-term goals of the player in Red Dead Redemption 2, which usually need many interactions. I will give you some examples of long-horizon tasks.
+    1.go outside: The player should go outside step by step. So it is long-horizon.
+    2.approach something: The player should move close to the target step by step. So it is long-horizon.
+    3.hold [B] key: The player should press the key [B] for a long time. So it is long-horizon.
+
+Reason_of_task: Why do you make such a judgment of task_horizon?
+Movement: Does the current task require the player to go to somewhere?
+Noun_and_Verb: The numbers of noun and verb in the current task.
+
+
 You should only respond in the format as described below, and you should not output comments or other information.
 Target_object_name: 
 Name
@@ -39,3 +59,11 @@ Description:
 The image shows...
 Screen_classification:
 Class of the screenshot
+Task_horizon:
+1
+Reason_of_task:
+...
+Movement:
+Yes or No
+Noun_and_Verb:
+1 noun 1 verb
