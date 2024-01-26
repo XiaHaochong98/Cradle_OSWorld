@@ -195,7 +195,7 @@ class GatherInformation():
     def __init__(self,
                  input_map: Dict = None,
                  template: str = None,
-                 marker_matcher: Any = None,
+                 icon_replacer: Any = None,
                  object_detector: Any = None,
                  llm_provider: LLMProvider = None,
                  text_input_map: Dict = None,
@@ -205,7 +205,7 @@ class GatherInformation():
 
         self.input_map = input_map
         self.template = template
-        self.marker_matcher = marker_matcher
+        self.icon_replacer = icon_replacer
         self.object_detector = object_detector
         self.llm_provider = llm_provider
         self.text_input_map = text_input_map
@@ -221,7 +221,7 @@ class GatherInformation():
         gather_infromation_configurations = input["gather_information_configurations"]
 
         frame_extractor_gathered_information = None
-        marker_matcher_gathered_information = None
+        icon_replacer_gathered_information = None
         object_detector_gathered_information = None
         llm_description_gathered_information = None
 
@@ -247,9 +247,27 @@ class GatherInformation():
                 text_input = input["text_input"]
                 video_path = input["video_clip_path"]
 
-                # extract the text information of the whole video
-                # run the frame_extractor to get the key frames
-                extracted_frame_paths = self.frame_extractor.extract(video_path=video_path)
+                # offline test
+                if "test_text_image" in input.keys():
+                    extracted_frame_paths = input["test_text_image"]
+                # online run
+                else:
+                    # extract the text information of the whole video
+                    # run the frame_extractor to get the key frames
+                    extracted_frame_paths = self.frame_extractor.extract(video_path=video_path)
+
+                # Gather information by Icon replacer
+                if gather_infromation_configurations["icon_replacer"] is True:
+                    logger.write(f"Using icon replacer to gather information")
+                    if self.icon_replacer is not None:
+                        try:
+                            extracted_frame_paths = self._replace_icon(extracted_frame_paths)
+                        except Exception as e:
+                            logger.error(f"Error in gather information by Icon replacer: {e}")
+                            flag = False
+                    else:
+                        logger.warn('Icon replacer is not set, skipping gather information by Icon replacer')
+
 
                 # for each key frame, use llm to get the text information
                 video_prefix = os.path.basename(video_path).split('.')[0].split('_')[-1]  # different video should have differen prefix for avoiding the same time stamp
@@ -306,18 +324,6 @@ class GatherInformation():
                 input[constants.TASK_DESCRIPTION] = last_task_guidance # this is for the input of the gather_information
             # @TODO: summary the dialogue and use it
 
-        # Gather information by marker matcher
-        if gather_infromation_configurations["marker_matcher"] is True:
-            logger.write(f"Using marker matcher to gather information")
-            if self.marker_matcher is not None:
-                try:
-                    marker_matcher_gathered_information = self.marker_matcher(screenshot_file=image_files[0], class_=class_)
-                except Exception as e:
-                    logger.error(f"Error in gather information by marker matcher: {e}")
-                    flag = False
-            else:
-                logger.warn('Marker matcher is not set, skipping gather information by marker matcher')
-
         # Gather information by LLM provider
         if gather_infromation_configurations["llm_description"] is True:
             logger.write(f"Using llm description to gather information")
@@ -351,8 +357,8 @@ class GatherInformation():
         if flag:
             objects = []
 
-            if marker_matcher_gathered_information is not None and "objects" in marker_matcher_gathered_information:
-                objects.extend(marker_matcher_gathered_information["objects"])
+            if icon_replacer_gathered_information is not None and "objects" in icon_replacer_gathered_information:
+                objects.extend(icon_replacer_gathered_information["objects"])
             if object_detector_gathered_information is not None and "objects" in object_detector_gathered_information:
                 objects.extend(object_detector_gathered_information["objects"])
             if llm_description_gathered_information is not None and "objects" in llm_description_gathered_information:
@@ -424,6 +430,13 @@ class GatherInformation():
             desc = data[prop_name]
             success = desc is not None and len(desc) > 0
         return success
+
+    def _replace_icon(self, extracted_frame_paths):
+        extracted_frames = [frame[0] for frame in extracted_frame_paths]
+        extracted_timesteps = [frame[1] for frame in extracted_frame_paths]
+        extracted_frames = self.icon_replacer(image_paths=extracted_frames)
+        extracted_frame_paths = list(zip(extracted_frames, extracted_timesteps))
+        return extracted_frame_paths
 
 
 class DecisionMaking():
@@ -665,7 +678,7 @@ class Planner(BasePlanner):
                  use_information_summary: bool = False,
                  use_self_reflection: bool = False,
                  gather_information_max_steps: int = 1,  # 5,
-                 marker_matcher: Any = None,
+                 icon_replacer: Any = None,
                  object_detector: Any = None,
                  frame_extractor: Any = None,
                  ):
@@ -711,7 +724,7 @@ class Planner(BasePlanner):
         self.use_self_reflection = use_self_reflection
         self.gather_information_max_steps = gather_information_max_steps
 
-        self.marker_matcher = marker_matcher
+        self.icon_replacer = icon_replacer
         self.object_detector = object_detector
         self.frame_extractor = frame_extractor
         self.set_internal_params(planner_params=planner_params,
@@ -744,7 +757,7 @@ class Planner(BasePlanner):
                                                      text_input_map=self.inputs["gather_text_information"],
                                                      get_text_template=self.templates["gather_text_information"],
                                                      frame_extractor=self.frame_extractor,
-                                                     marker_matcher=self.marker_matcher,
+                                                     icon_replacer=self.icon_replacer,
                                                      object_detector=self.object_detector,
                                                      llm_provider=self.llm_provider)
 

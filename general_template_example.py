@@ -10,7 +10,7 @@ from uac.planner.planner import Planner
 from uac.memory import LocalMemory
 from uac.provider.openai import OpenAIProvider
 from uac.provider import GdProvider
-from uac.gameio.lifecycle.ui_control import switch_to_game
+from uac.gameio.lifecycle.ui_control import switch_to_game, IconReplacer
 from uac.gameio.video.VideoRecorder import VideoRecorder
 from uac.gameio.video.VideoFrameExtractor import VideoFrameExtractor
 from uac.gameio.atomic_skills.trade_utils import __all__ as trade_skills
@@ -341,8 +341,7 @@ def skill_library_test():
     gm.store_skills()
 
 
-def main_test_gather_information(image_path = ""):
-
+def main_gather_information(image_path = ""):
     llm_provider_config_path = './conf/openai_config.json'
 
     llm_provider = OpenAIProvider()
@@ -374,7 +373,7 @@ def main_test_gather_information(image_path = ""):
     #configure the gather_information module
     gather_information_configurations = {
         "frame_extractor": False, # extract text from the video clip
-        "marker_matcher": False,
+        "icon_replacer": False,
         "llm_description": True, # get the description of the current screenshot
         "object_detector": False
     }
@@ -401,6 +400,83 @@ def main_test_gather_information(image_path = ""):
     logger.write(f'Reasoning: {object_name_reasoning}')
     logger.write(f'Screen Classification: {screen_classification}')
 
+def main_test_gather_information(image_path = ""):
+    llm_provider_config_path = './conf/openai_config.json'
+
+    llm_provider = OpenAIProvider()
+    llm_provider.init_provider(llm_provider_config_path)
+
+    gd_detector = GdProvider()
+
+    frame_extractor = VideoFrameExtractor()
+    icon_replacer = IconReplacer()
+
+    planner = Planner(llm_provider=llm_provider,
+                      planner_params=planner_params,
+                      frame_extractor=frame_extractor,
+                      icon_replacer=icon_replacer,
+                      object_detector=gd_detector,
+                      use_self_reflection=False,
+                      use_information_summary=False)
+
+
+    input = planner.gather_information_.input_map
+    text_input = planner.gather_information_.text_input_map
+
+    get_text_image_introduction = [
+        {
+            "introduction": input["image_introduction"][-1]["introduction"],
+            "path": image_path,
+            "assistant": input["image_introduction"][-1]["assistant"]
+        }
+    ]
+
+    #configure the gather_information module
+    gather_information_configurations = {
+        "frame_extractor": True, # extract text from the video clip
+        "icon_replacer": True,
+        "llm_description": False, # get the description of the current screenshot
+        "object_detector": False
+    }
+
+    input["gather_information_configurations"] = gather_information_configurations
+    # modify the general input for gather_information here
+    image_introduction=[get_text_image_introduction[-1]]
+    input["task_description"] = task_description
+    input["video_clip_path"] = ""
+    input["image_introduction"] = image_introduction
+    # Modify the input for get_text module in gather_information here
+    text_input["image_introduction"] = get_text_image_introduction
+    input["text_input"] = text_input
+
+    input["test_text_image"] = image_path
+
+    # >> Calling INFORMATION GATHERING
+    logger.write(f'>> Calling INFORMATION GATHERING')
+    data = planner.gather_information(input=input)
+
+    # you can extract any information from the gathered_information_JSON
+    gathered_information_JSON=data['res_dict']['gathered_information_JSON']
+
+    if gathered_information_JSON is not None:
+        gathered_information=gathered_information_JSON.data_structure
+    else:
+        logger.warn("NO data_structure in gathered_information_JSON")
+        gathered_information = dict()
+
+    # sort the gathered_information by the time stamp
+    gathered_information = dict(sorted(gathered_information.items(), key=lambda item: item[0]))
+    all_dialogue = gathered_information_JSON.search_type_across_all_indices(constants.DIALOGUE)
+    all_task_guidance = gathered_information_JSON.search_type_across_all_indices(constants.TASK_GUIDANCE)
+    all_generated_actions = gathered_information_JSON.search_type_across_all_indices(constants.ACTION_GUIDANCE)
+    classification_reasons = gathered_information_JSON.search_type_across_all_indices(constants.GATHER_TEXT_REASONING)
+
+    logger.write(f'Dialogue: {all_dialogue}')
+    #logger.write(f'Gathered Information: {gathered_information}')
+    logger.write(f'Classification Reasons: {classification_reasons}')
+    #logger.write(f'All Task Guidance: {all_task_guidance}')
+    logger.write(f'Generated Actions: {all_generated_actions}')
+
 
 def main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = False, use_information_summary = False):
 
@@ -412,10 +488,12 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
     gd_detector = GdProvider()
 
     frame_extractor = VideoFrameExtractor()
+    icon_replacer = IconReplacer()
 
     planner = Planner(llm_provider=llm_provider,
                       planner_params=planner_params,
                       frame_extractor=frame_extractor,
+                      icon_replacer=icon_replacer,
                       object_detector=gd_detector,
                       use_self_reflection=use_self_reflection,
                       use_information_summary=use_information_summary)
@@ -474,7 +552,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             #configure the gather_information module
             gather_information_configurations = {
                 "frame_extractor": True, # extract text from the video clip
-                "marker_matcher": False,
+                "icon_replacer": True,
                 "llm_description": True, # get the description of the current screenshot
                 "object_detector": True
             }
@@ -871,4 +949,10 @@ if __name__ == '__main__':
 
 
     # image_path = ""
+    # main_test_gather_information(image_path=image_path)
+
+    # image_path = [
+    #             ('image_path_1', '0_00_00_001'),
+    #             ('image_path_2', '0_00_00_004'),
+    #             ]
     # main_test_gather_information(image_path=image_path)

@@ -167,3 +167,4 @@ runs/
 /cache/hf
 /res/tool/subfinder/
 test*/
+test*
