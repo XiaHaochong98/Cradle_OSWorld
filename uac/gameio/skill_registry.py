@@ -29,7 +29,7 @@ EXPL_SKILL_LIB_FILE='skill_lib.json'
 BASIC_SKILL_LIB_FILE='skill_lib_basic.json'
 BASIC_SKILLS = ['shoot_people', 'shoot_wolves', 'follow', 'go_to_horse', 'turn_and_move_forward', 'turn', 'move_forward', 'navigate_path', 'shoot', 'choose_weapons_at', 'fight']
 NECESSARY_SKILLS = ['turn', 'move_forward', 'turn_and_move_forward']
-DENY_LIST_TERMS = ['shoot', 'follow', 'turn', 'move_forward', 'go_to_horse', 'navigate_path', 'choose_weapon']
+DENY_LIST_TERMS = ['shoot', 'follow', 'turn', 'move_forward', 'go_to_horse', 'navigate_path', 'choose_weapon', 'fight']
 ALLOW_LIST_TERMS = ['wheel']
 
 
@@ -198,7 +198,16 @@ class SkillRegistry:
 
 
     def register_skill_from_code(self, skill_code: str, overwrite = False) -> Tuple[bool, str]:
+        """Register the skill function from the code string.
 
+        Args:
+            skill_code: the code of skill.
+            overwrite: the flag indicates whether to overwrite the skill with the same name or not.
+
+        Returns:
+            bool: the true value means that there is no problem in the skill_code. The false value means that we may need to re-generate it.
+            str: the detailed information about the bool.
+        """
         def lower_func_name(skill_code):
             skill_name = get_func_name(skill_code)
             replaced_name = skill_name.lower()
@@ -243,6 +252,11 @@ class SkillRegistry:
             return True
 
         info = None
+
+        if skill_code.count('(') < 2:
+            info = "Skill code contains no functionality."
+            logger.error(info)
+            return True, info
 
         skill_code = lower_func_name(skill_code)
         skill_name = get_func_name(skill_code)
