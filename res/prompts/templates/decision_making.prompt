@@ -54,13 +54,13 @@ Actions: The best action, or short sequence of actions without gaps, to execute 
     5. When you decide to control the character to move, if the relevant bounding box is on the left side in the current screenshot, you MUST turn left with a big degree. If the relevant bounding box is slightly on the left side in the current screenshot, you MUST turn left with a small degree. If the relevant bounding box is on the right side in the current screenshot, you MUST turn right with a big degree. If the relevant bounding box is slightly on the right side in the current screenshot, you MUST turn right with a small degree. If the relevant bounding box is in the middle of the current screenshot, you can choose to move forward.
     6. When you decide to control the character to move, if yellow regions or yellow points exist in minimap information, it is related to the current task or instruction and implies that you should approach within the yellow region or approach the yellow points. You can refer to the corresponding angle information when deciding to approach these regions or points. If red points exist in the minimap information, it implies that you should turn towards them, and you can also refer to the corresponding angle information. 
     7. When you decide to control the character to move, if minimap information does not exist, the 'theta' you use to turn MUST be more than 10 degrees and less than 60 degrees.
-    8. When you decide to control the character to move, if you are in a normal road condition, the 'duration' you use to move forward should be 1 second. If you have bad road conditions such as snow and grass, especially when riding, that can slow you down, the "duration" of your progress should be longer.
+    8. When you decide to control the character to move, if you are in a normal road condition, the 'duration' you use to move forward should be 1 second. If you have bad road conditions such as snow and grass that can slow you down, the "duration" of your progress should be a little longer.
     9. When you are exploring or searching a place, if you are leaving the place, you MUST make a sharp turn to face the inside of the place. Any values for degrees are allowed.
     10. If upon self-refection you think the last action was not available at the current place, you MUST move to another place.
     11. You MUST ignore the angle information provided by the minimap in one of the following situations: when on self-refection you think you were blocked; when you were inside the target area in the minimap; when there is a bounding box on the screenshot.
     12. If upon self-refection you think you were blocked, you MUST make a moderate turn in the same direction as the previous turn action and move forward so that you can pass obstacles.
-    13. When you are indoors, you MUST not use any follow action.
-    14. When you are outdoors and the current task implies following, you MUST follow.
+    13. When you are indoors and the current task does not imply following, you MUST not use the follow action.
+    14. When you are outdoors and the current task implies following, you MUST use the follow action.
 
 You should only respond in the format as described below, and you should not output comments or other information:
 Reasoning:

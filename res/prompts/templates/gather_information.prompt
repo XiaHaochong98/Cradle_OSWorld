@@ -12,8 +12,9 @@ Target_object_name: Assume you can use an object detection model to detect the m
 2. If you are on the menu, you should detect the most relevant explicit item that can be selected on the meun. 
 3. If no explicit weapon is specified, prioritize choosing the gun as weapon. 
 4. If no explicit shoot target is specified, prioritize choosing the person as target. 
-5. If the object name belongs to the person type, replace it with person. 
-6. If there is no need to detect an object, just output "null". 
+5. If no explicit item is specified, just output "null". 
+6. If the object name belongs to the person type, replace it with person. 
+7. If there is no need to detect an object, just output "null". 
 
 Reasoning: The reasons why this object is chosen or why there is no need to detect an object. 
 
