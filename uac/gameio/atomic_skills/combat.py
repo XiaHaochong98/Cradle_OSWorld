@@ -11,9 +11,6 @@ io_env = IOEnvironment()
 def aim():
     """
     Aim the weapon in the game.
-    Parameters:
-    - x: The normalized abscissa of the pixel.
-    - y: The normalized ordinate of the pixel.
     """
     io_env.mouse_hold_button(button=io_env.RIGHT_MOUSE_BUTTON)
 
@@ -29,7 +26,7 @@ def choose_weapons_at(x, y):
     io_env.mouse_move_normalized(x, y)
 
 
-# @register_skill("shoot")
+@register_skill("shoot")
 def shoot(x, y):
     """
     Shoot the weapon at a specific location in view.
@@ -38,7 +35,7 @@ def shoot(x, y):
     - y: The normalized ordinate of the pixel.
     """
     io_env.mouse_move_normalized(x, y)
-    io_env.mouse_click_button(button=io_env.LEFT_MOUSE_BUTTON, clicks=2)
+    io_env.mouse_click_button(button=io_env.LEFT_MOUSE_BUTTON, clicks=2, duration=0.1)
 
 
 @register_skill("view_weapons")
@@ -70,7 +67,7 @@ def fight():
 
 __all__ = [
     "aim",
-    # "shoot",
+    "shoot",
     "choose_weapons_at",
     "view_weapons",
     "fight",

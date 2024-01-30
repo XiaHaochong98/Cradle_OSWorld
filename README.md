@@ -218,7 +218,7 @@ Change mouse mode in the control setting to DirectInput.
 | ![Original interface](docs/images/raw_input.png) | ![Changed interface](docs/images/direct_input.png) |
 
 #### 1.2 Control
-Change both two 'Tap and Hold Speed Control' to on, so we can press w twice to run, saving the need to press shift. Also change 'Aiming Mode' to 'Hold To Aim', so we do not need to keep pressing mouse right button when aiming.
+Change both two 'Tap and Hold Speed Control' to on, so we can press w twice to run, saving the need to press shift. Also make sure 'Aiming Mode' to 'Hold To Aim', so we need to keep pressing the mouse right button when aiming.
 | Original interface | Changed interface |
 |------------|------------|
 | ![Original interface](docs/images/move_control_previous.png) | ![Changed interface](docs/images/move_control_now.png) |

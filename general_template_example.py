@@ -10,6 +10,7 @@ from uac.planner.planner import Planner
 from uac.memory import LocalMemory
 from uac.provider.openai import OpenAIProvider
 from uac.provider import GdProvider
+from uac.gameio.io_env import IOEnvironment
 from uac.gameio.lifecycle.ui_control import switch_to_game, IconReplacer
 from uac.gameio.video.VideoRecorder import VideoRecorder
 from uac.gameio.video.VideoFrameExtractor import VideoFrameExtractor
@@ -27,6 +28,7 @@ from groundingdino.util.inference import load_image
 
 config = Config()
 logger = Logger()
+io_env = IOEnvironment()
 
 
 def main_test_decision_making(planner_params, task_description, skill_library):
@@ -513,6 +515,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
     skill_library = gm.get_skill_information(skill_library)
 
     switch_to_game()
+
     videocapture=VideoRecorder(os.path.join(config.work_dir, 'video.mp4'))
     videocapture.start_capture()
     start_frame_id = videocapture.get_current_frame_id()
@@ -593,7 +596,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             if constants.LAST_TASK_GUIDANCE in response_keys:
                 last_task_guidance = data['res_dict'][constants.LAST_TASK_GUIDANCE]
                 if constants.LAST_TASK_HORIZON in response_keys:
-                    long_horizon = bool(int(data['res_dict'][constants.LAST_TASK_HORIZON]))
+                    long_horizon = bool(int(data['res_dict'][constants.LAST_TASK_HORIZON][0])) # Only first character is relevant
                 else:
                     long_horizon = False
             else:

@@ -71,12 +71,12 @@ class IOEnvironment(metaclass=Singleton):
     WIN_NORM_MAX = 65536 # int max val
 
     # Constants
-    RIGHT_MOUSE_BUTTON = 'R'
-    LEFT_MOUSE_BUTTON = 'L'
-    MIDDLE_MOUSE_BUTTON = 'M'
+    RIGHT_MOUSE_BUTTON = 'Right'
+    LEFT_MOUSE_BUTTON = 'Left'
+    MIDDLE_MOUSE_BUTTON = 'Middle'
     right_mouse_button = RIGHT_MOUSE_BUTTON
-    left_mouse_button = LEFT_MOUSE_BUTTON = 'L'
-    middle_mouse_button = MIDDLE_MOUSE_BUTTON = 'M'
+    left_mouse_button = LEFT_MOUSE_BUTTON
+    middle_mouse_button = MIDDLE_MOUSE_BUTTON
     WHEEL_UP_MOUSE_BUTTON = 'WU'
     WHEEL_DOWN_MOUSE_BUTTON = 'WD'
 
@@ -281,17 +281,21 @@ class IOEnvironment(metaclass=Singleton):
 
 
     def handle_hold_in_unpause(self):
+        if self.backup_held_buttons is not None and self.backup_held_buttons != []:
+            for e in self.backup_held_buttons:
+                self._mouse_button_down(e[self.BUTTON_KEY])
+
+            self.held_buttons = self.backup_held_buttons.copy()
+
+        time.sleep(.1)
+
         if self.backup_held_keys is not None and self.backup_held_keys != []:
             for e in self.backup_held_keys:
                 pydirectinput.keyDown(e[self.KEY_KEY])
 
             self.held_keys = self.backup_held_keys.copy()
 
-        if self.backup_held_buttons is not None and self.backup_held_buttons != []:
-            for e in self.backup_held_buttons:
-                self._mouse_button_down(e[self.BUTTON_KEY])
-
-            self.held_buttons = self.backup_held_buttons.copy()
+        time.sleep(1)
 
 
     def list_session_screenshots(self, session_dir: str = config.work_dir):
@@ -490,6 +494,8 @@ class IOEnvironment(metaclass=Singleton):
                 time.sleep(duration)
                 pydirectinput.keyUp(key)
 
+            # logger.warn(f'key {key} pressed for {duration}')
+
 
     def key_hold(self, key, duration=None):
 
@@ -585,6 +591,8 @@ class IOEnvironment(metaclass=Singleton):
 
         if len(key) > 1:
             key = key.lower().replace('_', '').replace('-', '')
+        elif len(key) == 1:
+            key = key.lower()
 
         if key in self.ALIASES_LEFT_SHIFT_KEY:
             return 'shift'

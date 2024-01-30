@@ -234,10 +234,13 @@ def clip_minimap(minimap_image_filename):
     # Draw black triangles on the four corners of the mask
     # Top-left corner
     cv2.fillConvexPoly(mask, np.array([[0, 0], [triangle_size, 0], [0, triangle_size]]), 0)
+
     # Top-right corner
     cv2.fillConvexPoly(mask, np.array([[width, 0], [width - triangle_size, 0], [width, triangle_size]]), 0)
+
     # Bottom-left corner
     cv2.fillConvexPoly(mask, np.array([[0, height], [0, height - triangle_size], [triangle_size, height]]), 0)
+
     # Bottom-right corner
     cv2.fillConvexPoly(mask, np.array([[width, height], [width, height - triangle_size], [width - triangle_size, height]]), 0)
 
@@ -302,7 +305,7 @@ class CircleDetector:
         red_range=np.array([[0, 0, 170], [30, 30, 240]]),
         detect_mode='yellow & gray',
         debug=False
-    ): 
+    ):
 
         image = cv2.imread(img_file)
 
@@ -357,7 +360,9 @@ class CircleDetector:
                 detect_criterion = lambda circle: circle["gray_count"] >= 5 or circle["yellow_count"] >= 5
 
             for circle in circles_info:
+
                 center_x, center_y, radius = circle["center"][0], circle["center"][1], circle["radius"]
+
                 if detect_criterion(circle):
                     theta = self.get_theta(*origin, center_x, center_y)
                     dis = np.sqrt((center_x - origin[0]) ** 2 + (center_y - origin[1]) ** 2)
@@ -372,10 +377,10 @@ class CircleDetector:
                     cv2.circle(image, circle["center"], circle["radius"], (0, 255, 0), 2)
                     cv2.putText(image, str(i + 1), (circle["center"][0] - 5, circle["center"][1] + 4),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
                 measure['vis'] = image
 
         return theta, measure
-    
 
 
 
@@ -414,9 +419,9 @@ class IconReplacer:
                 original image with predicted template locations depicted as bounding boxes
         """
         # Convert Grayscale to RGB to be able to see the color bboxes
-        if image.ndim == 2: 
+        if image.ndim == 2:
             outImage = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB) # convert to RGB to be able to show detections as color box on grayscale image
-        else:               
+        else:
             outImage = image.copy()
 
         for _, row in tableHit.iterrows():
@@ -436,11 +441,16 @@ class IconReplacer:
 
         return outImage
 
+
     def _get_mtm_match(self, image: np.ndarray, template: np.ndarray, template_name):
+
         detection = matchTemplates([(template_name,template)], image, N_object=1, method=cv2.TM_CCOEFF_NORMED, maxOverlap=0.1)
+
         if detection['Score'][0] > 0.75:
             image = self._drawBoxesOnRGB(image, detection, boxThickness=-1, showLabel=True, boxColor=(255, 255, 255), labelColor=(0, 0, 0), labelScale=.62)
+
         return {'info': detection, 'vis': image}
+
 
     def _show(self, image, window_name='screen',show=True,save=''):
         if save:
@@ -451,13 +461,18 @@ class IconReplacer:
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
+
     def replace_icon(self, image_paths):
-        repalced_image_paths = []
+
+        replaced_image_paths = []
+
         for image_path in image_paths:
             image = cv2.imread(image_path)
+
             for template_file in self.template_paths:
                 template = cv2.imread(template_file)
                 template_name = os.path.splitext(os.path.basename(template_file))[0]
+
                 if 'left_mouse' in template_name:
                     template_name = 'LM'
                 elif 'right_mouse' in template_name:
@@ -466,11 +481,15 @@ class IconReplacer:
                     template_name = 'MS'
                 elif 'enter' in template_name:
                     template_name = 'Ent'
+
                 detection = self._get_mtm_match(image, template, template_name)
                 image = detection['vis']
+
                 directory, filename = os.path.split(image_path)
                 save_path = os.path.join(directory, "icon_replace_"+filename)
 
                 self._show(image, save=save_path, show=False)
-                repalced_image_paths.append(save_path)
-        return repalced_image_paths
+
+                replaced_image_paths.append(save_path)
+
+        return replaced_image_paths
