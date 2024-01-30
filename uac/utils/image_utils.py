@@ -46,5 +46,5 @@ def minimap_movement_detection(image_path1, image_path2, threshold = 30):
 
     average_distance = np.mean([m.distance for m in best_matches])
 
-    change_detected = average_distance > (threshold * config.resolution_ratio)
+    change_detected = average_distance > (threshold * config.resolution_ratio) or np.allclose(average_distance, 0, atol=1e-3)
     return change_detected, img_matches, average_distance
