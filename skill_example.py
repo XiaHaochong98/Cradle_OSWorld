@@ -64,8 +64,7 @@ if __name__ == "__main__":
             time.sleep(1)
         elif skill_chosen == 'shoot_people':  # shoot example
             # prompt: "Protect Dutch"
-            while True:
-                shoot_people()
+            shoot_people()
 
         elif skill_chosen == 'shoot_wolves':  # shoot example
             # prompt: "Keep the wolves away from Javier and John"

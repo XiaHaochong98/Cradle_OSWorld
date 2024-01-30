@@ -25,7 +25,7 @@ gd_detector = GdProvider()
 DEFAULT_MAX_SHOOTING_ITERATIONS = 100
 SHOOT_PEOPLE_TARGET_NAME = "person"
 SHOOT_WOLVES_TARGET_NAME = "wolf"
-
+CONTINUE_NO_ENEMY_FREQ = 5
 
 @register_skill("shoot_people")
 def shoot_people():
@@ -59,7 +59,7 @@ def keep_shooting_target(
     save_dir = config.work_dir
     circle_detector = CircleDetector(config.resolution_ratio)
     aim()  # aim before detection
-
+    terminal_flags = []
     for step in range(1,1+iterations):
 
         if debug:
@@ -76,7 +76,7 @@ def keep_shooting_target(
         screen_image_filename, minimap_image_filename = take_screenshot(timestep, config.game_region, config.minimap_region, draw_axis=False)
         screen = cv2.imread(screen_image_filename)
         h, w, _ = screen.shape
-
+        # center pointer
         pointer = np.array([h // 2,  w // 2])
         red_range=np.array([[0, 0, 150], [100, 100, 255]])
         is_red = cv2.countNonZero(cv2.inRange(screen[pointer[0],pointer[1]].reshape(1,1,3), red_range[0], red_range[1]))
@@ -89,18 +89,26 @@ def keep_shooting_target(
             detect_target += ' .'
         _, boxes, logits, phrases = gd_detector.detect(screen_image_filename, detect_target, box_threshold=0.4)
 
-        # sort according to areas
+        # enemy detection
+        follow_theta, follow_info = circle_detector.detect(minimap_image_filename,detect_mode='red', debug=debug)
+        logger.debug(f'turn: {follow_theta}')
+        if abs(follow_theta)<=360:
+            follow_theta = np.sign(follow_theta) * np.clip(abs(follow_theta),0,180)
+            terminal_flags.append(0)
+        else:
+            terminal_flags.append(1)
+            if sum(terminal_flags[-CONTINUE_NO_ENEMY_FREQ:]) == CONTINUE_NO_ENEMY_FREQ:
+                logger.debug(f'From step {step} to {step-CONTINUE_NO_ENEMY_FREQ} no enemy detected! Shooting is terminated.')
+                return
+        if debug:
+            cv2.imwrite(os.path.join(save_dir, f"red_detect_{timestep}.jpg"), follow_info['vis'])
         if not phrases:
-            follow_theta, follow_info = circle_detector.detect(minimap_image_filename,detect_mode='red', debug=debug)
-            logger.debug(f'turn: {follow_theta}')
             if abs(follow_theta)<=360:
-                follow_theta = np.sign(follow_theta) * np.clip(abs(follow_theta),0,180)
                 turn(follow_theta)
                 time.sleep(POST_WAIT_TIME)
-            if debug:
-                cv2.imwrite(os.path.join(save_dir, f"red_detect_{timestep}.jpg"), follow_info['vis'])
             continue
-
+        
+        # sort according to areas    
         areas = [(b[2]*b[3]).item() for b in boxes]
         area_ascend_index = np.argsort(areas)
         boxes = torch.stack([boxes[i] for i in area_ascend_index])
@@ -178,6 +186,8 @@ def keep_shooting_target(
             if debug:
                 cv2.imwrite(os.path.join(save_dir, f"red_detect_{timestep}.jpg"), follow_info['vis'])
 
+        
+            
 __all__ = [
     "shoot_people",
     "shoot_wolves"
