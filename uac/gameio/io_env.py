@@ -281,9 +281,13 @@ class IOEnvironment(metaclass=Singleton):
 
 
     def handle_hold_in_unpause(self):
+        buttons_hold = False
+        keys_hold = False
         if self.backup_held_buttons is not None and self.backup_held_buttons != []:
             for e in self.backup_held_buttons:
                 self._mouse_button_down(e[self.BUTTON_KEY])
+            
+            buttons_hold = True
 
             self.held_buttons = self.backup_held_buttons.copy()
 
@@ -292,10 +296,13 @@ class IOEnvironment(metaclass=Singleton):
         if self.backup_held_keys is not None and self.backup_held_keys != []:
             for e in self.backup_held_keys:
                 pydirectinput.keyDown(e[self.KEY_KEY])
+            
+            keys_hold = True
 
             self.held_keys = self.backup_held_keys.copy()
-
-        time.sleep(1)
+            
+        if buttons_hold or keys_hold:
+            time.sleep(1)
 
 
     def list_session_screenshots(self, session_dir: str = config.work_dir):
