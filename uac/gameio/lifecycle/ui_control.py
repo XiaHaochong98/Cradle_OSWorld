@@ -261,7 +261,7 @@ def annotate_with_coordinates(image_source, boxes, logits, phrases):
 
     # Without coordinates normalization
     labels = [
-        f"{phrase} {' '.join(map(str, ['x=', round((xyxy_s[0]+xyxy_s[2])/(2*w), 2), 'y=', round((xyxy_s[1]+xyxy_s[3])/(2*h), 2)]))}"
+        f"{phrase} {' '.join(map(str, ['x=', round((xyxy_s[0]+xyxy_s[2])/(2*w), 2), ', y=', round((xyxy_s[1]+xyxy_s[3])/(2*h), 2)]))}"
         for phrase, xyxy_s
         in zip(phrases, xyxy)
     ]

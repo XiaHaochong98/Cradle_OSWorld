@@ -22,7 +22,7 @@ def unique_predict(
 ):
     caption = caption.lower().strip()
     if not caption.endswith("."):
-        caption = caption + "."
+        caption = caption + " ."
 
     model = model.to(device)
     image = image.to(device)

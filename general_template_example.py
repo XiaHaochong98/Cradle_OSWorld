@@ -186,7 +186,6 @@ def main_test_information_summary(planner_params, task_description, skill_librar
         input["task_description"] = task_description
 
         data = planner.decision_making(input = input)
-        print(data['res_dict'])
 
         skill_steps = data['res_dict']['actions']
         if skill_steps is None:
