@@ -15,7 +15,7 @@ from uac import constants
 config = Config()
 logger = Logger()
 
-MAX_FOLLOW_ITERATIONS = 300
+MAX_FOLLOW_ITERATIONS = 20
 
 
 @register_skill("follow")
@@ -113,7 +113,7 @@ def cv_follow_circles(
 
             turn(180),move_forward(np.random.randint(1, 6))
             time.sleep(1)  # improve stability
-            turn(90),move_forward(np.random.randint(1, 6))
+            turn(-90),move_forward(np.random.randint(1, 6))
 
         previous_distance, previous_theta = follow_dis, follow_theta
 
