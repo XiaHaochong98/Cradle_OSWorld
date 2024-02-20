@@ -15,8 +15,8 @@ def aim():
     io_env.mouse_hold_button(button=io_env.RIGHT_MOUSE_BUTTON)
 
 
-@register_skill("choose_weapons_at")
-def choose_weapons_at(x, y):
+@register_skill("select_weapons_at")
+def select_weapons_at(x, y):
     """
     Move the mouse to a specific location to choose weapons in the game.
     Parameters:
@@ -68,7 +68,7 @@ def fight():
 __all__ = [
     "aim",
     "shoot",
-    "choose_weapons_at",
+    "select_weapons_at",
     "view_weapons",
     "fight",
     #"call_animals",
