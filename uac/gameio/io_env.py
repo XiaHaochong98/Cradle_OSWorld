@@ -286,7 +286,7 @@ class IOEnvironment(metaclass=Singleton):
         if self.backup_held_buttons is not None and self.backup_held_buttons != []:
             for e in self.backup_held_buttons:
                 self._mouse_button_down(e[self.BUTTON_KEY])
-            
+
             buttons_hold = True
 
             self.held_buttons = self.backup_held_buttons.copy()
@@ -296,11 +296,11 @@ class IOEnvironment(metaclass=Singleton):
         if self.backup_held_keys is not None and self.backup_held_keys != []:
             for e in self.backup_held_keys:
                 pydirectinput.keyDown(e[self.KEY_KEY])
-            
+
             keys_hold = True
 
             self.held_keys = self.backup_held_keys.copy()
-            
+
         if buttons_hold or keys_hold:
             time.sleep(1)
 
@@ -316,14 +316,22 @@ class IOEnvironment(metaclass=Singleton):
         return screenshots
 
 
-    def mouse_move_normalized(self, x, y):
+    def mouse_move_normalized(self, x, y, relative = False):
 
         w, h = config.game_resolution
 
-        x = int((x - .5) * w)
-        y = int((y - .5) * h)
+        gx = int(x * w)
+        gy = int(y * h)
 
-        self.mouse_move(x, y)
+        if relative is True:
+            logger.error("Use absolute values.")
+            raise Exception("Use absolute values.")
+
+        #mx, my = self.get_mouse_position()
+        #mx -= config.game_region[0] # left
+        #my -= config.game_region[1] # top
+
+        self.mouse_move(gx, gy, relative)
 
 
     def _mouse_coord_to_abs_win(self, coord, width_or_height):
@@ -332,7 +340,7 @@ class IOEnvironment(metaclass=Singleton):
 
 
     # If either relative or not, always pass in-game coordinates
-    def mouse_move(self, x, y, relative=True):
+    def mouse_move(self, x, y, relative=False):
         extra = ctypes.c_ulong(0)
         ii_ = Input_I()
 
