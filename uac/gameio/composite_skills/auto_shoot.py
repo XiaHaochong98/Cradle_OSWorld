@@ -8,7 +8,7 @@ from torchvision.ops import box_convert
 from groundingdino.util.inference import load_model, load_image, predict, annotate
 
 from uac.gameio.lifecycle.ui_control import take_screenshot, CircleDetector, unpause_game,pause_game
-from uac.gameio.atomic_skills.combat import aim,shoot
+from uac.gameio.atomic_skills.combat import aim, shoot
 from uac.gameio.lifecycle.ui_control import switch_to_game, take_screenshot
 from uac.gameio.atomic_skills.move import turn, move_forward
 from uac.gameio.skill_registry import register_skill
@@ -107,8 +107,8 @@ def keep_shooting_target(
                 turn(follow_theta)
                 time.sleep(POST_WAIT_TIME)
             continue
-        
-        # sort according to areas    
+
+        # sort according to areas
         areas = [(b[2]*b[3]).item() for b in boxes]
         area_ascend_index = np.argsort(areas)
         boxes = torch.stack([boxes[i] for i in area_ascend_index])
@@ -186,8 +186,7 @@ def keep_shooting_target(
             if debug:
                 cv2.imwrite(os.path.join(save_dir, f"red_detect_{timestep}.jpg"), follow_info['vis'])
 
-        
-            
+
 __all__ = [
     "shoot_people",
     "shoot_wolves"

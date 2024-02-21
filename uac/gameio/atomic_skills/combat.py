@@ -6,7 +6,6 @@ config = Config()
 io_env = IOEnvironment()
 
 
-
 @register_skill("aim")
 def aim():
     """
@@ -34,7 +33,7 @@ def shoot(x, y):
     - x: The normalized abscissa of the pixel.
     - y: The normalized ordinate of the pixel.
     """
-    io_env.mouse_move_normalized(x, y)
+    io_env.mouse_move_normalized(x=x, y=y, relative=True, from_center = True)
     io_env.mouse_click_button(button=io_env.LEFT_MOUSE_BUTTON, clicks=2, duration=0.1)
 
 

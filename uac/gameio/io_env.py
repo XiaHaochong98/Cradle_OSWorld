@@ -316,22 +316,20 @@ class IOEnvironment(metaclass=Singleton):
         return screenshots
 
 
-    def mouse_move_normalized(self, x, y, relative = False):
+    def mouse_move_normalized(self, x, y, relative = False, from_center = False):
+
+        logger.debug(f'noormalized game coord x {x} y {y} relative {relative} fc {from_center}')
 
         w, h = config.game_resolution
 
-        gx = int(x * w)
-        gy = int(y * h)
+        offset = 0
+        if from_center is True:
+            offset = .5 # Center of the game screen in normalized coordinates
 
-        if relative is True:
-            logger.error("Use absolute values.")
-            raise Exception("Use absolute values.")
+        gx = int((x-offset) * w)
+        gy = int((y-offset) * h)
 
-        #mx, my = self.get_mouse_position()
-        #mx -= config.game_region[0] # left
-        #my -= config.game_region[1] # top
-
-        self.mouse_move(gx, gy, relative)
+        self.mouse_move(x = gx, y = gy, relative = relative)
 
 
     def _mouse_coord_to_abs_win(self, coord, width_or_height):
