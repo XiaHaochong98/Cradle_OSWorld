@@ -443,10 +443,12 @@ class IconReplacer:
 
 
     def _get_mtm_match(self, image: np.ndarray, template: np.ndarray, template_name):
-
-        detection = matchTemplates([(template_name,template)], image, N_object=1, method=cv2.TM_CCOEFF_NORMED, maxOverlap=0.1)
-
-        if detection['Score'][0] > 0.75:
+        detection = matchTemplates([(template_name, cv2.resize(template, (round(template.shape[1] * s), round(template.shape[0] * s)))) for s in [0.9, 1, 1.1]],
+                                image,
+                                N_object=1,
+                                method=cv2.TM_CCOEFF_NORMED,
+                                maxOverlap=0.1)
+        if detection['Score'].iloc[0] > 0.75:
             image = self._drawBoxesOnRGB(image, detection, boxThickness=-1, showLabel=True, boxColor=(255, 255, 255), labelColor=(0, 0, 0), labelScale=.62)
 
         return {'info': detection, 'vis': image}
@@ -485,11 +487,11 @@ class IconReplacer:
                 detection = self._get_mtm_match(image, template, template_name)
                 image = detection['vis']
 
-                directory, filename = os.path.split(image_path)
-                save_path = os.path.join(directory, "icon_replace_"+filename)
+            directory, filename = os.path.split(image_path)
+            save_path = os.path.join(directory, "icon_replace_"+filename)
 
-                self._show(image, save=save_path, show=False)
+            self._show(image, save=save_path, show=False)
 
-                replaced_image_paths.append(save_path)
+            replaced_image_paths.append(save_path)
 
         return replaced_image_paths

@@ -401,7 +401,7 @@ def main_gather_information(image_path = ""):
     logger.write(f'Reasoning: {object_name_reasoning}')
     logger.write(f'Screen Classification: {screen_classification}')
 
-def main_test_gather_information(image_path = ""):
+def main_test_gather_information(image_path = "", video_path = ""):
     llm_provider_config_path = './conf/openai_config.json'
 
     llm_provider = OpenAIProvider()
@@ -444,7 +444,7 @@ def main_test_gather_information(image_path = ""):
     # modify the general input for gather_information here
     image_introduction=[get_text_image_introduction[-1]]
     input["task_description"] = task_description
-    input["video_clip_path"] = ""
+    input["video_clip_path"] = video_path
     input["image_introduction"] = image_introduction
     # Modify the input for get_text module in gather_information here
     text_input["image_introduction"] = get_text_image_introduction
@@ -960,14 +960,12 @@ if __name__ == '__main__':
     config.ocr_enabled = False
     config.skill_retrieval = True
 
-    # main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True, use_information_summary = False)
     main_pipeline(planner_params, task_description, skill_library, use_success_detection = False, use_self_reflection = True, use_information_summary = True)
 
     # skill_library_test()
 
     # video_path = ""
     # main_test_self_reflection(planner_params, task_description, skill_library, video_path)
-
 
     # image_path = ""
     # main_test_gather_information(image_path=image_path)
@@ -977,3 +975,7 @@ if __name__ == '__main__':
     #             ('image_path_2', '0_00_00_004'),
     #             ]
     # main_test_gather_information(image_path=image_path)
+
+
+    #video_path = ""
+    #main_test_gather_information(video_path=video_path)

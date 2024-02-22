@@ -248,7 +248,7 @@ class GatherInformation():
                 video_path = input["video_clip_path"]
 
                 # offline test
-                if "test_text_image" in input.keys():
+                if "test_text_image" in input.keys() and input["test_text_image"]:
                     extracted_frame_paths = input["test_text_image"]
                 # online run
                 else:
