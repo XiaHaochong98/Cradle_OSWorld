@@ -12,14 +12,13 @@ from torchvision.ops import box_convert
 import supervision as sv
 import mss
 import mss.tools
+from MTM import matchTemplates
 
 from uac.config import Config
 from uac.log import Logger
 from uac.gameio import IOEnvironment
 from uac.utils.template_matching import match_template_image
 
-from MTM import matchTemplates
-from matplotlib import pyplot as plt
 
 config = Config()
 logger = Logger()
@@ -40,7 +39,7 @@ def pause_game():
         logger.debug("The environment is already paused!")
 
     # While game is paused, quickly re-center mouse location on x axis to avoid clipping at game window border with time
-    io_env.ahk.mouse_move(config.game_resolution[0] // 2, config.game_resolution[1] // 2, speed=1, relative=False)
+    io_env.mouse_move(config.game_resolution[0] // 2, config.game_resolution[1] // 2, relative=False)
 
     io_env.handle_hold_in_pause()
 

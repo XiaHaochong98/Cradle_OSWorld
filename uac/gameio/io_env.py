@@ -4,18 +4,17 @@ from typing import (
     List,
     Tuple,
 )
-
 import os
 import time
 import ctypes
-import math
 
 from ahk import AHK
 import pydirectinput
+
 from uac.utils import Singleton
 from uac.config import Config
 from uac.log import Logger
-import numpy as np
+
 
 config = Config()
 logger = Logger()
@@ -117,6 +116,9 @@ class IOEnvironment(metaclass=Singleton):
     def __init__(self) -> None:
         """Initialize the IO environment class"""
         self.ahk = AHK()
+
+        #PyDirectInput is only used for key pressing, so no need for mouse checks
+        pydirectinput.FAILSAFE = False
 
 
     def pop_held_button(self, button):
