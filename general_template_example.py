@@ -652,12 +652,61 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             logger.write(f'Long Horizon: {long_horizon}')
             logger.write(f'Generated Actions: {all_generated_actions}')
 
+            if use_self_reflection and start_frame_id > -1:
+                input = planner.self_reflection_.input_map
+                action_frames = []
+                video_frames = videocapture.get_frames(start_frame_id,end_frame_id)
+
+                if len(video_frames) <= config.max_images_in_self_reflection * config.duplicate_frames + 1:
+                    action_frames = [frame[1] for frame in video_frames[1::config.duplicate_frames]]
+                else:
+                    for i in range(config.max_images_in_self_reflection):
+                        step = len(video_frames) // config.max_images_in_self_reflection * i + 1
+                        action_frames.append(video_frames[step][1])
+
+                image_introduction = [
+                    {
+                        "introduction": "Here are the sequential frames of the character executing the last action.",
+                        "path": action_frames,
+                        "assistant": "",
+                        "resolution": "low"
+                }]
+
+                input["image_introduction"] = image_introduction
+                #input["task_description"] = task_description
+                input["task_description"] = task_description
+                input['skill_library'] = skill_library
+                input["previous_reasoning"] = pre_decision_making_reasoning
+
+                if pre_action:
+                    pre_action_name, pre_action_params = gm.skill_registry.convert_expression_to_skill(pre_action)
+                    # only input the pre_action name
+                    input["previous_action"] = pre_action_name
+                    action_code, action_code_info = gm.get_skill_library_in_code(pre_action_name)
+                    input['action_code'] = action_code if action_code is not None else action_code_info
+                else:
+                    input["previous_action"] = ""
+                    input['action_code'] = ""
+
+                if exec_info["errors"]:
+                    input['executing_action_error']  = exec_info["errors_info"]
+                else:
+                    input['executing_action_error']  = ""
+
+                # >> Calling SELF REFLECTION
+                logger.write(f'>> Calling SELF REFLECTION')
+                data = planner.self_reflection(input = input)
+
+                self_reflection_reasoning = data['res_dict']['reasoning']
+                pre_self_reflection_reasoning = self_reflection_reasoning
+                memory.add_recent_history("self_reflection_reasoning", self_reflection_reasoning)
+                logger.write(f'Self-reflection reason: {self_reflection_reasoning}')
+
             if last_task_guidance:
                 task_description = last_task_guidance
                 memory.add_task_guidance(last_task_guidance, long_horizon)
 
             if config.skill_retrieval:
-
                 for extracted_skills in all_generated_actions:
                     extracted_skills=extracted_skills['values']
                     for extracted_skill in extracted_skills:
@@ -829,55 +878,6 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 logger.write(f'Success: {success}')
                 logger.write(f'Success criteria: {success_criteria}')
                 logger.write(f'Success reason: {success_reasoning}')
-
-            if use_self_reflection:
-                input = planner.self_reflection_.input_map
-                action_frames = []
-                video_frames = videocapture.get_frames(start_frame_id,end_frame_id)
-
-                if len(video_frames) <= config.max_images_in_self_reflection * config.duplicate_frames + 1:
-                    action_frames = [frame[1] for frame in video_frames[1::config.duplicate_frames]]
-                else:
-                    for i in range(config.max_images_in_self_reflection):
-                        step = len(video_frames) // config.max_images_in_self_reflection * i + 1
-                        action_frames.append(video_frames[step][1])
-
-                image_introduction = [
-                    {
-                        "introduction": "Here are the sequential frames of the character executing the last action.",
-                        "path": action_frames,
-                        "assistant": "",
-                        "resolution": "low"
-                }]
-
-                input["image_introduction"] = image_introduction
-                input["task_description"] = task_description
-                input['skill_library'] = skill_library
-                input["previous_reasoning"] = pre_decision_making_reasoning
-
-                if pre_action:
-                    pre_action_name, pre_action_params = gm.skill_registry.convert_expression_to_skill(pre_action)
-                    # only input the pre_action name
-                    input["previous_action"] = pre_action_name
-                    action_code, action_code_info = gm.get_skill_library_in_code(pre_action_name)
-                    input['action_code'] = action_code if action_code is not None else action_code_info
-                else:
-                    input["previous_action"] = ""
-                    input['action_code'] = ""
-
-                if exec_info["errors"]:
-                    input['executing_action_error']  = exec_info["errors_info"]
-                else:
-                    input['executing_action_error']  = ""
-
-                # >> Calling SELF REFLECTION
-                logger.write(f'>> Calling SELF REFLECTION')
-                data = planner.self_reflection(input = input)
-
-                self_reflection_reasoning = data['res_dict']['reasoning']
-                pre_self_reflection_reasoning = self_reflection_reasoning
-                memory.add_recent_history("self_reflection_reasoning", self_reflection_reasoning)
-                logger.write(f'Self-reflection reason: {self_reflection_reasoning}')
 
             gm.store_skills()
             memory.save()
