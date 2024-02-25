@@ -81,7 +81,7 @@ class Config(metaclass=Singleton):
 
         #Skill retrieval
         self.skill_from_local = True
-        self.skill_local_path = './res/skills/'
+        self.skill_local_path = './res/skills'
         self.skill_retrieval = False
         self.skill_num = 10
         self.skill_scope = 'Full' #'Full', 'Basic', and None

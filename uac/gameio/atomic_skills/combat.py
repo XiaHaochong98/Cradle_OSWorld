@@ -14,16 +14,25 @@ def aim():
     io_env.mouse_hold_button(button=io_env.RIGHT_MOUSE_BUTTON)
 
 
-@register_skill("select_weapons_at")
-def select_weapons_at(x, y):
+@register_skill("select_weapon")
+def select_weapon(x, y):
     """
-    Move the mouse to a specific location to choose weapons in the game.
+    Move the mouse to a specific location to select the weapon in the game.
     Parameters:
     - x: The normalized abscissa of the pixel.
     - y: The normalized ordinate of the pixel.
     """
     io_env.mouse_move_normalized(x, y)
 
+@register_skill("select_sidearm")
+def select_sidearm(x, y):
+    """
+    Move the mouse to a specific location to select the sidearm in the game.
+    Parameters:
+    - x: The normalized abscissa of the pixel.
+    - y: The normalized ordinate of the pixel.
+    """
+    select_weapon(x, y)
 
 @register_skill("shoot")
 def shoot(x, y):

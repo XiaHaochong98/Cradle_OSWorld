@@ -27,9 +27,9 @@ SKILL_CODE_KEY = 'skill_code'
 SKILL_CODE_HASH_KEY = 'skill_code_base64'
 EXPL_SKILL_LIB_FILE='skill_lib.json'
 BASIC_SKILL_LIB_FILE='skill_lib_basic.json'
-BASIC_SKILLS = ['shoot_people', 'shoot_wolves', 'follow', 'go_to_horse', 'turn_and_move_forward', 'turn', 'move_forward', 'navigate_path', 'shoot', 'select_weapons_at', 'fight']
+BASIC_SKILLS = ['shoot_people', 'shoot_wolves', 'follow', 'go_to_horse', 'turn_and_move_forward', 'turn', 'move_forward', 'navigate_path', 'shoot', 'select_weapon', 'select_sidearm', 'fight']
 NECESSARY_SKILLS = ['turn', 'move_forward', 'turn_and_move_forward']
-DENY_LIST_TERMS = ['shoot', 'follow', 'turn', 'move_forward', 'go_to_horse', 'navigate_path', 'select_weapon', 'fight']
+DENY_LIST_TERMS = ['shoot', 'follow', 'turn', 'move_forward', 'go_to_horse', 'navigate_path', 'select_weapon', 'select_sidearm', 'fight']
 ALLOW_LIST_TERMS = []
 
 

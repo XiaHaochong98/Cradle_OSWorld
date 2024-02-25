@@ -541,7 +541,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             text_input = planner.gather_information_.text_input_map
             video_clip_path = videocapture.get_video(start_frame_id,end_frame_id)
             videocapture.clear_frame_buffer()
-            task_description = memory.get_task_guidance(use_last=True)
+            task_description = memory.get_task_guidance(use_last=False)
 
             get_text_image_introduction = [
                 {
@@ -705,6 +705,8 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             if last_task_guidance:
                 task_description = last_task_guidance
                 memory.add_task_guidance(last_task_guidance, long_horizon)
+
+            logger.write(f'Current Task Guidance: {task_description}')
 
             if config.skill_retrieval:
                 for extracted_skills in all_generated_actions:
@@ -926,7 +928,7 @@ if __name__ == '__main__':
         }
     }
 
-    skill_library = ['turn', 'move_forward', 'turn_and_move_forward', 'follow', 'aim', 'shoot', 'shoot_wolves', 'select_weapons_at', 'fight']
+    skill_library = ['turn', 'move_forward', 'turn_and_move_forward', 'follow', 'aim', 'shoot', 'shoot_wolves', 'select_weapon', 'select_sidearm', 'fight']
     #skill_library = move_skills + follow_skills
     #task_description =  "Follow Dutch."
     #task_description =  "Hitch your horse."

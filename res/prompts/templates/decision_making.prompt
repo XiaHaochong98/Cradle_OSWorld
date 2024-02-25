@@ -41,7 +41,7 @@ Reasoning: You should think step by step and provide detailed reasoning to deter
     6. You should first describe each bounding box, from left to right. Which bounding box is more relevant to the target? 
     7. What is the value x of the most relevant bounding box only in the current screenshot? The value is the central coordination (x,y) of the central point of the box.
     8. Based on the few shots and the value x, where is the relevant bounding box in the current screenshot? Clearly on the left side, slightly on the left side, in the center, slightly on the right side, or clearly on the right side?
-    9. Summarize the contents of recent history, including the task and behavior histories.
+    9. Summarize the contents of recent history, mainly focusing on the historical tasks and behaviors.
     10. Summarize the content of self-reflection for the last executed action, and do not be distracted by other information.
     11. What was the previous action? If the previous action was a turn, was it a left or a right turn?
     12. Based on Actions Rule 12, do you need to consider or ignore the angle information from the minimap? If considering it, summarize the content of the minimap information. 
@@ -62,6 +62,7 @@ Actions: The best action, or short sequence of actions without gaps, to execute 
     12. You MUST ignore the angle information provided by the minimap in the following situations: when you think you were blocked based on self-reflection or when you were inside the highlighted area in the minimap.
     13. When you are indoors, or the current task does not imply following, you MUST not use the follow action.
     14. When you are outdoors, and the current task implies following, you MUST use the follow action.
+    15. If the game fails, you MUST retry from the latest checkpoint, not restart from the beginning of the mission.
 
 You should only respond in the format described below, and you should not output comments or other information:
 Reasoning:
