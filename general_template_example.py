@@ -23,7 +23,7 @@ from uac.gameio.composite_skills.auto_shoot import __all__ as auto_shoot_skills
 from uac.gameio.composite_skills.follow import __all__ as follow_skills
 from uac import constants
 from uac.gameio.skill_registry import SkillRegistry
-
+import copy
 from groundingdino.util.inference import load_image
 
 config = Config()
@@ -719,7 +719,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 skill_library = gm.get_skill_information(skill_library)
 
             # for decision making
-            input = planner.decision_making_.input_map
+            input = copy.deepcopy(planner.decision_making_.input_map)
 
             number_of_execute_skills = input["number_of_execute_skills"]
 
