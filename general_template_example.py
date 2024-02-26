@@ -695,9 +695,12 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
                 # >> Calling SELF REFLECTION
                 logger.write(f'>> Calling SELF REFLECTION')
-                data = planner.self_reflection(input = input)
+                reflection_data = planner.self_reflection(input = input)
 
-                self_reflection_reasoning = data['res_dict']['reasoning']
+                if 'reasoning' in reflection_data['res_dict'].keys():
+                    self_reflection_reasoning = reflection_data['res_dict']['reasoning']
+                else:
+                    self_reflection_reasoning = ""
                 pre_self_reflection_reasoning = self_reflection_reasoning
                 memory.add_recent_history("self_reflection_reasoning", self_reflection_reasoning)
                 logger.write(f'Self-reflection reason: {self_reflection_reasoning}')
@@ -796,7 +799,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
             gm.unpause_game()
             # TODO: find a better name of the GENERAL_GAME_INTERFACE
-            if pre_screen_classification == constants.GENERAL_GAME_INTERFACE and screen_classification != constants.GENERAL_GAME_INTERFACE and pre_action:
+            if pre_screen_classification.lower() == constants.GENERAL_GAME_INTERFACE and screen_classification.lower() != constants.GENERAL_GAME_INTERFACE and pre_action:
                 exec_info = gm.execute_actions([pre_action])
 
             start_frame_id = videocapture.get_current_frame_id()
