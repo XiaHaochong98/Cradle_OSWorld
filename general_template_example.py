@@ -540,7 +540,6 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             input = planner.gather_information_.input_map
             text_input = planner.gather_information_.text_input_map
             video_clip_path = videocapture.get_video(start_frame_id,end_frame_id)
-            videocapture.clear_frame_buffer()
             task_description = memory.get_task_guidance(use_last=False)
 
             get_text_image_introduction = [
@@ -721,6 +720,8 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 logger.write(f'skill_library: {skill_library}')
                 skill_library = gm.get_skill_information(skill_library)
 
+            videocapture.clear_frame_buffer()
+            
             # for decision making
             input = copy.deepcopy(planner.decision_making_.input_map)
 
