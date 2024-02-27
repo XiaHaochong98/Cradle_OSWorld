@@ -800,8 +800,8 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
             gm.unpause_game()
             # TODO: find a better name of the GENERAL_GAME_INTERFACE
-            if pre_screen_classification.lower() == constants.GENERAL_GAME_INTERFACE and screen_classification.lower() != constants.GENERAL_GAME_INTERFACE and pre_action:
-                exec_info = gm.execute_actions([pre_action])
+            #if pre_screen_classification.lower() == constants.GENERAL_GAME_INTERFACE and screen_classification.lower() != constants.GENERAL_GAME_INTERFACE and pre_action:
+            #    exec_info = gm.execute_actions([pre_action])
 
             start_frame_id = videocapture.get_current_frame_id()
 
@@ -810,7 +810,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             cur_screen_shot_path, _ = gm.capture_screen()
 
             end_frame_id = videocapture.get_current_frame_id()
-            gm.pause_game()
+            gm.pause_game(screen_classification.lower())
 
             pre_action = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
 

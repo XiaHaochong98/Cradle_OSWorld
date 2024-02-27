@@ -7,6 +7,7 @@ from uac.log import Logger
 from uac.gameio.lifecycle.ui_control import take_screenshot, segment_minimap, switch_to_game, pause_game, unpause_game, exit_back_to_pause
 from uac.gameio.composite_skills.navigation import navigate_path
 from uac.gameio.skill_registry import SkillRegistry
+from uac import constants
 
 config = Config()
 logger = Logger()
@@ -28,8 +29,10 @@ class GameManager:
                                             embedding_provider = embedding_provider)
 
 
-    def pause_game(self):
-        pause_game()
+    def pause_game(self, screen_type=constants.GENERAL_GAME_INTERFACE):
+        
+        if screen_type==constants.GENERAL_GAME_INTERFACE or screen_type==constants.PAUSE_INTERFACE:
+            pause_game()
 
 
     def unpause_game(self):

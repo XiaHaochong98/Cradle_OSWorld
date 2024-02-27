@@ -19,7 +19,6 @@ from uac.log import Logger
 from uac.gameio import IOEnvironment
 from uac.utils.template_matching import match_template_image
 
-
 config = Config()
 logger = Logger()
 io_env = IOEnvironment()
@@ -32,28 +31,26 @@ def pause_game():
     # if io_env.check_held_keys():
     #    logger.warn("Not pausing because tab or B are held.")
     #    return
-
     if not is_env_paused():
         pydirectinput.press('esc')
+        io_env.handle_hold_in_pause()
+
+        time.sleep(PAUSE_SCREEN_WAIT)
     else:
-        logger.debug("The environment is already paused!")
+        logger.debug("The environment does not need to be paused!")
 
     # While game is paused, quickly re-center mouse location on x axis to avoid clipping at game window border with time
     io_env.mouse_move(config.game_resolution[0] // 2, config.game_resolution[1] // 2, relative=False)
-
-    io_env.handle_hold_in_pause()
-
-    time.sleep(PAUSE_SCREEN_WAIT)
 
 
 def unpause_game():
     if is_env_paused():
         pydirectinput.press('esc')
+        time.sleep(PAUSE_SCREEN_WAIT)
+
+        io_env.handle_hold_in_unpause()
     else:
         logger.debug("The environment is not paused!")
-    time.sleep(PAUSE_SCREEN_WAIT)
-
-    io_env.handle_hold_in_unpause()
 
 
 def exit_back_to_pause():
