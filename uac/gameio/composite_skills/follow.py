@@ -40,7 +40,6 @@ def cv_follow_circles(
     is_move = False
     circle_detector = CircleDetector(config.resolution_ratio)
 
-    move_forward(3)
 
     previous_distance, previous_theta, counter = 0, 0, 0
     max_q_size = 2
@@ -71,6 +70,11 @@ def cv_follow_circles(
         # find direction to follow
         follow_theta, follow_info = circle_detector.detect(minimap_image_filename, debug=debug)
         follow_dis = follow_info[constants.DISTANCE_TYPE]
+
+        if abs(follow_theta) <= 360 and step == 0:
+
+            turn(follow_theta)
+            move_forward(3) # warm up
 
         if debug:
             logger.debug(

@@ -932,7 +932,7 @@ if __name__ == '__main__':
         }
     }
 
-    skill_library = ['turn', 'move_forward', 'turn_and_move_forward', 'follow', 'aim', 'shoot', 'shoot_wolves', 'select_weapon', 'select_sidearm', 'fight']
+    skill_library = ['turn', 'move_forward', 'turn_and_move_forward', 'follow', 'aim', 'shoot', 'shoot_wolves', 'select_weapon', 'select_sidearm', 'fight', 'mount_horse']
     #skill_library = move_skills + follow_skills
     #task_description =  "Follow Dutch."
     #task_description =  "Hitch your horse."
