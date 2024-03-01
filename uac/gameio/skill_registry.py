@@ -13,6 +13,7 @@ from uac.config import Config
 from uac.log import Logger
 from uac.utils.json_utils import load_json, save_json
 from uac.gameio import IOEnvironment
+from uac import constants
 
 config = Config()
 logger = Logger()
@@ -28,7 +29,9 @@ SKILL_CODE_HASH_KEY = 'skill_code_base64'
 EXPL_SKILL_LIB_FILE='skill_lib.json'
 BASIC_SKILL_LIB_FILE='skill_lib_basic.json'
 BASIC_SKILLS = ['shoot_wolves', 'follow', 'go_to_horse', 'turn_and_move_forward', 'turn', 'move_forward', 'navigate_path', 'shoot', 'select_weapon', 'select_sidearm', 'fight', 'mount_horse']
-NECESSARY_SKILLS = ['turn', 'move_forward', 'turn_and_move_forward']
+MOVEMENT_SKILLS = ['turn', 'move_forward', 'turn_and_move_forward']
+MAP_SKILLS = ['select_previous_index_object', 'select_next_index_object']
+TRADE_SKILLS = ['select_upside_product', 'select_downside_product', 'select_rightside_product', 'select_leftside_product']
 DENY_LIST_TERMS = ['shoot', 'follow', 'turn', 'move_forward', 'go_to_horse', 'navigate_path', 'select_weapon', 'select_sidearm', 'fight', 'mount_horse']
 ALLOW_LIST_TERMS = []
 
@@ -81,7 +84,10 @@ class SkillRegistry:
         self.embedding_provider = embedding_provider
         self.basic_skills = copy.deepcopy(BASIC_SKILLS)
         self.recent_skills = []
-        self.necessary_skills = copy.deepcopy(NECESSARY_SKILLS)
+        self.movement_skills = copy.deepcopy(MOVEMENT_SKILLS)
+        self.map_skills = copy.deepcopy(MAP_SKILLS)
+        self.trade_skills = copy.deepcopy(TRADE_SKILLS)
+
 
         if self.from_local:
             if not os.path.exists(os.path.join(self.local_path, self.skill_library_filename)):
@@ -319,9 +325,9 @@ class SkillRegistry:
             self.recent_skills.pop(position)
 
 
-    def retrieve_skills(self, query_task: str, skill_num: int) -> List[str]:
+    def retrieve_skills(self, query_task: str, skill_num: int, screen_type: str) -> List[str]:
         skill_num = min(skill_num, len(self.skill_index))
-        target_skills = [skill for skill in self.recent_skills] + [skill for skill in self.necessary_skills]
+        target_skills = [skill for skill in self.recent_skills]
         task_emb = np.array(self.embedding_provider.embed_query(query_task))
         self.skill_index.sort(key = lambda x: -np.dot(x[SKILL_EMBEDDING_KEY],task_emb))
         for skill in self.skill_index:
@@ -331,6 +337,15 @@ class SkillRegistry:
                 if skill[SKILL_NAME_KEY] not in target_skills:
                     target_skills.append(skill[SKILL_NAME_KEY])
         self.recent_skills = []
+
+        # add necessary skills based on screen type
+        if screen_type == constants.GENERAL_GAME_INTERFACE:
+            target_skills += [skill for skill in self.movement_skills]
+        elif screen_type == constants.TRADE_INTERFACE:
+            target_skills += [skill for skill in self.trade_skills]
+        elif screen_type == constants.MAP_INTERFACE:
+            target_skills += [skill for skill in self.map_skills]
+
         return target_skills
 
 

@@ -41,10 +41,10 @@ def cancel_shopkeeper_interaction():
 #     """
 #     ahk.mouse_move(width, height, speed=speed, relative=relative)
 
-@register_skill("choose_products_at")
-def choose_products_at(x, y):
+@register_skill("select_product")
+def select_product(x, y):
     """
-    Move the mouse to a specific location to choose products in the game.
+    Move the mouse to a specific location to select the product in the game.
     Parameters:
     - x: The normalized abscissa of the pixel.
     - y: The normalized ordinate of the pixel.
@@ -70,8 +70,8 @@ def go_back():
     post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
 
-@register_skill("select_next_up_product")
-def select_next_up_product():
+@register_skill("select_upside_product")
+def select_upside_product():
     """
     This function simulates the action of selecting the product on the next upside of the current selected product.
     It uses the pydirectinput library to press the "up" key.
@@ -79,8 +79,8 @@ def select_next_up_product():
     io_env.key_press('up')
 
 
-@register_skill("select_next_down_product")
-def select_next_down_product():
+@register_skill("select_downside_product")
+def select_downside_product():
     """
     This function simulates the action of selecting the product on the next downside of the current selected product.
     It uses the pydirectinput library to press the "down" key.
@@ -119,12 +119,12 @@ __all__ = [
     "shopkeeper_interaction",
     "cancel_shopkeeper_interaction",
     #"select_products_by_mouse",
-    "choose_products_at",
-    #"select_upside_product",
-    #"select_downside_product",
-    "select_next_product",
-    #"select_leftside_product",
-    #"select_rightside_product",
+    #"choose_products_at",
+    "select_upside_product",
+    "select_downside_product",
+    #"select_next_product",
+    "select_leftside_product",
+    "select_rightside_product",
     #"mouse_select_target_object",
     #"go_back"
 ]

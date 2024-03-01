@@ -510,7 +510,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
     if config.skill_retrieval:
         gm.register_available_skills(skill_library)
-        skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
+        skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num, screen_type = constants.GENERAL_GAME_INTERFACE)
     skill_library = gm.get_skill_information(skill_library)
 
     switch_to_game()
@@ -716,7 +716,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                     for extracted_skill in extracted_skills:
                         gm.add_new_skill(skill_code=extracted_skill['code'])
 
-                skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
+                skill_library = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num, screen_type = screen_classification.lower())
                 logger.write(f'skill_library: {skill_library}')
                 skill_library = gm.get_skill_information(skill_library)
 

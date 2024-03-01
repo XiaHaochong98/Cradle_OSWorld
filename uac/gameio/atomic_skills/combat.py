@@ -76,8 +76,9 @@ def fight():
 __all__ = [
     "aim",
     "shoot",
-    "select_weapons_at",
-    "view_weapons",
+    "select_weapon",
+    "select_sidearm",
+    #"view_weapons",
     "fight",
     #"call_animals",
 ]

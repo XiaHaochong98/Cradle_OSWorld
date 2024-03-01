@@ -66,8 +66,8 @@ class GameManager:
         self.skill_registry.delete_skill(skill_name)
 
 
-    def retrieve_skills(self, query_task, skill_num):
-        return self.skill_registry.retrieve_skills(query_task, skill_num)
+    def retrieve_skills(self, query_task, skill_num, screen_type):
+        return self.skill_registry.retrieve_skills(query_task, skill_num, screen_type)
 
 
     def register_available_skills(self, candidates):
