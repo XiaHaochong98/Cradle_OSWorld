@@ -2,6 +2,8 @@ import os
 import cv2
 import time
 
+from groundingdino.util.inference import load_image
+
 from uac.config import Config
 from uac.gameio.game_manager import GameManager
 from uac.log import Logger
@@ -24,8 +26,6 @@ from uac.gameio.composite_skills.follow import __all__ as follow_skills
 from uac import constants
 from uac.gameio.skill_registry import SkillRegistry
 import copy
-from groundingdino.util.inference import load_image
-
 config = Config()
 logger = Logger()
 io_env = IOEnvironment()
@@ -60,11 +60,13 @@ def main_test_decision_making(planner_params, task_description, skill_library):
             "assistant": input["image_introduction"][-1]["assistant"]
         }
     ]
+
     input["image_introduction"] = image_introduction
     input["task_description"] = task_description
 
     input['skill_library'] = skill_library
     input["previous_action"] = "view_next_page()"
+
     # input["previous_reasoning"] = "The current page displayed is the 'Canned Food' section of the Wheeler, Rawson & Co. catalogue, which includes a variety of canned goods. Items on the page, from the top left and moving to the right, are: Big Valley Canned Apricots, Schmitz Baked Beans, Flock of Sparrows Canned Kidney Beans, Big Valley Canned Peaches, Edna McSweeney Brand Canned Corned Beef, Blackwing Foods Canned Sweetcorn, Dewberry Brand Canned Peas, and Big Valley Canned Pineapples. The currently selected item is 'Canned Apricots' as indicated by the box around the item's description at the bottom of the screen. The target item, which is an 'Apple,' is not depicted on the current screen as these are all canned goods and do not include fresh produce. Therefore, the next logical step would be to navigate to the next page, which likely contains the Fresh Food section, with the hope of finding an apple there."
     # input["previous_reasoning"] = "1. The current screen displays four canned food items laid out in a two by two grid. From top left and moving right, the first item is 'Big Valley Canned Apricots,' next to it is 'Schmitz Baked Beans.' Below the apricots are 'Edna Mcsweeney Brand Canned Corned Beef,' and to the right of that is 'Blackwing Foods Canned Sweetcorn.' 2. The target item, an 'APPLE,' is not visible on the current screen, as these are canned goods and not fresh produce. 3. The item currently selected is 'Big Valley Canned Apricots,' as indicated by the detailed information shown at the bottom of the screen. Since the target item is an apple and should be under the 'Fresh Food' category, we should proceed to view the next page in the catalogue to find it."
 
@@ -128,6 +130,7 @@ def main_test_success_detection(planner_params, task_description):
 
 
 def main_test_information_summary(planner_params, task_description, skill_library):
+
     llm_provider_config_path = './conf/openai_config.json'
 
     llm_provider = OpenAIProvider()
@@ -299,6 +302,7 @@ def main_test_self_reflection(planner_params, task_description, skill_library, v
 
     logger.write(f'Reasoning: {reasoning}')
 
+
 def skill_library_test():
 
     provider_config_path = './conf/openai_config.json'
@@ -328,10 +332,8 @@ def skill_library_test():
     logger.write(str(returns_skills))
     logger.write(str(gm.get_skill_information(returns_skills)))
 
-
     returns_skills = gm.retrieve_skills(query_task = task_description, skill_num = config.skill_num)
     logger.write(str(returns_skills))
-
 
     skill_library = move_skills + follow_skills
     gm.register_available_skills(skill_library)
@@ -343,6 +345,7 @@ def skill_library_test():
 
 
 def main_gather_information(image_path = ""):
+
     llm_provider_config_path = './conf/openai_config.json'
 
     llm_provider = OpenAIProvider()
@@ -359,7 +362,6 @@ def main_gather_information(image_path = ""):
                       use_self_reflection=False,
                       use_information_summary=False)
 
-
     input = planner.gather_information_.input_map
     text_input = planner.gather_information_.text_input_map
 
@@ -371,7 +373,7 @@ def main_gather_information(image_path = ""):
         }
     ]
 
-    #configure the gather_information module
+    # Configure the gather_information module
     gather_information_configurations = {
         "frame_extractor": False, # extract text from the video clip
         "icon_replacer": False,
@@ -380,11 +382,13 @@ def main_gather_information(image_path = ""):
     }
 
     input["gather_information_configurations"] = gather_information_configurations
-    # modify the general input for gather_information here
+
+    # Modify the general input for gather_information here
     image_introduction=[get_text_image_introduction[-1]]
     input["task_description"] = task_description
     input["video_clip_path"] = ""
     input["image_introduction"] = image_introduction
+
     # Modify the input for get_text module in gather_information here
     text_input["image_introduction"] = get_text_image_introduction
     input["text_input"] = text_input
@@ -400,6 +404,7 @@ def main_gather_information(image_path = ""):
     logger.write(f'Object Name: {target_object_name}')
     logger.write(f'Reasoning: {object_name_reasoning}')
     logger.write(f'Screen Classification: {screen_classification}')
+
 
 def main_test_gather_information(image_path = "", video_path = ""):
     llm_provider_config_path = './conf/openai_config.json'
@@ -535,7 +540,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
     while not success:
 
         try:
-            #for gather information
+            # Gather information preparation
             logger.write(f'Gather Information Start Frame ID: {start_frame_id}, End Frame ID: {end_frame_id}')
             input = planner.gather_information_.input_map
             text_input = planner.gather_information_.text_input_map
@@ -550,7 +555,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 }
             ]
 
-            #configure the gather_information module
+            # Configure the gather_information module
             gather_information_configurations = {
                 "frame_extractor": True, # extract text from the video clip
                 "icon_replacer": True,
@@ -559,7 +564,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             }
             input["gather_information_configurations"] = gather_information_configurations
 
-            # modify the general input for gather_information here
+            # Modify the general input for gather_information here
             image_introduction=[get_text_image_introduction[-1]]
             input["task_description"] = task_description
             input["video_clip_path"] = video_clip_path
@@ -573,7 +578,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             logger.write(f'>> Calling INFORMATION GATHERING')
             data = planner.gather_information(input=input)
 
-            # you can extract any information from the gathered_information_JSON
+            # Any information from the gathered_information_JSON
             gathered_information_JSON=data['res_dict']['gathered_information_JSON']
 
             if gathered_information_JSON is not None:
@@ -582,7 +587,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 logger.warn("NO data_structure in gathered_information_JSON")
                 gathered_information = dict()
 
-            # sort the gathered_information by the time stamp
+            # Sort the gathered_information by timestamp
             gathered_information = dict(sorted(gathered_information.items(), key=lambda item: item[0]))
             all_dialogue = gathered_information_JSON.search_type_across_all_indices(constants.DIALOGUE)
             all_task_guidance = gathered_information_JSON.search_type_across_all_indices(constants.TASK_GUIDANCE)
@@ -631,7 +636,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 gd_detector.save_annotate_frame(image_source, boxes, logits, phrases, target_object_name.title(), bb_image_path)
 
                 if boxes is not None and boxes.numel() != 0:
-                    #add the screenshot with bounding boxes into the local memory
+                    # Add the screenshot with bounding boxes into working memory
                     memory.add_recent_history(key=constants.AUGMENTED_IMAGES_MEM_BUCKET, info=bb_image_path)
                 else:
                     memory.add_recent_history(key=constants.AUGMENTED_IMAGES_MEM_BUCKET, info=constants.NO_IMAGE)
@@ -722,7 +727,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
             videocapture.clear_frame_buffer()
             
-            # for decision making
+            # Decision making preparation
             input = copy.deepcopy(planner.decision_making_.input_map)
 
             number_of_execute_skills = input["number_of_execute_skills"]
@@ -743,7 +748,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
                 if boxes is None or boxes.numel() == 0:
                     input['few_shots'] = []
 
-            #@TODO Temporary solution with fake augmented entries if no bounding box exists. Ideally it should read images, then check for possible augmentation.
+            # @TODO Temporary solution with fake augmented entries if no bounding box exists. Ideally it should read images, then check for possible augmentation.
             image_memory = memory.get_recent_history("image", k=config.decision_making_image_num)
             augmented_image_memory = memory.get_recent_history(constants.AUGMENTED_IMAGES_MEM_BUCKET, k=config.decision_making_image_num)
 
@@ -767,7 +772,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             input["image_introduction"] = image_introduction
             input["task_description"] = task_description
 
-            # newly add dino detection for minimap
+            # Minimap info tracking
             if constants.MINIMAP_INFORMATION in response_keys:
                 minimap_information = data["res_dict"][constants.MINIMAP_INFORMATION]
                 logger.write(f"{constants.MINIMAP_INFORMATION}: {minimap_information}")
@@ -799,7 +804,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             logger.write(f'Skill Steps: {skill_steps}')
 
             gm.unpause_game()
-            # TODO: find a better name of the GENERAL_GAME_INTERFACE
+            # @TODO: find a better name for GENERAL_GAME_INTERFACE
             #if pre_screen_classification.lower() == constants.GENERAL_GAME_INTERFACE and screen_classification.lower() != constants.GENERAL_GAME_INTERFACE and pre_action:
             #    exec_info = gm.execute_actions([pre_action])
 
@@ -812,7 +817,8 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             end_frame_id = videocapture.get_current_frame_id()
             gm.pause_game(screen_classification.lower())
 
-            pre_action = exec_info["last_skill"] # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
+            # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
+            pre_action = exec_info["last_skill"]
 
             pre_decision_making_reasoning = ''
             if 'res_dict' in data.keys() and 'reasoning' in data['res_dict'].keys():
@@ -825,7 +831,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             # For such cases with no expected response, we should define a retry limit
             logger.write(f'Decision reasoning: {pre_decision_making_reasoning}')
 
-            # for information summary
+            # Information summary preparation
             if use_information_summary and len(memory.get_recent_history("decision_making_reasoning", memory.max_recent_steps)) == memory.max_recent_steps:
                 input = planner.information_summary_.input_map
                 logger.write(f'> Information summary call...')
@@ -850,7 +856,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
             memory.add_recent_history("image", cur_screen_shot_path)
 
-            # for success detection
+            # Success detection preparation
             if use_success_detection:
                 input = planner.success_detection_.input_map
                 image_introduction = [
@@ -896,6 +902,7 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
     gm.cleanup_io()
     videocapture.finish_capture()
+
 
 if __name__ == '__main__':
 
@@ -981,7 +988,6 @@ if __name__ == '__main__':
     #             ('image_path_2', '0_00_00_004'),
     #             ]
     # main_test_gather_information(image_path=image_path)
-
-
     #video_path = ""
     #main_test_gather_information(video_path=video_path)
+

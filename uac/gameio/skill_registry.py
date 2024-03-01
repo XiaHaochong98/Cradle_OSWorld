@@ -45,7 +45,6 @@ def register_skill(name):
         if f"@register_skill(\"{name}\")\n" in skill_code:
             skill_code = skill_code.replace(f"@register_skill(\"{name}\")\n", "")
 
-
         SKILL_INDEX.append({SKILL_NAME_KEY:          name,
                             SKILL_EMBEDDING_KEY:     None,
                             SKILL_CODE_KEY:          skill_code})
@@ -278,7 +277,6 @@ class SkillRegistry:
                 self.delete_skill(skill_name)
                 logger.write(f"Skill '{skill_name}' will be overwritten.")
 
-
         if skill_name in self.skill_registry:
             info = f"Skill '{skill_name}' already exists."
             logger.write(info)
@@ -298,11 +296,10 @@ class SkillRegistry:
             return False, info
 
         self.skill_registry[skill_name] = skill
-        self.skill_index.append({SKILL_NAME_KEY:         skill_name,
-                                SKILL_EMBEDDING_KEY:     self.get_embedding(skill_name, inspect.getdoc(skill)),
-                                SKILL_CODE_KEY:          skill_code})
+        self.skill_index.append({SKILL_NAME_KEY:     skill_name,
+                                SKILL_EMBEDDING_KEY: self.get_embedding(skill_name, inspect.getdoc(skill)),
+                                SKILL_CODE_KEY:      skill_code})
         self.recent_skills.append(skill_name)
-
 
         info = f"Skill '{skill_name}' has been registered."
         logger.write(info)

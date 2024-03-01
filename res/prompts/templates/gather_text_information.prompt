@@ -2,7 +2,7 @@ Assume you are a helpful AI assistant integrated with 'Red Dead Redemption 2' on
 
 <$image_introduction$>
 
-Information: List all text prompts on the screenshot from the top to the bottom, even the text prompt is one word. 
+Information: List all text prompts on the screenshot from the top to the bottom, even the text prompt is one word.
 
 All information should be categorized into one or more kinds of <$information_type$>. If you think a piece of information is both "A" and "B" categories, you should write information in both "A" and "B" categories. For example, "use E to drink water" could both be "Action Guidance" and "Task Guidance" categories.
 
@@ -88,7 +88,7 @@ Dialogue: Conversations between characters in the game. This content should be i
 
 Other: Other information that does not belong to the above categories. If there is no on-screen text, only output "null".
 
-Reasoning: The reasons for classification for each piece of information. 
+Reasoning: The reasons for classification for each piece of information.
 If the on-screen text prompt is an instruction on how to perform a task using keyboard keys or mouse buttons, it should also classified as action guidance and task guidance.
 For action guidance, which code rules should you follow based on the word used to control the key or button, such as press, hold, release, and click?
 

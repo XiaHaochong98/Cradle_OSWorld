@@ -1,5 +1,4 @@
 import os
-import base64
 from typing import (
     Any,
     Dict,
@@ -27,9 +26,10 @@ from uac import constants
 from uac.provider import LLMProvider, EmbeddingProvider
 from uac.config import Config
 from uac.log import Logger
-from uac.planner.util import get_attr
 from uac.utils.json_utils import load_json
+from uac.utils.encoding_utils import encode_base64, decode_base64
 from uac.utils.file_utils import assemble_project_path
+from uac.utils.string_utils import hash_text_sha256
 
 config = Config()
 logger = Logger()
@@ -850,9 +850,23 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             return self.assemble_prompt_paragraph(template_str=template_str, params=params)
 
 
-def encode_image(image_path):
+def encode_image_path(image_path):
     with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode('utf-8')
+        encoded_image = encode_image_binary(image_file.read(), image_path)
+        return encoded_image
+
+
+def encode_image_binary(image_binary, image_path=None):
+    encoded_image = encode_base64(image_binary)
+    if image_path is None:
+        image_path = '<$bin_placeholder$>'
+
+    logger.debug(f'|>. img_hash {hash_text_sha256(encoded_image)}, path {image_path} .<|')
+    return encoded_image
+
+
+def decode_image(base64_encoded_image):
+    return decode_base64(base64_encoded_image)
 
 
 def encode_data_to_base64_path(data: Any) -> List[str]:
@@ -865,35 +879,30 @@ def encode_data_to_base64_path(data: Any) -> List[str]:
         if isinstance(item, str):
             if os.path.exists(assemble_project_path(item)):
                 path = assemble_project_path(item)
-                encoded_image = encode_image(path)
+                encoded_image = encode_image_path(path)
                 image_type = path.split(".")[-1].lower()
                 encoded_image = f"data:image/{image_type};base64,{encoded_image}"
                 encoded_images.append(encoded_image)
             else:
                 encoded_images.append(item)
 
+            continue
+
         elif isinstance(item, bytes):  # mss grab bytes
             image = Image.frombytes('RGB', item.size, item.bgra, 'raw', 'BGRX')
             buffered = io.BytesIO()
             image.save(buffered, format="JPEG")
-            encoded_image = base64.b64encode(buffered.getvalue()).decode('utf-8')
-            encoded_image = f"data:image/jpeg;base64,{encoded_image}"
-            encoded_images.append(encoded_image)
-
         elif isinstance(item, Image.Image):  # PIL image
             buffered = io.BytesIO()
             item.save(buffered, format="JPEG")
-            encoded_image = base64.b64encode(buffered.getvalue()).decode('utf-8')
-            encoded_image = f"data:image/jpeg;base64,{encoded_image}"
-            encoded_images.append(encoded_image)
-
         elif isinstance(item, np.ndarray):  # cv2 image array
             item = cv2.cvtColor(item, cv2.COLOR_BGR2RGB)  # convert to RGB
             image = Image.fromarray(item)
             buffered = io.BytesIO()
             image.save(buffered, format="JPEG")
-            encoded_image = base64.b64encode(buffered.getvalue()).decode('utf-8')
-            encoded_image = f"data:image/jpeg;base64,{encoded_image}"
-            encoded_images.append(encoded_image)
+
+        encoded_image = encode_image_binary(buffered.getvalue())
+        encoded_image = f"data:image/jpeg;base64,{encoded_image}"
+        encoded_images.append(encoded_image)
 
     return encoded_images

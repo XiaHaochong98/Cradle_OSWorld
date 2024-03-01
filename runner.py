@@ -9,7 +9,7 @@ from uac.config import Config
 from uac.gameio import GameManager
 from uac.planner.planner import Planner
 from uac.log import Logger
-from uac.provider.openai import OpenAIProvider, encode_image
+from uac.provider.openai import OpenAIProvider, encode_image_path
 from uac.utils.file_utils import assemble_project_path, read_resource_file
 from uac.memory import LocalMemory
 from uac.gameio.skill_registry import SkillRegistry
@@ -32,7 +32,7 @@ def main(args):
 
     rel_image = "./res/samples/game_screenshot.jpg"
     image = assemble_project_path(rel_image)
-    base64_image = encode_image(image)
+    base64_image = encode_image_path(image)
 
     prompt_messages=[
         {"role": "system", "content": [

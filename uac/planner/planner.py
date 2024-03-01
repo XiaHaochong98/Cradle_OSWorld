@@ -26,8 +26,10 @@ async def gather_information_get_completion_parallel(llm_provider, text_input_ma
                                                      text_input, get_text_template, i,video_prefix,gathered_information_JSON):
 
     logger.write(f"Start gathering text information from the {i + 1}th frame")
+
     text_input = text_input_map if text_input is None else text_input
     image_introduction = text_input["image_introduction"]
+
     # Set the last frame path as the current frame path
     image_introduction[-1] = {
         "introduction": image_introduction[-1]["introduction"],
@@ -35,15 +37,16 @@ async def gather_information_get_completion_parallel(llm_provider, text_input_ma
         "assistant": image_introduction[-1]["assistant"]
     }
     text_input["image_introduction"] = image_introduction
-    message_prompts = llm_provider.assemble_prompt(template_str=get_text_template,
-                                                   params=text_input)
-    logger.debug(f'>> Upstream - R: {message_prompts}')
+    message_prompts = llm_provider.assemble_prompt(template_str=get_text_template, params=text_input)
+
+    logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
 
     success_flag = False
     while not success_flag:
         try:
             response, info = await llm_provider.create_completion_async(message_prompts)
-            logger.debug(f'>> Downstream - A: {response}')
+            logger.debug(f'{logger.DOWNSTREAM_MASK}{response}\n')
+
             # Convert the response to dict
             processed_response = parse_semi_formatted_text(response)
             success_flag = True
@@ -53,6 +56,7 @@ async def gather_information_get_completion_parallel(llm_provider, text_input_ma
 
             # wait 2 seconds for the next request and retry
             await asyncio.sleep(2)
+
     # Convert the response to dict
     if processed_response is None or len(response) == 0:
         logger.warn('Empty response in gather text information call')
@@ -67,7 +71,7 @@ async def gather_information_get_completion_parallel(llm_provider, text_input_ma
 
 
 def gather_information_get_completion_sequence(llm_provider, text_input_map, current_frame_path, time_stamp,
-                                               text_input, get_text_template, i,video_prefix,gathered_information_JSON):
+                                               text_input, get_text_template, i, video_prefix, gathered_information_JSON):
 
     logger.write(f"Start gathering text information from the {i + 1}th frame")
     text_input = text_input_map if text_input is None else text_input
@@ -81,14 +85,13 @@ def gather_information_get_completion_sequence(llm_provider, text_input_map, cur
     }
     text_input["image_introduction"] = image_introduction
 
-    message_prompts = llm_provider.assemble_prompt(template_str=get_text_template,
-                                                   params=text_input)
+    message_prompts = llm_provider.assemble_prompt(template_str=get_text_template, params=text_input)
 
-    logger.debug(f'>> Upstream - R: {message_prompts}')
+    logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
 
     response, info = llm_provider.create_completion(message_prompts)
 
-    logger.debug(f'>> Downstream - A: {response}')
+    logger.debug(f'{logger.DOWNSTREAM_MASK}{response}\n')
     success_flag = False
     while not success_flag:
         try:
@@ -105,9 +108,11 @@ def gather_information_get_completion_sequence(llm_provider, text_input_map, cur
     if processed_response is None or len(response) == 0:
         logger.warn('Empty response in gather text information call')
         logger.debug("response", response, "processed_response", processed_response)
+
     objects = processed_response
     objects_index = str(video_prefix) + '_' + time_stamp
     gathered_information_JSON.add_instance(objects_index, objects)
+
     logger.write(f"Finish gathering text information from the {i + 1}th frame")
 
     return True
@@ -115,19 +120,26 @@ def gather_information_get_completion_sequence(llm_provider, text_input_map, cur
 
 async def get_completion_in_parallel(llm_provider, text_input_map, extracted_frame_paths, text_input,get_text_template,video_prefix,gathered_information_JSON):
     tasks =[]
+
     for i, (current_frame_path, time_stamp) in enumerate(extracted_frame_paths):
+
         task=gather_information_get_completion_parallel(llm_provider, text_input_map, current_frame_path, time_stamp,
                                                    text_input, get_text_template, i,video_prefix,gathered_information_JSON)
+
         tasks.append(task)
+
         # wait 2 seconds for the next request
         time.sleep(2)
+
     return await asyncio.gather(*tasks)
 
 
 def get_completion_in_sequence(llm_provider, text_input_map, extracted_frame_paths, text_input,get_text_template,video_prefix,gathered_information_JSON):
+
     for i, (current_frame_path, time_stamp) in enumerate(extracted_frame_paths):
         gather_information_get_completion_sequence(llm_provider, text_input_map, current_frame_path, time_stamp,
                                                    text_input, get_text_template, i,video_prefix,gathered_information_JSON)
+
     return True
 
 
@@ -295,6 +307,7 @@ class GatherInformation():
                     logger.write(f"Start gathering text information from the whole video in sequence")
                     get_completion_in_sequence(self.llm_provider, self.text_input_map, extracted_frame_paths,
                                                text_input,self.get_text_template,video_prefix,frame_extractor_gathered_information)
+
                 frame_extractor_gathered_information.sort_index_by_timestamp()
                 logger.write(f"Finish gathering text information from the whole video")
 
@@ -318,10 +331,12 @@ class GatherInformation():
 
             # remove the content of "task is none"
             all_task_guidance = [task_guidance for task_guidance in all_task_guidance if constants.NONE_TASK_OUTPUT not in task_guidance["values"].lower()]
+
             if len(all_task_guidance) != 0:
                 # new task guidance is found, use the latest one
                 last_task_guidance = max(all_task_guidance, key=lambda x: x['index'])['values']
                 input[constants.TASK_DESCRIPTION] = last_task_guidance # this is for the input of the gather_information
+
             # @TODO: summary the dialogue and use it
 
         # Gather information by LLM provider
@@ -331,21 +346,24 @@ class GatherInformation():
                 # Call the LLM provider for gather information json
                 message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
 
-                logger.debug(f'>> Upstream - R: {message_prompts}')
+                logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
+
                 gather_information_success_flag = False
                 while gather_information_success_flag is False:
                     try:
                         response, info = self.llm_provider.create_completion(message_prompts)
+                        logger.debug(f'{logger.DOWNSTREAM_MASK}{response}\n')
 
-                        logger.debug(f'>> Downstream - A: {response}')
                         # Convert the response to dict
                         processed_response = parse_semi_formatted_text(response)
                         gather_information_success_flag = True
                     except Exception as e:
                         logger.error(f"Response of image description is not in the correct format: {e}, retrying...")
                         gather_information_success_flag = False
+
                         # wait 2 seconds for the next request and retry
                         time.sleep(2)
+
                 llm_description_gathered_information = processed_response
 
             except Exception as e:
@@ -382,7 +400,8 @@ class GatherInformation():
             if self.object_detector is not None:
                 try:
                     target_object_name = processed_response[constants.TARGET_OBJECT_NAME].lower() \
-                        if constants.NONE_TARGET_OBJECT_OUTPUT not in processed_response[constants.TARGET_OBJECT_NAME].lower() else ""       
+                        if constants.NONE_TARGET_OBJECT_OUTPUT not in processed_response[constants.TARGET_OBJECT_NAME].lower() else ""
+
                     image_source, boxes, logits, phrases = self.object_detector.detect(image_path=image_files[0],
                                                                                        text_prompt= target_object_name,
                                                                                        box_threshold=0.4, device='cuda')
@@ -465,14 +484,14 @@ class DecisionMaking():
         processed_response = {}
 
         try:
-            message_prompts = self.llm_provider.assemble_prompt(template_str=self.template,
-                                                                params=input)
-            logger.debug(f'>> Upstream - R: {message_prompts}')
+            message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
+
+            logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
 
             # Call the LLM provider for decision making
             response, info = self.llm_provider.create_completion(message_prompts)
 
-            logger.debug(f'>> Downstream - A: {response}')
+            logger.debug(f'{logger.DOWNSTREAM_MASK}{response}\n')
 
             if response is None or len(response) == 0:
                 logger.warn('No response in decision making call')
@@ -528,11 +547,11 @@ class SuccessDetection():
             # Call the LLM provider for success detection
             message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
 
-            logger.debug(f'>> Upstream - R: {message_prompts}')
+            logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
 
             response, info = self.llm_provider.create_completion(message_prompts)
 
-            logger.debug(f'>> Downstream - A: {response}')
+            logger.debug(f'{logger.DOWNSTREAM_MASK}{response}\n')
 
             # Convert the response to dict
             processed_response = parse_semi_formatted_text(response)
@@ -584,11 +603,11 @@ class SelfReflection():
             # Call the LLM provider for self reflection
             message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
 
-            logger.debug(f'>> Upstream - R: {message_prompts}')
+            logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
 
             response, info = self.llm_provider.create_completion(message_prompts)
 
-            logger.debug(f'>> Downstream - A: {response}')
+            logger.debug(f'{logger.DOWNSTREAM_MASK}{response}\n')
 
             # Convert the response to dict
             processed_response = parse_semi_formatted_text(response)
@@ -642,11 +661,11 @@ class InformationSummary():
             # Call the LLM provider for information summary
             message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
 
-            logger.debug(f'>> Upstream - R: {message_prompts}')
+            logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
 
             response, info = self.llm_provider.create_completion(message_prompts)
 
-            logger.debug(f'>> Downstream - A: {response}')
+            logger.debug(f'{logger.DOWNSTREAM_MASK}{response}\n')
 
             # Convert the response to dict
             processed_response = parse_semi_formatted_text(response)

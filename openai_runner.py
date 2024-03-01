@@ -4,7 +4,7 @@ import argparse
 import time
 
 from uac.log import Logger
-from uac.provider.openai import OpenAIProvider, encode_image
+from uac.provider.openai import OpenAIProvider, encode_image_path
 from uac.utils.file_utils import assemble_project_path
 
 logger = Logger()
@@ -15,7 +15,7 @@ def main(args):
     # create provider and make simple calls
     provider = OpenAIProvider()
     provider.init_provider(args.providerConfig) # config passed in from command line argument
-                                                # in vscode, there is already an example ready to run, no need to pass parameters here   
+                                                # in vscode, there is already an example ready to run, no need to pass parameters here
 
     # sample call to get an embedding
     res_emb = provider.embed_query("Hello world")
@@ -24,7 +24,7 @@ def main(args):
 
     image = "./res/samples/game_screenshot.jpg"
     image = assemble_project_path(image)
-    base64_image = encode_image(image)
+    base64_image = encode_image_path(image)
 
     prompt_messages=[
         {"role": "system", "content": [

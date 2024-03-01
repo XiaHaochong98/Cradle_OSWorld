@@ -2,7 +2,6 @@ import os
 import numpy as np
 from typing import Any, List, Tuple
 import time
-import base64
 
 import cv2
 import easyocr
@@ -14,6 +13,7 @@ PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
 
 from uac.log import Logger
 from uac.config import Config
+from uac.provider.openai import decode_image
 from uac.utils.file_utils import assemble_project_path
 
 logger = Logger()
@@ -41,7 +41,7 @@ class VideoEasyOCRExtractor():
                     path = assemble_project_path(image)
                     image = cv2.imread(path)
                 else: # base64 to cv2 image
-                    image_data = base64.b64decode(image)
+                    image_data = decode_image(image)
                     image = cv2.imdecode(np.frombuffer(image_data, np.uint8), cv2.IMREAD_COLOR)
 
             elif isinstance(image, bytes):  # bytes to cv2 image
@@ -65,9 +65,8 @@ class VideoEasyOCRExtractor():
         images = self.to_images(image)
         res = []
         for image in images:
-            # if return full, return the (bounding box, text, prob) tuple
-            # else, return the text only
-
+            # if full, return the (bounding box, text, prob) tuple
+            # else, return text only
             item = self.reader.readtext(image, detail=return_full)
             res.append(item)
         return res
