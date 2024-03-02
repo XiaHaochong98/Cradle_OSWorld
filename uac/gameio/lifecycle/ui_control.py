@@ -32,8 +32,10 @@ def pause_game():
     #    logger.warn("Not pausing because tab or B are held.")
     #    return
     if not is_env_paused():
-        pydirectinput.press('esc')
         io_env.handle_hold_in_pause()
+
+        time.sleep(PAUSE_SCREEN_WAIT)
+        pydirectinput.press('esc')
 
         time.sleep(PAUSE_SCREEN_WAIT)
     else:

@@ -74,7 +74,8 @@ def cv_follow_circles(
         if abs(follow_theta) <= 360 and step == 0:
 
             turn(follow_theta)
-            move_forward(3) # warm up
+            move_forward(1) # warm up
+
 
         if debug:
             logger.debug(
@@ -86,7 +87,7 @@ def cv_follow_circles(
         if debug and follow_dis < follow_dis_threshold:
             logger.write('Keep with the companion')
 
-        if abs(follow_theta) <= 360:
+        if abs(follow_theta) <= 360 and step > 0:
 
             turn(follow_theta)
 
