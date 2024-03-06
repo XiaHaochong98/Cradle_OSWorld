@@ -269,6 +269,11 @@ class SkillRegistry:
         # Always avoid adding skills that are ambiguous with existing pre-defined ones.
         if check_protection_conflict(skill_name) == False:
             info = f"Skill '{skill_name}' conflicts with protected skills."
+            for word in DENY_LIST_TERMS:
+                if word in skill_name:
+                    for protected_skill in BASIC_SKILLS:
+                        if word in protected_skill:
+                            self.recent_skills.append(protected_skill)
             logger.write(info)
             return True, info
 
@@ -338,7 +343,7 @@ class SkillRegistry:
         # add necessary skills based on screen type
         if screen_type == constants.GENERAL_GAME_INTERFACE:
             target_skills += [skill for skill in self.movement_skills]
-        elif screen_type == constants.TRADE_INTERFACE:
+        elif screen_type == constants.TRADE_INTERFACE or screen_type == constants.SATCHEL_INTERFACE:
             target_skills += [skill for skill in self.trade_skills]
         elif screen_type == constants.MAP_INTERFACE:
             target_skills += [skill for skill in self.map_skills]

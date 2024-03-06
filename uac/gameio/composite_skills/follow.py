@@ -15,7 +15,7 @@ from uac import constants
 config = Config()
 logger = Logger()
 
-MAX_FOLLOW_ITERATIONS = 20
+MAX_FOLLOW_ITERATIONS = 40
 
 
 @register_skill("follow")

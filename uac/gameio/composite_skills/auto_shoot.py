@@ -51,11 +51,7 @@ def keep_shooting_target(
     '''
     Keep shooting the 'detect_target' detected by object detector automatically.
     '''
-    if detect_target == SHOOT_WOLVES_TARGET_NAME:
-        move_forward(15)
-        POST_WAIT_TIME = 0.1
-    else:
-        POST_WAIT_TIME = 0.5
+    POST_WAIT_TIME = 0.1
     save_dir = config.work_dir
     circle_detector = CircleDetector(config.resolution_ratio)
     aim()  # aim before detection
@@ -97,9 +93,9 @@ def keep_shooting_target(
             terminal_flags.append(0)
         else:
             terminal_flags.append(1)
-            if sum(terminal_flags[-CONTINUE_NO_ENEMY_FREQ:]) == CONTINUE_NO_ENEMY_FREQ:
-                logger.debug(f'From step {step} to {step-CONTINUE_NO_ENEMY_FREQ} no enemy detected! Shooting is terminated.')
-                return
+            # if sum(terminal_flags[-CONTINUE_NO_ENEMY_FREQ:]) == CONTINUE_NO_ENEMY_FREQ:
+            #     logger.debug(f'From step {step} to {step-CONTINUE_NO_ENEMY_FREQ} no enemy detected! Shooting is terminated.')
+            #     return
         if debug:
             cv2.imwrite(os.path.join(save_dir, f"red_detect_{timestep}.jpg"), follow_info['vis'])
         if not phrases:

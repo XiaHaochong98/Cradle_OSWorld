@@ -656,6 +656,9 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             logger.write(f'Long Horizon: {long_horizon}')
             logger.write(f'Generated Actions: {all_generated_actions}')
 
+            if screen_classification.lower() == constants.GENERAL_GAME_INTERFACE:
+                gm.pause_game(screen_classification.lower())
+
             if use_self_reflection and start_frame_id > -1:
                 input = planner.self_reflection_.input_map
                 action_frames = []
@@ -805,11 +808,10 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
 
             gm.unpause_game()
             # @TODO: find a better name for GENERAL_GAME_INTERFACE
-            #if pre_screen_classification.lower() == constants.GENERAL_GAME_INTERFACE and screen_classification.lower() != constants.GENERAL_GAME_INTERFACE and pre_action:
-            #    exec_info = gm.execute_actions([pre_action])
+            if pre_screen_classification.lower() == constants.GENERAL_GAME_INTERFACE and (screen_classification.lower() == constants.MAP_INTERFACE or screen_classification.lower() == constants.SATCHEL_INTERFACE) and pre_action:
+                exec_info = gm.execute_actions([pre_action])
 
             start_frame_id = videocapture.get_current_frame_id()
-
             exec_info = gm.execute_actions(skill_steps)
 
             cur_screen_shot_path, _ = gm.capture_screen()

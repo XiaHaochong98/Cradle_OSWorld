@@ -34,9 +34,7 @@ def pause_game():
     if not is_env_paused():
         io_env.handle_hold_in_pause()
 
-        time.sleep(PAUSE_SCREEN_WAIT)
         pydirectinput.press('esc')
-
         time.sleep(PAUSE_SCREEN_WAIT)
     else:
         logger.debug("The environment does not need to be paused!")

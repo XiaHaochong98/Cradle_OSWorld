@@ -41,10 +41,10 @@ def cancel_shopkeeper_interaction():
 #     """
 #     ahk.mouse_move(width, height, speed=speed, relative=relative)
 
-@register_skill("select_product")
-def select_product(x, y):
+@register_skill("mouse_select_item")
+def mouse_select_item(x, y):
     """
-    Move the mouse to a specific location to select the product in the game.
+    Move the mouse to a specific location to select the item in the game.
     Parameters:
     - x: The normalized abscissa of the pixel.
     - y: The normalized ordinate of the pixel.
@@ -52,10 +52,10 @@ def select_product(x, y):
     io_env.mouse_move_normalized(x, y)
 
 
-@register_skill("mouse_select_target_object")
-def mouse_select_target_object():
+@register_skill("mouse_confirm_item")
+def mouse_confirm_item():
     """
-    Confirms the selection by clicking the left mouse button once.
+    Confirms the selection item by clicking the left mouse button once.
     """
     io_env.mouse_click_button(button=io_env.LEFT_MOUSE_BUTTON)
 
@@ -118,14 +118,13 @@ def select_next_product():
 __all__ = [
     "shopkeeper_interaction",
     "cancel_shopkeeper_interaction",
-    #"select_products_by_mouse",
-    #"choose_products_at",
+    #"mouse_select_item",
+    #"mouse_confirm_item",
     "select_upside_product",
     "select_downside_product",
     #"select_next_product",
     "select_leftside_product",
     "select_rightside_product",
-    #"mouse_select_target_object",
     #"go_back"
 ]
 
