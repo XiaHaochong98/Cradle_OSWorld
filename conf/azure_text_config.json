@@ -1,6 +1,6 @@
 {
-	"key_var" : "AZ_OPENAI_KEY",
-	"base_var": "AZ_BASE_URL",
+	"key_var" : "AZ_TXT_OPENAI_KEY",
+	"base_var": "AZ_TXT_BASE_URL",
 	"models": {
 		"gpt-4": "gpt-4",
 		"text-embedding-ada-002": "text-embedding-ada-002"

@@ -127,7 +127,6 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             engine = self._get_azure_deployment_id_for_model(self.embedding_model)
             openai_args = {
                 "model": self.embedding_model,
-                "engine": engine,
             }
 
         return openai_args
@@ -322,8 +321,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
 
             """Send a request to the OpenAI API."""
             if self.provider_cfg[PROVIDER_SETTING_IS_AZURE]:
-                response = self.client.chat.completions.create(deployment_id=self.get_azure_deployment_id_for_model(model),
-                model=model,
+                response = self.client.chat.completions.create(model=model,
                 messages=messages,
                 temperature=temperature,
                 seed=seed,
