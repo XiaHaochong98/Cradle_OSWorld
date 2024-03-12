@@ -656,9 +656,6 @@ def main_pipeline(planner_params, task_description, skill_library, use_success_d
             logger.write(f'Long Horizon: {long_horizon}')
             logger.write(f'Generated Actions: {all_generated_actions}')
 
-            if screen_classification.lower() == constants.GENERAL_GAME_INTERFACE:
-                gm.pause_game(screen_classification.lower())
-
             if use_self_reflection and start_frame_id > -1:
                 input = planner.self_reflection_.input_map
                 action_frames = []
@@ -941,7 +938,7 @@ if __name__ == '__main__':
         }
     }
 
-    skill_library = ['turn', 'move_forward', 'turn_and_move_forward', 'follow', 'aim', 'shoot', 'shoot_wolves', 'select_weapon', 'select_sidearm', 'fight', 'mount_horse']
+    skill_library = ['turn', 'move_forward', 'turn_and_move_forward', 'follow', 'aim', 'shoot', 'shoot_wolves', 'select_weapon', 'select_sidearm', 'fight', 'mount_horse', 'select_upside_product', 'select_downside_product', 'select_rightside_product', 'select_leftside_product', 'select_previous_index_object', 'select_next_index_object']
     #skill_library = move_skills + follow_skills
     #task_description =  "Follow Dutch."
     #task_description =  "Hitch your horse."
