@@ -1,24 +1,23 @@
 import time
 import argparse
-import math
 
-from uac.gameio import GameManager
-from uac.gameio.lifecycle.ui_control import switch_to_code, switch_to_game, segment_minimap, exit_back_to_game
-from uac.gameio.composite_skills.navigation import cv_navigation
-from uac.gameio.composite_skills.go_to_icon import go_to_horse
-from uac.utils.template_matching import match_template_image
-from uac.gameio.atomic_skills.map import open_map, open_index, close_index
-from uac.gameio.lifecycle.ui_control import unpause_game, pause_game
-from uac.gameio.atomic_skills.combat import shoot, aim, fight
-from uac.gameio.atomic_skills.move import turn, mount_horse, move_forward
-from uac.gameio.composite_skills.follow import follow
-from uac.gameio.composite_skills.auto_shoot import shoot_wolves, shoot_people
-from uac.gameio.skill_registry import SkillRegistry
-from uac.config import Config
-from uac.log import Logger
-from uac.gameio import IOEnvironment
-from uac.log.logger import shrink_log_message
-from uac.gameio.io_env import IOEnvironment, _theta_calculation
+from cradle.gameio import GameManager
+from cradle.gameio.lifecycle.ui_control import switch_to_game, segment_minimap, exit_back_to_game
+from cradle.gameio.composite_skills.navigation import cv_navigation
+from cradle.gameio.composite_skills.go_to_icon import go_to_horse
+from cradle.utils.template_matching import match_template_image
+from cradle.gameio.atomic_skills.map import open_map, open_index, close_index
+from cradle.gameio.lifecycle.ui_control import unpause_game, pause_game
+from cradle.gameio.atomic_skills.combat import shoot, aim, fight
+from cradle.gameio.atomic_skills.move import turn, mount_horse, move_forward
+from cradle.gameio.composite_skills.follow import follow
+from cradle.gameio.composite_skills.auto_shoot import shoot_wolves, shoot_people
+from cradle.gameio.skill_registry import SkillRegistry
+from cradle.config import Config
+from cradle.log import Logger
+from cradle.gameio import IOEnvironment
+from cradle.log.logger import process_log_messages
+from cradle.gameio.io_env import IOEnvironment, _theta_calculation
 
 config = Config()
 logger = Logger()

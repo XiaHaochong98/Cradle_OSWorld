@@ -4,15 +4,15 @@ import argparse
 import time
 import json
 
-from uac.agent import Agent
-from uac.config import Config
-from uac.gameio import GameManager
-from uac.planner.planner import Planner
-from uac.log import Logger
-from uac.provider.openai import OpenAIProvider, encode_image_path
-from uac.utils.file_utils import assemble_project_path, read_resource_file
-from uac.memory import LocalMemory
-from uac.gameio.skill_registry import SkillRegistry
+from cradle.agent import Agent
+from cradle.config import Config
+from cradle.gameio import GameManager
+from cradle.planner.planner import Planner
+from cradle.log import Logger
+from cradle.provider.openai import OpenAIProvider, encode_image_path
+from cradle.utils.file_utils import assemble_project_path, read_resource_file
+from cradle.memory import LocalMemory
+from cradle.gameio.skill_registry import SkillRegistry
 
 
 def main(args):
@@ -24,28 +24,6 @@ def main(args):
     provider = OpenAIProvider()
     provider.init_provider(args.providerConfig) # config passed in from command line argument
                                                 # in vscode, there is already an example ready to run, no need to pass parameters here
-
-    # sample call to get an embedding
-    # res_emb = provider.embed_query("Hello world")
-
-    # sample call to get a completion from messages with text and image
-
-    rel_image = "./res/samples/game_screenshot.jpg"
-    image = assemble_project_path(rel_image)
-    base64_image = encode_image_path(image)
-
-    prompt_messages=[
-        {"role": "system", "content": [
-            {"type" : "text", "text" : "Act like an agent to interpret my commands."}
-        ]},
-        {"role": "user", "content": [
-            {"type": "text", "text": "Who are you and what is your version? Are you GPT-4V? Can I send you an image?"},
-            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
-        ]}
-    ]
-
-    # res_comp = provider.create_completion(prompt_messages)
-    # response = res_comp[0]
 
     # Creating game manager to interact with game
     gm = GameManager(env_name = config.env_name,
@@ -84,9 +62,6 @@ def main(args):
     }
 
     planner = Planner(llm_provider=provider, planner_params=planner_params, use_screen_classification = False, use_information_summary= False)
-
-    # result_str = planner._gather_information(screenshot_file=rel_image)
-    # result = json.loads(result_str)["description"]
 
     # Creating agent with its dependencies
     agent = Agent("UAC Agent", memory, gm, planner)
