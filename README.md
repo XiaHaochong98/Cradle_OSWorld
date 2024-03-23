@@ -251,7 +251,7 @@ Enable to show the speaker's name in the subtitles.
 ### 3. File Structure（Outdated. Do not read）
 Most of our code are in the uac/gameio and uac/utils.
 
-#### 3.1 uac/gameio/atomic_skills:
+#### 3.1 cradle/environment/rdr2/atomic_skills:
 move.py: Includes turn, move_forward, mount horse and dismount horse.
 
 map.py: Includes the operations needed to open the map and manipulate with the map.
@@ -291,10 +291,10 @@ In the trade_utils.py
 -   select_products
 -   confirm_selection
 
-#### 3.2 uac/gameio/composite_skills:
+#### 3.2 cradle/environment/rdr2/composite_skills:
 Currently, we only have 'cv_navigation' as a composite skill. Includes calculate_turn_angle (between the red line in the mini-map and the normal line, which is used in the cv_navigation).
 
-#### 3.4 uac/gameio/lifecycle/ui_control.py
+#### 3.4 cradle/environment/rdr2/lifecycle/ui_control.py
 Contains code for switch game and code between two desktops and take_screenshot of the game.
 
 

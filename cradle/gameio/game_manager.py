@@ -4,9 +4,9 @@ from typing import Tuple
 from cradle.config import Config
 from cradle.gameio import IOEnvironment
 from cradle.log import Logger
-from cradle.gameio.lifecycle.ui_control import take_screenshot, segment_minimap, switch_to_game, pause_game, unpause_game, exit_back_to_pause
-from cradle.gameio.composite_skills.navigation import navigate_path
-from cradle.gameio.skill_registry import SkillRegistry
+from cradle.environment.rdr2.lifecycle.ui_control import take_screenshot, segment_minimap, switch_to_game, pause_game, unpause_game, exit_back_to_pause
+from cradle.environment.rdr2.composite_skills.navigation import navigate_path
+from cradle.environment.rdr2.skill_registry import SkillRegistry
 from cradle import constants
 
 config = Config()

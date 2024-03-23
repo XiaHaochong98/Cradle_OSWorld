@@ -8,6 +8,7 @@ from colorama import Fore, Style, init as colours_on
 import pyautogui
 
 from cradle import constants
+from cradle.utils.json_utils import load_json
 from cradle.utils import Singleton
 from cradle.utils.file_utils import assemble_project_path, get_project_root
 
@@ -37,7 +38,9 @@ class Config(metaclass=Singleton):
     work_dir = './runs'
     log_dir = './logs'
 
-    env_name = "Red Dead Redemption 2"
+    # env name
+    env_name = "-"
+    env_sub_path = "-"
 
     # config for frame extraction
     VideoFrameExtractor_path = "./res/tool/subfinder/VideoSubFinderWXW.exe"
@@ -79,9 +82,9 @@ class Config(metaclass=Singleton):
         # Parallel request to LLM parameters
         self.parallel_request_gather_information = True
 
-        #Skill retrieval
+        # Skill retrieval
         self.skill_from_local = True
-        self.skill_local_path = './res/skills'
+        self.skill_local_path = './res/skills/' + self.env_sub_path + '/'
         self.skill_retrieval = False
         self.skill_num = 10
         self.skill_scope = 'Full' #'Full', 'Basic', and None
@@ -118,6 +121,24 @@ class Config(metaclass=Singleton):
         self._set_game_window_info()
 
 
+    def load_env_config(self, env_config_path):
+        """Load environment specific configuration."""
+        path = assemble_project_path(env_config_path)
+        env_config = load_json(path)
+
+        self.env_name = env_config["env_name"]
+        self.env_sub_path = env_config["sub_path"]
+
+        self.skill_local_path = './res/skills/' + self.env_sub_path + '/'
+
+        self._set_game_window_info()
+
+
+    def set_env_name(self, env_name: str) -> None:
+        """Set the environment name."""
+        self.env_name = env_name
+
+
     def set_fixed_seed(self, is_fixed: bool = True, seed: int = DEFAULT_FIXED_SEED_VALUE, temperature: float = DEFAULT_FIXED_TEMPERATURE_VALUE) -> None:
         """Set the fixed seed values. By default, used the default values. Please avoid using different values."""
         self.fixed_seed = is_fixed
@@ -152,7 +173,7 @@ class Config(metaclass=Singleton):
         game_window.width = self.DEFAULT_GAME_RESOLUTION[0]
         game_window.height = self.DEFAULT_GAME_RESOLUTION[1]
 
-        if len(named_windows) == 0:
+        if len(named_windows) == 0 or len(named_windows) > 1:
             self._config_warn(f'-----------------------------------------------------------------')
             self._config_warn(f'Cannot find the env window. Assuming this is an offline test run!')
             self._config_warn(f'-----------------------------------------------------------------')

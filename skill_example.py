@@ -2,17 +2,16 @@ import time
 import argparse
 
 from cradle.gameio import GameManager
-from cradle.gameio.lifecycle.ui_control import switch_to_game, segment_minimap, exit_back_to_game
-from cradle.gameio.composite_skills.navigation import cv_navigation
-from cradle.gameio.composite_skills.go_to_icon import go_to_horse
+from cradle.environment.rdr2.lifecycle.ui_control import switch_to_game, segment_minimap, exit_back_to_game, unpause_game, pause_game
+from cradle.environment.rdr2.composite_skills.navigation import cv_navigation
+from cradle.environment.rdr2.composite_skills.go_to_icon import go_to_horse
 from cradle.utils.template_matching import match_template_image
-from cradle.gameio.atomic_skills.map import open_map, open_index, close_index
-from cradle.gameio.lifecycle.ui_control import unpause_game, pause_game
-from cradle.gameio.atomic_skills.combat import shoot, aim, fight
-from cradle.gameio.atomic_skills.move import turn, mount_horse, move_forward
-from cradle.gameio.composite_skills.follow import follow
-from cradle.gameio.composite_skills.auto_shoot import shoot_wolves, shoot_people
-from cradle.gameio.skill_registry import SkillRegistry
+from cradle.environment.rdr2.atomic_skills.map import open_map, open_index, close_index
+from cradle.environment.rdr2.atomic_skills.combat import shoot, aim, fight
+from cradle.environment.rdr2.atomic_skills.move import turn, mount_horse, move_forward
+from cradle.environment.rdr2.composite_skills.follow import follow
+from cradle.environment.rdr2.composite_skills.auto_shoot import shoot_wolves, shoot_people
+from cradle.environment.rdr2.skill_registry import SkillRegistry
 from cradle.config import Config
 from cradle.log import Logger
 from cradle.gameio import IOEnvironment

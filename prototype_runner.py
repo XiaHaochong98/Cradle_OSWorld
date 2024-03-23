@@ -14,16 +14,16 @@ from cradle.memory import LocalMemory
 from cradle.provider.openai import OpenAIProvider
 from cradle.provider import GdProvider
 from cradle.gameio.io_env import IOEnvironment
-from cradle.gameio.lifecycle.ui_control import switch_to_game, IconReplacer
+from cradle.environment.rdr2.lifecycle.ui_control import switch_to_game, IconReplacer
 from cradle.gameio.video.VideoRecorder import VideoRecorder
 from cradle.gameio.video.VideoFrameExtractor import VideoFrameExtractor
-from cradle.gameio.atomic_skills.trade_utils import __all__ as trade_skills
-from cradle.gameio.atomic_skills.buy import __all__ as buy_skills
-from cradle.gameio.atomic_skills.map import __all__ as map_skills
-from cradle.gameio.atomic_skills.move import __all__ as move_skills
-from cradle.gameio.atomic_skills.combat import __all__ as combat_skills
-from cradle.gameio.composite_skills.auto_shoot import __all__ as auto_shoot_skills
-from cradle.gameio.composite_skills.follow import __all__ as follow_skills
+from cradle.environment.rdr2.atomic_skills.trade_utils import __all__ as trade_skills
+from cradle.environment.rdr2.atomic_skills.buy import __all__ as buy_skills
+from cradle.environment.rdr2.atomic_skills.map import __all__ as map_skills
+from cradle.environment.rdr2.atomic_skills.move import __all__ as move_skills
+from cradle.environment.rdr2.atomic_skills.combat import __all__ as combat_skills
+from cradle.environment.rdr2.composite_skills.auto_shoot import __all__ as auto_shoot_skills
+from cradle.environment.rdr2.composite_skills.follow import __all__ as follow_skills
 from cradle import constants
 
 config = Config()
@@ -461,8 +461,15 @@ if __name__ == '__main__':
         default="./conf/openai_config.json",
     )
 
+    parser.add_argument(
+        "--envConfig",
+        type=str,
+        default="./conf/env_config_rdr2.json",
+    )
+
     args = parser.parse_args()
 
+    config.load_env_config(args.envConfig)
     config.set_fixed_seed()
 
     # only change the input for different sub-modules
@@ -478,20 +485,20 @@ if __name__ == '__main__':
         ],
         "prompt_paths": {
             "inputs": {
-                "decision_making": "./res/prompts/inputs/decision_making.json",
-                "gather_information": "./res/prompts/inputs/gather_information.json",
-                "success_detection": "./res/prompts/inputs/success_detection.json",
-                "self_reflection": "./res/prompts/inputs/self_reflection.json",
-                "information_summary": "./res/prompts/inputs/information_summary.json",
-                "gather_text_information": "./res/prompts/inputs/gather_text_information.json"
+                "decision_making": "./res/prompts/inputs/rdr2/decision_making.json",
+                "gather_information": "./res/prompts/inputs/rdr2/gather_information.json",
+                "success_detection": "./res/prompts/inputs/rdr2/success_detection.json",
+                "self_reflection": "./res/prompts/inputs/rdr2/self_reflection.json",
+                "information_summary": "./res/prompts/inputs/rdr2/information_summary.json",
+                "gather_text_information": "./res/prompts/inputs/rdr2/gather_text_information.json"
             },
             "templates": {
-                "decision_making": "./res/prompts/templates/decision_making.prompt",
-                "gather_information": "./res/prompts/templates/gather_information.prompt",
-                "success_detection": "./res/prompts/templates/success_detection.prompt",
-                "self_reflection": "./res/prompts/templates/self_reflection.prompt",
-                "information_summary": "./res/prompts/templates/information_summary.prompt",
-                "gather_text_information": "./res/prompts/templates/gather_text_information.prompt"
+                "decision_making": "./res/prompts/templates/rdr2/decision_making.prompt",
+                "gather_information": "./res/prompts/templates/rdr2/gather_information.prompt",
+                "success_detection": "./res/prompts/templates/rdr2/success_detection.prompt",
+                "self_reflection": "./res/prompts/templates/rdr2/self_reflection.prompt",
+                "information_summary": "./res/prompts/templates/rdr2/information_summary.prompt",
+                "gather_text_information": "./res/prompts/templates/rdr2/gather_text_information.prompt"
             },
         }
     }

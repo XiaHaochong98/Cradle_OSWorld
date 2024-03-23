@@ -15,7 +15,6 @@ from cradle.utils import Singleton
 from cradle.config import Config
 from cradle.log import Logger
 
-
 config = Config()
 logger = Logger()
 

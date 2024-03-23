@@ -6,7 +6,7 @@ import numpy as np
 from torchvision.ops import box_convert
 from groundingdino.util.inference import load_model, load_image
 
-from cradle.gameio.lifecycle.ui_control import annotate_with_coordinates, segment_minimap
+from cradle.environment.rdr2.lifecycle.ui_control import annotate_with_coordinates, segment_minimap
 from cradle.utils import Singleton
 from cradle.log import Logger
 from cradle import constants

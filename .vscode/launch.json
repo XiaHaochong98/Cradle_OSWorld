@@ -15,6 +15,7 @@
             },
             "args": [
                      "--providerConfig", "./conf/openai_config.json",
+                     "--envConfig", "./conf/env_config_rdr2.json",
                      // "--providerConfig", "./conf/azure_vis_config.json",
                     ],
             // "justMyCode": true

@@ -2,9 +2,6 @@ import json
 import re
 
 from cradle import constants
-from cradle.log import Logger
-
-logger = Logger()
 
 
 def load_json(file_path):
@@ -54,8 +51,7 @@ def parse_semi_formatted_json(json_string):
         obj = json.loads(response)
 
     except Exception as e:
-        logger.error(f"Error in processing json: {e}. Object was: {json_string}.")
-        logger.error_ex(e)
+        raise ValueError(f"Error in processing json: {e}. Object was: {json_string}.") from e
 
     return obj
 

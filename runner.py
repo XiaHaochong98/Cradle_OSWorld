@@ -1,8 +1,4 @@
-import os
-import sys
 import argparse
-import time
-import json
 
 from cradle.agent import Agent
 from cradle.config import Config
@@ -12,7 +8,7 @@ from cradle.log import Logger
 from cradle.provider.openai import OpenAIProvider, encode_image_path
 from cradle.utils.file_utils import assemble_project_path, read_resource_file
 from cradle.memory import LocalMemory
-from cradle.gameio.skill_registry import SkillRegistry
+from cradle.environment.rdr2.skill_registry import SkillRegistry
 
 
 def main(args):
@@ -45,18 +41,18 @@ def main(args):
         ],
         "prompt_paths": {
             "inputs": {
-                "decision_making": "./res/prompts/inputs/decision_making.json",
-                "gather_information": "./res/prompts/inputs/gather_information.json",
-                "success_detection": "./res/prompts/inputs/success_detection.json",
-                "information_summary": "./res/prompts/inputs/information_summary.json",
-                "gather_text_information": "./res/prompts/inputs/gather_text_information.json",
+                "decision_making": "./res/prompts/inputs/rdr2/decision_making.json",
+                "gather_information": "./res/prompts/inputs/rdr2/gather_information.json",
+                "success_detection": "./res/prompts/inputs/rdr2/success_detection.json",
+                "information_summary": "./res/prompts/inputs/rdr2/information_summary.json",
+                "gather_text_information": "./res/prompts/inputs/rdr2/gather_text_information.json",
             },
             "templates": {
-                "decision_making": "./res/prompts/templates/decision_making.prompt",
-                "gather_information": "./res/prompts/templates/gather_information.prompt",
-                "success_detection": "./res/prompts/templates/success_detection.prompt",
-                "information_summary": "./res/prompts/templates/information_summary.prompt",
-                "gather_text_information": "./res/prompts/templates/gather_text_information.prompt",
+                "decision_making": "./res/prompts/templates/rdr2/decision_making.prompt",
+                "gather_information": "./res/prompts/templates/rdr2/gather_information.prompt",
+                "success_detection": "./res/prompts/templates/rdr2/success_detection.prompt",
+                "information_summary": "./res/prompts/templates/rdr2/information_summary.prompt",
+                "gather_text_information": "./res/prompts/templates/rdr2/gather_text_information.prompt",
             },
         }
     }
@@ -78,6 +74,12 @@ if __name__ == "__main__":
         "--providerConfig",
         type=str,
         default="./conf/openai_config.json",
+    )
+
+    parser.add_argument(
+        "--envConfig",
+        type=str,
+        default="./conf/env_config_rdr2.json",
     )
 
     # parser.add_argument(
