@@ -31,33 +31,9 @@ def main(args):
 
     # Creating planner, which encapsulates model use
 
-    planner_params = {
-        "__check_list__": [
-            "decision_making",
-            "gather_information",
-            "success_detection",
-            "information_summary",
-            "gather_text_information",
-        ],
-        "prompt_paths": {
-            "inputs": {
-                "decision_making": "./res/prompts/inputs/rdr2/decision_making.json",
-                "gather_information": "./res/prompts/inputs/rdr2/gather_information.json",
-                "success_detection": "./res/prompts/inputs/rdr2/success_detection.json",
-                "information_summary": "./res/prompts/inputs/rdr2/information_summary.json",
-                "gather_text_information": "./res/prompts/inputs/rdr2/gather_text_information.json",
-            },
-            "templates": {
-                "decision_making": "./res/prompts/templates/rdr2/decision_making.prompt",
-                "gather_information": "./res/prompts/templates/rdr2/gather_information.prompt",
-                "success_detection": "./res/prompts/templates/rdr2/success_detection.prompt",
-                "information_summary": "./res/prompts/templates/rdr2/information_summary.prompt",
-                "gather_text_information": "./res/prompts/templates/rdr2/gather_text_information.prompt",
-            },
-        }
-    }
+    planner_params = gm.interface.planner_params
 
-    planner = Planner(llm_provider=provider, planner_params=planner_params, use_screen_classification = False, use_information_summary= False)
+    planner = Planner(llm_provider=provider, planner_params=planner_params, use_information_summary= False)
 
     # Creating agent with its dependencies
     agent = Agent("UAC Agent", memory, gm, planner)

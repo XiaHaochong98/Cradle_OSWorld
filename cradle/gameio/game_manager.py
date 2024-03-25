@@ -4,15 +4,12 @@ from typing import Tuple
 from cradle.config import Config
 from cradle.gameio import IOEnvironment
 from cradle.log import Logger
-from cradle.environment.rdr2.lifecycle.ui_control import take_screenshot, segment_minimap, switch_to_game, pause_game, unpause_game, exit_back_to_pause
-from cradle.environment.rdr2.composite_skills.navigation import navigate_path
-from cradle.environment.rdr2.skill_registry import SkillRegistry
 from cradle import constants
+from cradle.environment import ENVIORNMENT_REGISTRY
 
 config = Config()
 logger = Logger()
 io_env = IOEnvironment()
-
 
 class GameManager:
 
@@ -22,29 +19,33 @@ class GameManager:
         embedding_provider = None
     ):
         self.env_name = env_name
-        self.skill_registry = SkillRegistry(local_path = config.skill_local_path,
-                                            from_local = config.skill_from_local,
-                                            store_path = config.work_dir,
-                                            skill_scope = config.skill_scope,
-                                            embedding_provider = embedding_provider)
+        self.env_short_name = config.env_short_name
+        self.interface = ENVIORNMENT_REGISTRY[self.env_short_name]()
+        self.skill_registry = self.interface.SkillRegistry(
+            local_path = config.skill_local_path,
+            from_local = config.skill_from_local,
+            store_path = config.work_dir,
+            skill_scope = config.skill_scope,
+            embedding_provider = embedding_provider
+        )
 
 
     def pause_game(self, screen_type=constants.GENERAL_GAME_INTERFACE):
 
         if screen_type==constants.GENERAL_GAME_INTERFACE or screen_type==constants.PAUSE_INTERFACE or screen_type==constants.RADIAL_INTERFACE:
-            pause_game()
+            self.interface.pause_game()
 
 
     def unpause_game(self):
-        unpause_game()
+        self.interface.unpause_game()
 
 
     def switch_to_game(self):
-        switch_to_game()
+        self.interface.switch_to_game()
 
 
     def exit_back_to_pause(self):
-        exit_back_to_pause()
+        self.interface.exit_back_to_pause()
 
 
     def get_skill_information(self, skill_list):
@@ -82,11 +83,9 @@ class GameManager:
 
         # Execute action
         total_time_step = 500
-
         if action == "navigate_path":
-
             time.sleep(2)
-            navigate_path(total_time_step)
+            self.interface.navigate_path(total_time_step)
 
 
     def execute_actions(self, actions):
@@ -157,11 +156,11 @@ class GameManager:
 
     def capture_screen(self, include_minimap = False):
         tid = time.time()
-        return take_screenshot(tid, include_minimap=include_minimap)
+        return self.interface.take_screenshot(tid, include_minimap=include_minimap)
 
 
     def extract_minimap(self, screenshot_path):
-        return segment_minimap(screenshot_path)
+        return self.interface.segment_minimap(screenshot_path)
 
 
     def list_session_screenshots(self, session_dir: str = config.work_dir):

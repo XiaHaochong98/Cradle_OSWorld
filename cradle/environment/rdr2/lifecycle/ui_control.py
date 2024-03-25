@@ -490,3 +490,14 @@ class IconReplacer:
             replaced_image_paths.append(save_path)
 
         return replaced_image_paths
+
+__all__ = [
+    "pause_game",
+    "unpause_game",
+    "exit_back_to_game",
+    "exit_back_to_pause",
+    "take_screenshot",
+    "segment_minimap",
+    "switch_to_game",
+    "IconReplacer"
+]

@@ -41,6 +41,7 @@ class Config(metaclass=Singleton):
     # env name
     env_name = "-"
     env_sub_path = "-"
+    env_short_name = "-"
 
     # config for frame extraction
     VideoFrameExtractor_path = "./res/tool/subfinder/VideoSubFinderWXW.exe"
@@ -113,6 +114,7 @@ class Config(metaclass=Singleton):
 
         self.env_name = env_config["env_name"]
         self.env_sub_path = env_config["sub_path"]
+        self.env_short_name = env_config["env_short_name"]
 
         # Base resolution and region for the game in 4k, used for angle scaling
         self.base_resolution = (3840, 2160)
