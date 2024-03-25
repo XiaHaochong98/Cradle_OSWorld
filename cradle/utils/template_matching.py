@@ -88,7 +88,6 @@ def match_template_image(src_file: str, template_file: str, debug = False, outpu
     # Resize template according to resolution ratio
     template = cv2.resize(template, (0, 0), fx=config.resolution_ratio, fy=config.resolution_ratio)
 
-
     if rotate_angle != 0:
         h, w, c = image.shape
         M = cv2.getRotationMatrix2D((w // 2, h // 2), rotate_angle, 1)

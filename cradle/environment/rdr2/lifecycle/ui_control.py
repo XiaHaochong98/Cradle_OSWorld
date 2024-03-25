@@ -2,8 +2,6 @@ import os, math
 import time
 from typing import Any
 
-import pydirectinput
-import pyautogui
 from PIL import Image, ImageDraw, ImageFont
 import cv2
 import numpy as np
@@ -31,7 +29,7 @@ def pause_game():
     if not is_env_paused():
         io_env.handle_hold_in_pause()
 
-        pydirectinput.press('esc')
+        io_env.key_press('esc')
         time.sleep(PAUSE_SCREEN_WAIT)
     else:
         logger.debug("The environment does not need to be paused!")
@@ -42,7 +40,7 @@ def pause_game():
 
 def unpause_game():
     if is_env_paused():
-        pydirectinput.press('esc')
+        io_env.key_press('esc', 0)
         time.sleep(PAUSE_SCREEN_WAIT)
 
         io_env.handle_hold_in_unpause()
@@ -57,7 +55,7 @@ def exit_back_to_pause():
     back_steps = 0
     while not is_env_paused() and back_steps < max_steps:
         back_steps += 1
-        pydirectinput.press('esc')
+        io_env.key_press('esc')
         time.sleep(PAUSE_SCREEN_WAIT)
 
     if back_steps >= max_steps:
@@ -73,7 +71,7 @@ def exit_back_to_game():
 
 
 def switch_to_game():
-    named_windows = pyautogui.getWindowsWithTitle(config.env_name)
+    named_windows = io_env.get_windows_by_name(config.env_name)
     if len(named_windows) == 0:
         logger.error(f"Cannot find the game window {config.env_name}!")
         return
@@ -92,11 +90,17 @@ def switch_to_game():
     time.sleep(1)
 
 
-def take_screenshot(tid : float = 0.0,
-                    screen_region : tuple[int, int, int, int] = config.game_region,
-                    minimap_region : tuple[int, int, int, int] = config.minimap_region,
+def take_screenshot(tid : float,
+                    screen_region : tuple[int, int, int, int] = None,
+                    minimap_region : tuple[int, int, int, int] = None,
                     include_minimap = True,
                     draw_axis = False):
+
+    if screen_region is None:
+        screen_region = config.game_region
+
+    if minimap_region is None:
+        minimap_region = config.base_minimap_region
 
     region = screen_region
     region = {

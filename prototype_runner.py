@@ -65,7 +65,7 @@ def trigger_pipeline_loop(llm_provider_config_path, planner_params, task_descrip
 
     switch_to_game()
 
-    videocapture=VideoRecorder(os.path.join(config.work_dir, 'video.mp4'))
+    videocapture=VideoRecorder(os.path.join(config.work_dir, 'video.mp4'), config)
     videocapture.start_capture()
     start_frame_id = videocapture.get_current_frame_id()
 

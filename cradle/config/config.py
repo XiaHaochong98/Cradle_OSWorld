@@ -5,9 +5,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from colorama import Fore, Style, init as colours_on
-import pyautogui
 
 from cradle import constants
+import cradle
 from cradle.utils.json_utils import load_json
 from cradle.utils import Singleton
 from cradle.utils.file_utils import assemble_project_path, get_project_root
@@ -61,14 +61,6 @@ class Config(metaclass=Singleton):
         if self.fixed_seed:
             self.set_fixed_seed()
 
-        # Base resolution and region for the game in 4k, used for angle scaling
-        self.base_resolution = (3840, 2160)
-        self.base_minimap_region = (112, 1450, 640, 640)
-
-        # Full screen resolution for normalizing mouse movement
-        self.screen_resolution = pyautogui.size()
-        self.mouse_move_factor = self.screen_resolution[0] / self.base_resolution[0]
-
         # Default LLM parameters
         self.temperature = float(os.getenv("TEMPERATURE", self.temperature))
         self.max_tokens = int(os.getenv("MAX_TOKENS", "1024"))
@@ -81,13 +73,6 @@ class Config(metaclass=Singleton):
 
         # Parallel request to LLM parameters
         self.parallel_request_gather_information = True
-
-        # Skill retrieval
-        self.skill_from_local = True
-        self.skill_local_path = './res/skills/' + self.env_sub_path + '/'
-        self.skill_retrieval = False
-        self.skill_num = 10
-        self.skill_scope = 'Full' #'Full', 'Basic', and None
 
         # video
         self.video_fps = 8
@@ -118,20 +103,33 @@ class Config(metaclass=Singleton):
             self._set_latest_memory_path()
 
         self._set_dirs()
-        self._set_game_window_info()
 
 
     def load_env_config(self, env_config_path):
         """Load environment specific configuration."""
+
         path = assemble_project_path(env_config_path)
         env_config = load_json(path)
 
         self.env_name = env_config["env_name"]
         self.env_sub_path = env_config["sub_path"]
 
-        self.skill_local_path = './res/skills/' + self.env_sub_path + '/'
+        # Base resolution and region for the game in 4k, used for angle scaling
+        self.base_resolution = (3840, 2160)
+        self.base_minimap_region = (112, 1450, 640, 640)
+
+        # Full screen resolution for normalizing mouse movement
+        self.screen_resolution = cradle.gameio.gui_utils.get_screen_size()
+        self.mouse_move_factor = self.screen_resolution[0] / self.base_resolution[0]
 
         self._set_game_window_info()
+
+        # Skill retrieval
+        self.skill_from_local = True
+        self.skill_local_path = './res/skills/' + self.env_sub_path + '/'
+        self.skill_retrieval = False
+        self.skill_num = 10
+        self.skill_scope = 'Full' #'Full', 'Basic', and None
 
 
     def set_env_name(self, env_name: str) -> None:
@@ -164,7 +162,7 @@ class Config(metaclass=Singleton):
 
     def _set_game_window_info(self):
 
-        named_windows = pyautogui.getWindowsWithTitle(self.env_name)
+        named_windows = cradle.gameio.gui_utils.get_named_windows(self.env_name)
 
         # Fake game window info for testing cases with no running game
         game_window = namedtuple('A', ['left', 'top', 'width', 'height'])

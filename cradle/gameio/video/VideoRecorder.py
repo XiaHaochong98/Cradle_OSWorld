@@ -74,11 +74,11 @@ class FrameBuffer():
 
 class VideoRecorder():
 
-    def __init__(self, video_path: str, screen_region: Tuple[int, int, int, int] = config.game_region):
+    def __init__(self, video_path: str, config: Config):
         self.fps = config.video_fps
         self.max_size = 10000
         self.video_path = video_path
-        self.screen_region = screen_region
+        self.screen_region = config.game_region
         self.frame_size = (self.screen_region[2], self.screen_region[3])
 
         self.current_frame_id = -1
@@ -218,7 +218,7 @@ class VideoRecorder():
 
 
 if __name__ == '__main__':
-    capture_video = VideoRecorder('test.mp4')
+    capture_video = VideoRecorder('test.mp4', config)
 
     capture_video.start_capture()
     config.ocr_enabled = True

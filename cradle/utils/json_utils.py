@@ -79,7 +79,7 @@ def parse_semi_formatted_text(text):
             try:
                 current_key = line.rstrip(':').lower()
             except Exception as e:
-                logger.error(f"Response is not in the correct format: {e}\nReceived text was: {text}")
+                # logger.error(f"Response is not in the correct format: {e}\nReceived text was: {text}")
                 raise
 
             current_value = []

@@ -34,6 +34,7 @@ class SwitchWindow(object):
 
 if __name__ == "__main__":
 
+    config.load_env_config("./conf/env_config_rdr2.json")
     gm = GameManager(config.env_name)
 
     parser = argparse.ArgumentParser()
