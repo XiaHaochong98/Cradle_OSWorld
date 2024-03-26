@@ -42,7 +42,7 @@ def cv_navigation(total_iterations, terminal_threshold=NAVIGATION_TERMINAL_THRES
 
     warm_up = True
 
-    waypoint_marker_filename = f'./res/icons/{config.env_sub_path}/red_marker.jpg'
+    waypoint_marker_filename = f'./res/{config.env_sub_path}/icons/red_marker.jpg'
 
     try:
         for step in range(total_iterations):

@@ -16,27 +16,27 @@
         },
         {
             "introduction": "This is an example: The bounding box is clearly on the left side (not slightly left) of the image.",
-            "path": "./res/samples/rdr2/few_shot_leftside.jpg",
+            "path": "./res/rdr2/samples/few_shot_leftside.jpg",
             "assistant": "Yes, it is clearly on the left side."
         },
         {
             "introduction": "This is an example: The bounding box is slightly on the left side (not clearly left) of the image.",
-            "path": "./res/samples/rdr2/few_shot_slightly_leftside.jpg",
+            "path": "./res/rdr2/samples/few_shot_slightly_leftside.jpg",
             "assistant": "Yes, it is slightly on the left side."
         },
         {
             "introduction": "This is an example: The bounding box is clearly on the right side (not slightly right) of the image.",
-            "path": "./res/samples/rdr2/few_shot_rightside.jpg",
+            "path": "./res/rdr2/samples/few_shot_rightside.jpg",
             "assistant": "Yes, it is clearly on the right side."
         },
         {
             "introduction": "This is an example: The bounding box is slightly on the right side (not clearly right) of the image.",
-            "path": "./res/samples/rdr2/few_shot_slightly_rightside.jpg",
+            "path": "./res/rdr2/samples/few_shot_slightly_rightside.jpg",
             "assistant": "Yes, it is slightly on the right side."
         },
         {
             "introduction": "This is an example: The bounding box is on the central of the image.",
-            "path": "./res/samples/rdr2/few_shot_central.jpg",
+            "path": "./res/rdr2/samples/few_shot_central.jpg",
             "assistant": "Yes, it is on the central side."
         }
     ],

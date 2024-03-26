@@ -662,20 +662,20 @@ class Planner(BasePlanner):
             ],
             "prompt_paths": {
                 "inputs": {
-                    "decision_making": "./res/prompts/inputs/rdr2/decision_making.json",
-                    "gather_information": "./res/prompts/inputs/rdr2/gather_information.json",
-                    "success_detection": "./res/prompts/inputs/rdr2/success_detection.json",
-                    "self_reflection": "./res/prompts/inputs/rdr2/self_reflection.json",
-                    "information_summary": "./res/prompts/inputs/rdr2/information_summary.json",
-                    "gather_text_information": "./res/prompts/inputs/rdr2/gather_text_information.json"
+                    "decision_making": "./res/{config.env_sub_path}/prompts/inputs/decision_making.json",
+                    "gather_information": "./res/{config.env_sub_path}/prompts/inputs/gather_information.json",
+                    "success_detection": "./res/{config.env_sub_path}/prompts/inputs/success_detection.json",
+                    "self_reflection": "./res/{config.env_sub_path}/prompts/inputs/self_reflection.json",
+                    "information_summary": "./res/{config.env_sub_path}/prompts/inputs/information_summary.json",
+                    "gather_text_information": "./res/{config.env_sub_path}/prompts/inputs/gather_text_information.json"
                 },
                 "templates": {
-                    "decision_making": "./res/prompts/templates/rdr2/decision_making.prompt",
-                    "gather_information": "./res/prompts/templates/rdr2/gather_information.prompt",
-                    "success_detection": "./res/prompts/templates/rdr2/success_detection.prompt",
-                    "self_reflection": "./res/prompts/templates/rdr2/self_reflection.prompt",
-                    "information_summary": "./res/prompts/templates/rdr2/information_summary.prompt",
-                    "gather_text_information": "./res/prompts/templates/rdr2/gather_text_information.prompt"
+                    "decision_making": "./res/{config.env_sub_path}/prompts/templates/decision_making.prompt",
+                    "gather_information": "./res/{config.env_sub_path}/prompts/templates/gather_information.prompt",
+                    "success_detection": "./res/{config.env_sub_path}/prompts/templates/success_detection.prompt",
+                    "self_reflection": "./res/{config.env_sub_path}/prompts/templates/self_reflection.prompt",
+                    "information_summary": "./res/{config.env_sub_path}/prompts/templates/information_summary.prompt",
+                    "gather_text_information": "./res/{config.env_sub_path}/prompts/templates/gather_text_information.prompt"
                 },
             }
         }

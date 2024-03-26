@@ -188,13 +188,13 @@ Sample config for an OpenAI provider:
 
 ### 2. Prompt definition files
 
-Prompt files are located in the repo at ./res/prompts. Out of the code tree.
+Prompt files are located in the repo at ./res/rdr2/prompts. Out of the code tree.
 
 There three types of prompt-related files: input_example, output_example, and templates. Examples are json files. Templates are text files with special markers inside. See details below.
 
 Inside each of these directories, most files will fit into three categories: decision_making, gather_information, and success_detection
 
-Files are named according to the format: ./res/prompts/\<type\>/\<category\>_\<sub_task\>.\<ext\>
+Files are named according to the format: ./res/rdr2/prompts/\<type\>/\<category\>_\<sub_task\>.\<ext\>
 
 For example:
 ./res/**input_example**/**decision_making**_**follow_red_line**.json, is an example of **input** for the **decision making** prompt for the **follow the red line** sub-task. In the future, most filenamess will end in "_general", when they are not sub-task-specific anymore.

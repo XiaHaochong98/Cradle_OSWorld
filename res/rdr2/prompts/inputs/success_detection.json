@@ -6,12 +6,12 @@
     "image_introduction":[
         {
             "introduction": "This screenshot is the previous step of the game",
-            "path": "./res/prompts/testing/decision_making/rdr2/buy/10.jpg",
+            "path": "./res/rdr2/prompts/testing/decision_making//buy/10.jpg",
             "assistant": ""
         },
         {
             "introduction": "This screenshot is the current step of the game",
-            "path": "./res/prompts/testing/decision_making/rdr2/buy/11.jpg",
+            "path": "./res/rdr2/prompts/testing/decision_making/buy/11.jpg",
             "assistant": ""
         }
     ]

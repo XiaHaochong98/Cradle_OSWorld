@@ -197,7 +197,7 @@ def is_env_paused():
     confidence_threshold = 0.85
 
     # Multiple-scale-template-matching example, decide whether the game is paused according to the confidence score
-    pause_clock_template_file = f'./res/icons/{config.env_sub_path}/clock.jpg'
+    pause_clock_template_file = f'./res/{config.env_sub_path}/icons/clock.jpg'
 
     screenshot = take_screenshot(time.time(), include_minimap=False)[0]
     match_info = match_template_image(screenshot, pause_clock_template_file, debug=True, output_bb=True, save_matches=True, scale='full')
@@ -371,10 +371,10 @@ class CircleDetector:
 
 class IconReplacer:
 
-    def __init__(self, template_path = f'./res/icons/{config.env_sub_path}/keys'):
+    def __init__(self, template_path = f'./res/{config.env_sub_path}/icons/keys'):
 
         if '/-/' in template_path:
-            template_path = f'./res/icons/{config.env_sub_path}/keys'
+            template_path = f'./res/{config.env_sub_path}/icons/keys'
 
         self.template_paths = [os.path.join(template_path, filename) for filename in os.listdir(template_path)]
 

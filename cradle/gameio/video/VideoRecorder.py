@@ -74,7 +74,7 @@ class FrameBuffer():
 
 class VideoRecorder():
 
-    def __init__(self, video_path: str, config: Config):
+    def __init__(self, video_path: str):
         self.fps = config.video_fps
         self.max_size = 10000
         self.video_path = video_path

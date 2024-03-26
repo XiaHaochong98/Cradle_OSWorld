@@ -34,7 +34,7 @@ def go_to_icon(target: str = "horse", iterations=DEFAULT_GO_TO_ICON_ITERATIONS, 
     Parameters:
     - target: Name of the target icon type on the minimap. The default value is "horse"
     """
-    cv_go_to_icon(iterations, template_file=f'./res/icons/{config.env_sub_path}/{target}.jpg', debug=debug)
+    cv_go_to_icon(iterations, template_file=f'./res/{config.env_sub_path}/icons/{target}.jpg', debug=debug)
 
 
 def get_theta(origin_x, origin_y, center_x, center_y):

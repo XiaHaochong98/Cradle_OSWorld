@@ -5,27 +5,27 @@
     "image_introduction":[
         {
             "introduction": "the first image is the first screenshot of recent events",
-            "path": "./res/prompts/testing/decision_making/rdr2/map_create_waypoint/screenshots/1.jpg",
+            "path": "./res/rdr2/prompts/testing/decision_making/map_create_waypoint/screenshots/1.jpg",
             "assistant": ""
         },
         {
             "introduction": "the second image is the second screenshot of recent events",
-            "path": "./res/prompts/testing/decision_making/rdr2/map_create_waypoint/screenshots/2.jpg",
+            "path": "./res/rdr2/prompts/testing/decision_making/map_create_waypoint/screenshots/2.jpg",
             "assistant": ""
         },
         {
             "introduction": "the third image is the third screenshot of recent events",
-            "path": "./res/prompts/testing/decision_making/rdr2/map_create_waypoint/screenshots/3.jpg",
+            "path": "./res/rdr2/prompts/testing/decision_making/map_create_waypoint/screenshots/3.jpg",
             "assistant": ""
         },
         {
             "introduction": "the fourth image is the fourth screenshot of recent events",
-            "path": "./res/prompts/testing/decision_making/rdr2/map_create_waypoint/screenshots/4.jpg",
+            "path": "./res/rdr2/prompts/testing/decision_making//map_create_waypoint/screenshots/4.jpg",
             "assistant": ""
         },
         {
             "introduction": "the fifth image is the fifth screenshot of recent events",
-            "path": "./res/prompts/testing/decision_making/rdr2/map_create_waypoint/screenshots/5.jpg",
+            "path": "./res/rdr2/prompts/testing/decision_making/map_create_waypoint/screenshots/5.jpg",
             "assistant": ""
         }
     ]
