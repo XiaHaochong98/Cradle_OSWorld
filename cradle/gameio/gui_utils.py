@@ -116,7 +116,10 @@ def mouse_move_to(x, y, duration = -1, relative = False, screen_resolution = Non
         command = Input(ctypes.c_ulong(0), ii_)
         ctypes.windll.user32.SendInput(1, ctypes.pointer(command), ctypes.sizeof(command))
     else:
-        pyautogui.moveTo(x, y, duration=duration, relative=relative)
+        if relative == True:
+            pyautogui.move(x, y, duration=duration)
+        else:
+            pyautogui.moveTo(x, y, duration=duration)
 
 
 def get_mouse_location():
