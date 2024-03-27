@@ -1,7 +1,7 @@
 # UAC
 Repository for the Universal Agent Control project.
 
-Please setup your environment following [this page](./ENVIRONMENT.MD).
+Please setup your environment following [this page](./ENVIRONMENTS.md).
 
 ## Infra code
 

@@ -36,5 +36,5 @@ runner.py is the entry point to run an agent. Currently not working code, just a
 
 To setup the settings for each game or software. Please check out these pages for details.
 
-1. [Red Dead Redemption 2](docs/env/rdr2.md)
-2. [Stardew Valley](docs/env/stardew.md)
+1. [Red Dead Redemption 2](docs/envs/rdr2.md)
+2. [Stardew Valley](docs/envs/stardew.md)
