@@ -67,7 +67,7 @@ class IOEnvironment(metaclass=Singleton):
 
     def __init__(self) -> None:
         """Initialize the IO environment class"""
-
+        pass
 
     def pop_held_button(self, button):
 

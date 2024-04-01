@@ -1,8 +1,207 @@
-from collections import namedtuple
 import platform
 import ctypes
-
 import pyautogui
+import subprocess
+
+
+class TargetWindow():
+    def __init__(self, window):
+        self.window = window
+
+        self.system = platform.system()
+
+        if self.system == 'Windows':
+            self.left = window.left
+            self.top = window.top
+            self.width = window.width
+            self.height = window.height
+            self.title = window.title
+        elif self.system == "Darwin":
+            bounds = self.window.get("kCGWindowBounds", "")
+            self.left = int(bounds["X"])
+            self.top = int(bounds["Y"])
+            self.width = int(bounds["Width"])
+            self.height = int(bounds["Height"])
+            self.title = window.get("kCGWindowOwnerName", "")
+
+    def __repr__(self):
+        return f"GameWindow({self.title}, {self.left}, {self.top}, {self.width}, {self.height})"
+
+    def __str__(self):
+        return f"GameWindow({self.title}, {self.left}, {self.top}, {self.width}, {self.height})"
+
+    def activate(self):
+        """
+        Activate the game window
+        """
+        if self.system == "Windows":
+            self.window.activate()
+        elif self.system == "Darwin":
+            env_name = self.title
+            applescript_command = f"""
+            tell application "{env_name}"
+                activate
+            end tell
+            """
+            subprocess.run(["osascript", "-e", applescript_command])
+
+    def deactivate(self):
+        """
+        Deactivate the game window
+        """
+        if self.system == "Windows":
+            self.window.hide()
+        elif self.system == "Darwin":
+            env_name = self.title
+            applescript_command = f"""
+                                  tell application "System Events" to tell process "{env_name}"
+                                      set visible to false
+                                  end tell"""
+            subprocess.run(["osascript", "-e", applescript_command])
+
+    def is_active(self):
+        """
+        Check if the game window is active
+        """
+        if self.system == "Windows":
+            return self.window.isActive
+        elif self.system == "Darwin":
+            env_name = self.title
+            applescript_command = f"""
+            tell application "System Events" to tell process "{env_name}"
+                return frontmost
+            end tell"""
+            result = subprocess.run(["osascript", "-e", applescript_command], capture_output=True)
+            return result.stdout == b"true\n"
+
+    def minimize(self):
+        """
+        Minimize the game window
+        """
+        if self.system == "Windows":
+            self.window.minimize()
+        elif self.system == "Darwin":
+            env_name = self.title
+            applescript_command = f"""
+            tell application "System Events" to tell process "{env_name}"
+                set frontmost to true
+                click button 3 of window 1
+            end tell"""
+            subprocess.run(["osascript", "-e", applescript_command])
+
+    def maximize(self):
+        """
+        Maximize the game window
+        """
+        if self.system == "Windows":
+            self.window.maximize()
+        elif self.system == "Darwin":
+            env_name = self.title
+            applescript_command = f"""
+            tell application "System Events" to tell process "{env_name}"
+                set frontmost to true
+                click button 2 of window 1
+            end tell"""
+            subprocess.run(["osascript", "-e", applescript_command])
+
+    def hide(self):
+        """
+        Hide the game window
+        """
+        if self.system == "Windows":
+            self.window.hide()
+        elif self.system == "Darwin":
+            env_name = self.title
+            applescript_command = f"""
+            tell application "System Events" to tell process "{env_name}"
+                set visible to false
+            end tell"""
+            subprocess.run(["osascript", "-e", applescript_command])
+
+    def show(self):
+        """
+        Show the game window
+        """
+        if self.system == "Windows":
+            self.window.show()
+        elif self.system == "Darwin":
+            env_name = self.title
+            applescript_command = f"""
+            tell application "System Events" to tell process "{env_name}"
+                set visible to true
+            end tell"""
+            subprocess.run(["osascript", "-e", applescript_command])
+
+
+    def is_visible(self):
+        """
+        Check if the game window is visible
+        """
+        if self.system == "Windows":
+            return self.window.isShowing
+        elif self.system == "Darwin":
+            env_name = self.title
+            applescript_command = f"""
+            tell application "System Events" to tell process "{env_name}"
+                return visible
+            end tell"""
+            result = subprocess.run(["osascript", "-e", applescript_command], capture_output=True)
+            return result.stdout == b"true\n"
+
+    def moveTo(self, set_left, set_top):
+        """
+        Move the game window to the specified coordinates
+        """
+        if self.system == "Windows":
+            self.window.moveTo(set_left, set_top)
+
+        elif self.system == "Darwin":
+            env_name = self.title
+
+            window = get_named_windows(env_name)[0]
+
+            left = window.left
+            top = window.top
+            width = window.width
+            height = window.height
+
+            pyautogui.moveTo(left + width // 2, top + 10, duration=1.0)
+            pyautogui.mouseDown()
+            pyautogui.moveRel(-left + set_left, -top + set_top, duration=1.0)
+            pyautogui.mouseUp()
+
+        # Because the desktop may have bar limitations, the window should be reacquired
+        window = get_named_windows(self.title)[0]
+        return window
+
+
+    def resizeTo(self, set_width, set_height):
+        """
+        Resize the game window to the specified width and height
+        """
+
+        if self.system == "Windows":
+            self.window.resizeTo(set_width, set_height)
+        elif self.system == "Darwin":
+            env_name = self.title
+
+            window = get_named_windows(env_name)[0]
+
+            left = window.left
+            top = window.top
+            width = window.width
+            height = window.height
+
+            right, bottom = left + width, top + height
+
+            pyautogui.moveTo(right, bottom, duration=1.0)
+            pyautogui.mouseDown()
+            pyautogui.moveRel(set_width - width, set_height - height, duration=1.0)
+            pyautogui.mouseUp()
+
+        # Because the desktop may have bar limitations, the window should be reacquired
+        window = get_named_windows(self.title)[0]
+        return window
 
 if platform.system() == 'Windows':
     from ahk import AHK
@@ -63,7 +262,7 @@ if platform.system() == 'Windows':
         return int(abs_coord)
 
 elif platform.system() == "Darwin":
-    import AppKit
+    import Quartz
 
 
 def mouse_button_down(button):
@@ -151,19 +350,22 @@ def get_screen_size():
 def get_named_windows(env_name):
 
     if platform.system() == 'Windows':
-        return pyautogui.getWindowsWithTitle(env_name)
+        windows = pyautogui.getWindowsWithTitle(env_name)
+        windows = [TargetWindow(window) for window in windows]
+        return windows
     elif platform.system() == "Darwin":
-        ws = AppKit.NSWorkspace.sharedWorkspace()
-        for app in ws.runningApplications():
-            if app.localizedName() == env_name:
-                # app.activateWithOptions_(AppKit.NSApplicationActivateIgnoringOtherApps)
+        windows = []
 
-                window = namedtuple('A', ['left', 'top', 'width', 'height'])
-                window.left = 0
-                window.top = 0
-                window.width = 0
-                window.height = 0
-                return window
-        return []
+        window_list = Quartz.CGWindowListCopyWindowInfo(
+            Quartz.kCGWindowListOptionAll,
+            Quartz.kCGNullWindowID
+            )
+
+        for window in window_list:
+            owner_name = window.get("kCGWindowOwnerName", "")
+            print(owner_name)
+            if owner_name == env_name:
+                windows.append(TargetWindow(window))
+        return windows
     else:
         raise ValueError(f"Platform {platform.system()} not supported yet")
