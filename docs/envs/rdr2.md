@@ -128,32 +128,32 @@ Only modify it if absolutely necessary. Values have already been tuned to game s
 Change mouse mode in the control setting to DirectInput.
 | Original interface | Changed interface |
 |------------|------------|
-| ![Original interface](../images/raw_input.png) | ![Changed interface](../images/direct_input.png) |
+| ![Original interface](rdr2/images/raw_input.png) | ![Changed interface](rdr2/images/direct_input.png) |
 
 #### 2.2 Control
 Change both two 'Tap and Hold Speed Control' to on, so we can press w twice to run, saving the need to press shift. Also make sure 'Aiming Mode' to 'Hold To Aim', so we need to keep pressing the mouse right button when aiming.
 | Original interface | Changed interface |
 |------------|------------|
-| ![Original interface](../images/move_control_previous.png) | ![Changed interface](../images/move_control_now.png) |
+| ![Original interface](rdr2/images/move_control_previous.png) | ![Changed interface](rdr2/images/move_control_now.png) |
 
 #### 2.3 Game Screen
 The recommended default resolution to use is 1920x1080 (For developers, it must be 1920x1080), but it can vary if the **16:9** aspect ratio is preserved. This means your screen must be of size (1920,1080), (2560,1440) or (3840,2160). DO NOT change the aspect ratio. Also, remember to set the game Screen Type to **Windowed Borderless**.
 `SETTING -> GRAPHICS -> Resolution = 1920X1080` and  `Screen Type = Windowed Borderless`
-![game_position](../images/game_position.png)
+![game_position](rdr2/images/game_position.png)
 
-![resolution](../images/resolution.png)
+![resolution](rdr2/images/resolution.png)
 
 #### 2.4 Mini-map
 Remember to enlarge the icon to ensure the program is working well following: `SETTING -> DISPLAY ->  Radar Blip Size = Large` and  `SETTING -> DISPLAY ->  Map Blip Size = Large` and  `SETTING -> DISPLAY ->  Radar = Expanded` (or press Alt + X).
 
-![](../images/enlarge_minimap.png)
+![](rdr2/images/enlarge_minimap.png)
 
-![minimap_setting](../images/minimap_setting.png)
+![minimap_setting](rdr2/images/minimap_setting.png)
 
 #### 2.5 Subtitles
 Enable to show the speaker's name in the subtitles.
 
-![subtitles_setting](../images/subtitles.png)
+![subtitles_setting](rdr2/images/subtitles.png)
 
 ### 3. Libraries for Keyboard & Mouse Control
 
