@@ -98,6 +98,8 @@ class Config(metaclass=Singleton):
             "navigate_path"
         ]
 
+        self.show_mouse_in_screenshot = False
+        
         # Just for convenience of testing, will be removed in final version.
         self.use_latest_memory_path = False
         if self.use_latest_memory_path:
