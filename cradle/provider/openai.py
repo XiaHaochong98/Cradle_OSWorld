@@ -734,6 +734,9 @@ def encode_data_to_base64_path(data: Any) -> List[str]:
             image = Image.fromarray(item)
             buffered = io.BytesIO()
             image.save(buffered, format="JPEG")
+        elif item is None:
+            logger.error("Tring to encode None image! Skipping it.")
+            continue
 
         encoded_image = encode_image_binary(buffered.getvalue())
         encoded_image = f"data:image/jpeg;base64,{encoded_image}"

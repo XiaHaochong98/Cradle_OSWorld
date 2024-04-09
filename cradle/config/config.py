@@ -6,11 +6,12 @@ from pathlib import Path
 from dotenv import load_dotenv
 from colorama import Fore, Style, init as colours_on
 
-from cradle import constants
 import cradle
+from cradle import constants
 from cradle.utils.json_utils import load_json
 from cradle.utils import Singleton
 from cradle.utils.file_utils import assemble_project_path, get_project_root
+from cradle.utils.dict_utils import kget
 
 load_dotenv(verbose=True)
 
@@ -20,8 +21,8 @@ class Config(metaclass=Singleton):
     Configuration class.
     """
 
-    DEFAULT_GAME_RESOLUTION = (1920, 1080)
-    DEFAULT_GAME_SCREEN_RATIO = (16, 9)
+    DEFAULT_ENV_RESOLUTION = (1920, 1080)
+    DEFAULT_ENV_SCREEN_RATIO = (16, 9)
 
     DEFAULT_TEMPERATURE = 1.0
     DEFAULT_SEED = None
@@ -75,14 +76,14 @@ class Config(metaclass=Singleton):
         # Parallel request to LLM parameters
         self.parallel_request_gather_information = True
 
-        # video
+        # Video
         self.video_fps = 8
         self.duplicate_frames = 4
 
-        # self-reflection
+        # Self-reflection image count
         self.max_images_in_self_reflection = 4
 
-        # decision-making
+        # Decision-making image count
         self.decision_making_image_num = 2
 
         # OCR local checks
@@ -114,9 +115,10 @@ class Config(metaclass=Singleton):
         path = assemble_project_path(env_config_path)
         env_config = load_json(path)
 
-        self.env_name = env_config["env_name"]
-        self.env_sub_path = env_config["sub_path"]
-        self.env_short_name = env_config["env_short_name"]
+        self.env_name = kget(env_config, constants.ENVIRONMENT_NAME, default='')
+        self.win_name_pattern = kget(env_config, constants.ENVIRONMENT_WINDOW_NAME_PATTERN, default='')
+        self.env_sub_path = kget(env_config, constants.ENVIRONMENT_SHORT_NAME, default='')
+        self.env_short_name = kget(env_config, constants.ENVIRONMENT_SUB_PATH, default='')
 
         # Base resolution and region for the game in 4k, used for angle scaling
         self.base_resolution = (3840, 2160)
@@ -126,7 +128,7 @@ class Config(metaclass=Singleton):
         self.screen_resolution = cradle.gameio.gui_utils.get_screen_size()
         self.mouse_move_factor = self.screen_resolution[0] / self.base_resolution[0]
 
-        self._set_game_window_info()
+        self._set_env_window_info()
 
         # Skill retrieval
         self.skill_from_local = True
@@ -164,33 +166,47 @@ class Config(metaclass=Singleton):
         Path(self.log_dir).mkdir(parents=True, exist_ok=True)
 
 
-    def _set_game_window_info(self):
+    def _set_env_window_info(self):
 
-        named_windows = cradle.gameio.gui_utils.get_named_windows(self.env_name)
+        # Fake target environment window info for testing cases with no running env application
+        env_window = namedtuple('A', ['left', 'top', 'width', 'height'])
+        env_window.left = 0
+        env_window.top = 0
+        env_window.width = self.DEFAULT_ENV_RESOLUTION[0]
+        env_window.height = self.DEFAULT_ENV_RESOLUTION[1]
 
-        # Fake game window info for testing cases with no running game
-        game_window = namedtuple('A', ['left', 'top', 'width', 'height'])
-        game_window.left = 0
-        game_window.top = 0
-        game_window.width = self.DEFAULT_GAME_RESOLUTION[0]
-        game_window.height = self.DEFAULT_GAME_RESOLUTION[1]
+        # Get window candidates by name alternatives
+        named_windows = cradle.gameio.gui_utils.get_named_windows_fallback(self.env_name, self.win_name_pattern)
 
         if len(named_windows) == 0 or len(named_windows) > 1:
             self._config_warn(f'-----------------------------------------------------------------')
-            self._config_warn(f'Cannot find the env window. Assuming this is an offline test run!')
+            self._config_warn(f'Cannot find unique env window nor pattern: {self.env_name}|{self.win_name_pattern}. Assuming this is an offline test run!')
             self._config_warn(f'-----------------------------------------------------------------')
         else:
-            game_window = named_windows[0]
-            assert game_window.width >= self.DEFAULT_GAME_RESOLUTION[0] and game_window.height >= self.DEFAULT_GAME_RESOLUTION[1], 'The resolution of screen should at least be 1920 X 1080.'
-            assert game_window.width * self.DEFAULT_GAME_SCREEN_RATIO[1] == game_window.height * self.DEFAULT_GAME_SCREEN_RATIO[0], 'The screen ratio should be 16:9.'
+            env_window = named_windows[0]
 
-        self.game_resolution = (game_window.width, game_window.height)
-        self.game_region = (game_window.left, game_window.top, game_window.width, game_window.height)
-        self.resolution_ratio = self.game_resolution[0] / self.base_resolution[0]
-        self.minimap_region = self._calc_minimap_region(self.game_resolution)
-        self.minimap_region[0] += game_window.left
-        self.minimap_region[1] += game_window.top
+            # Check if pre-resize is necessary
+            if not self._min_resolution_check(env_window) or not self._aspect_ration_check(env_window):
+                env_window.resizeTo(self.DEFAULT_ENV_RESOLUTION[0], self.DEFAULT_ENV_RESOLUTION[1])
+
+            assert self._min_resolution_check(env_window), 'The resolution of env window should at least be 1920 X 1080.'
+            assert self._aspect_ration_check(env_window), 'The screen ratio should be 16:9.'
+
+        self.env_resolution = (env_window.width, env_window.height)
+        self.env_region = (env_window.left, env_window.top, env_window.width, env_window.height)
+        self.resolution_ratio = self.env_resolution[0] / self.base_resolution[0]
+        self.minimap_region = self._calc_minimap_region(self.env_resolution)
+        self.minimap_region[0] += env_window.left
+        self.minimap_region[1] += env_window.top
         self.minimap_region = tuple(self.minimap_region)
+
+
+    def _min_resolution_check(self, env_window):
+        return env_window.width >= self.DEFAULT_ENV_RESOLUTION[0] and env_window.height >= self.DEFAULT_ENV_RESOLUTION[1]
+
+
+    def _aspect_ration_check(self, env_window):
+        return env_window.width * self.DEFAULT_ENV_SCREEN_RATIO[1] == env_window.height * self.DEFAULT_ENV_SCREEN_RATIO[0]
 
 
     def _calc_minimap_region(self, screen_region):

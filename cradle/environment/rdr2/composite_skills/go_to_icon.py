@@ -111,7 +111,7 @@ def cv_go_to_icon(
         timestep = time.time()
 
         # 1. Get observation screenshot
-        take_screenshot(timestep, config.game_region, config.minimap_region, draw_axis=False)
+        take_screenshot(timestep, config.env_region, config.minimap_region, draw_axis=False)
         theta, info = match_template(os.path.join(save_dir, f"minimap_{timestep}.jpg"), template_file, config.resolution_ratio, debug)
         dis, confidence = info['distance'], info['confidence']
 

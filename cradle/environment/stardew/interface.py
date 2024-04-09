@@ -5,10 +5,10 @@ from cradle.gameio import IOEnvironment
 from cradle.environment.stardew.skill_registry import SkillRegistry
 from cradle.environment import register_environment
 
-
 config = Config()
 logger = Logger()
 io_env = IOEnvironment()
+
 
 @register_environment("stardew")
 class Interface():

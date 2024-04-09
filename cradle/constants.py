@@ -1,3 +1,9 @@
+# Environment configuration keys
+ENVIRONMENT_NAME = 'env_name'
+ENVIRONMENT_WINDOW_NAME_PATTERN = 'win_name_pattern'
+ENVIRONMENT_SHORT_NAME = 'env_short_name'
+ENVIRONMENT_SUB_PATH = 'sub_path'
+
 # Gather information expected fields
 ACTION_GUIDANCE = 'action_guidance'
 ITEM_STATUS = 'item_status'

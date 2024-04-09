@@ -1,0 +1,6 @@
+{
+    "env_name": "Microsoft Outlook",
+    "win_name_pattern": "Outlook$",
+    "sub_path": "outlook",
+    "env_short_name": "outlook"
+}

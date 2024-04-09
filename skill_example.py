@@ -2,7 +2,8 @@ import time
 import argparse
 
 from cradle.gameio import GameManager
-from cradle.environment.rdr2.lifecycle.ui_control import switch_to_game, segment_minimap, exit_back_to_game, unpause_game, pause_game
+#from cradle.environment.rdr2.lifecycle.ui_control import switch_to_game, segment_minimap, exit_back_to_game, unpause_game, pause_game
+from cradle.environment.outlook.lifecycle.ui_control import switch_to_game
 from cradle.environment.rdr2.composite_skills.navigation import cv_navigation
 from cradle.environment.rdr2.composite_skills.go_to_icon import go_to_horse
 from cradle.utils.template_matching import match_template_image
@@ -34,7 +35,7 @@ class SwitchWindow(object):
 
 if __name__ == "__main__":
 
-    config.load_env_config("./conf/env_config_rdr2.json")
+    config.load_env_config("./conf/env_config_outlook.json")
     gm = GameManager(config.env_name)
 
     parser = argparse.ArgumentParser()

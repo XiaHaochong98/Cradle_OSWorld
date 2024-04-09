@@ -11,6 +11,7 @@ config = Config()
 logger = Logger()
 io_env = IOEnvironment()
 
+
 class GameManager:
 
     def __init__(
@@ -19,8 +20,7 @@ class GameManager:
         embedding_provider = None
     ):
         self.env_name = env_name
-        self.env_short_name = config.env_short_name
-        self.interface = ENVIORNMENT_REGISTRY[self.env_short_name]()
+        self.interface = ENVIORNMENT_REGISTRY[config.env_short_name]()
         self.skill_registry = self.interface.SkillRegistry(
             local_path = config.skill_local_path,
             from_local = config.skill_from_local,
@@ -28,6 +28,10 @@ class GameManager:
             skill_scope = config.skill_scope,
             embedding_provider = embedding_provider
         )
+
+
+    def get_interface(self):
+        return self.interface
 
 
     def pause_game(self, screen_type=constants.GENERAL_GAME_INTERFACE):

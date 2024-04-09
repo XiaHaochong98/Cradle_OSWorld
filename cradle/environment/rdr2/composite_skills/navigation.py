@@ -34,7 +34,7 @@ def navigate_path(iterations = DEFAULT_NAVIGATION_ITERATIONS, debug = False):
 
 def cv_navigation(total_iterations, terminal_threshold=NAVIGATION_TERMINAL_THRESHOLD, debug = False):
 
-    game_screen_region = config.game_region
+    game_screen_region = config.env_region
     minimap_region = config.minimap_region
     save_dir = config.work_dir
 

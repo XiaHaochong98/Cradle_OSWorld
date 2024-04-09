@@ -35,7 +35,7 @@ def pause_game():
         logger.debug("The environment does not need to be paused!")
 
     # While game is paused, quickly re-center mouse location on x axis to avoid clipping at game window border with time
-    io_env.mouse_move(config.game_resolution[0] // 2, config.game_resolution[1] // 2, relative=False)
+    io_env.mouse_move(config.env_resolution[0] // 2, config.env_resolution[1] // 2, relative=False)
 
 
 def unpause_game():
@@ -97,7 +97,7 @@ def take_screenshot(tid : float,
                     draw_axis = False):
 
     if screen_region is None:
-        screen_region = config.game_region
+        screen_region = config.env_region
 
     if minimap_region is None:
         minimap_region = config.base_minimap_region
@@ -173,7 +173,7 @@ def segment_minimap(screenshot_path):
     minimap_image_filename = output_dir + "/minimap_" + str(tid) + ".jpg"
 
     minimap_region = config.base_minimap_region
-    minimap_region = [int(x * (config.game_resolution[0] / config.base_resolution[0]) ) for x in minimap_region] # (56, 725, 56 + 320, 725 + 320)
+    minimap_region = [int(x * (config.env_resolution[0] / config.base_resolution[0]) ) for x in minimap_region] # (56, 725, 56 + 320, 725 + 320)
     minimap_region[2] += minimap_region[0]
     minimap_region[3] += minimap_region[1]
 
@@ -490,6 +490,7 @@ class IconReplacer:
             replaced_image_paths.append(save_path)
 
         return replaced_image_paths
+
 
 __all__ = [
     "pause_game",

@@ -78,7 +78,7 @@ class VideoRecorder():
         self.fps = config.video_fps
         self.max_size = 10000
         self.video_path = video_path
-        self.screen_region = config.game_region
+        self.screen_region = config.env_region
         self.frame_size = (self.screen_region[2], self.screen_region[3])
 
         self.current_frame_id = -1

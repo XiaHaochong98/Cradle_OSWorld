@@ -72,7 +72,7 @@ def keep_shooting_target(
 
         timestep = time.time()
 
-        screen_image_filename, minimap_image_filename = take_screenshot(timestep, config.game_region, config.minimap_region, draw_axis=False)
+        screen_image_filename, minimap_image_filename = take_screenshot(timestep, config.env_region, config.minimap_region, draw_axis=False)
         screen = cv2.imread(screen_image_filename)
         h, w, _ = screen.shape
 
@@ -168,7 +168,7 @@ def keep_shooting_target(
                 shoot_y = boxes[j][1]
 
                 if debug:
-                    cv2.arrowedLine(annotated_frame, (config.game_resolution[0] // 2, config.game_resolution[1] // 2), (
+                    cv2.arrowedLine(annotated_frame, (config.env_resolution[0] // 2, config.env_resolution[1] // 2), (
                         int((detect_xyxy[0] + detect_xyxy[2]) / 2), int((detect_xyxy[1] + detect_xyxy[3]) / 2)),(0, 255, 0), 2, tipLength=0.1)
                     cv2.imwrite(os.path.join(save_dir, f"annotated_{detect_object}_{timestep}.jpg"), annotated_frame)
 

@@ -468,7 +468,7 @@ class PipelineRunner():
             for key, value in minimap_information.items():
                 if value:
                     for index, item in enumerate(value):
-                        minimap_info_str = minimap_info_str + key + ' ' + str(index) + ': angle '  + str(int(item['theta'])) + ' degree' + '\n'
+                        minimap_info_str = minimap_info_str + key + ' ' + str(index) + ': angle ' + str(int(item['theta'])) + ' degree' + '\n'
             minimap_info_str = minimap_info_str.rstrip('\n')
 
             logger.write(f'minimap_info_str: {minimap_info_str}')

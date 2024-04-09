@@ -1,28 +1,36 @@
-import os, math
 import time
 from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont
-import cv2
-import numpy as np
-import torch
-from torchvision.ops import box_convert
-import supervision as sv
 import mss
 import mss.tools
-from MTM import matchTemplates
+import cv2
+import numpy as np
+import mss
+import mss.tools
 
 from cradle.config import Config
 from cradle.log import Logger
 from cradle.gameio import IOEnvironment
-from cradle.utils.template_matching import match_template_image
-from cradle.gameio.gui_utils import get_mouse_location
 
 config = Config()
 logger = Logger()
 io_env = IOEnvironment()
 
-PAUSE_SCREEN_WAIT = 1
+
+def switch_to_game():
+    target_window = io_env.get_windows_by_name(config.env_name)[0]
+    try:
+        target_window.activate()
+    except Exception as e:
+        if "Error code from Windows: 0" in str(e):
+            # Handle pygetwindow exception
+            pass
+        else:
+            raise e
+
+    time.sleep(1)
+
 
 def take_screenshot(tid : float,
                     screen_region : tuple[int, int, int, int] = None,
@@ -32,7 +40,7 @@ def take_screenshot(tid : float,
                     show_mouse_in_screenshot = config.show_mouse_in_screenshot):
 
     if screen_region is None:
-        screen_region = config.game_region
+        screen_region = config.env_region
 
     if minimap_region is None:
         minimap_region = config.base_minimap_region
@@ -55,13 +63,13 @@ def take_screenshot(tid : float,
         image = Image.frombytes("RGB", screen_image.size, screen_image.bgra, "raw", "BGRX")
 
         if show_mouse_in_screenshot:
-            mouse_cursor = cv2.imread('res\icons\pink_mouse.png', cv2.IMREAD_UNCHANGED)
+            mouse_cursor = cv2.imread('./res/icons/pink_mouse.png', cv2.IMREAD_UNCHANGED)
             if mouse_cursor is None:
                 logger.error("Failed to read mouse cursor image file.")
             else:
                 new_size = (mouse_cursor.shape[1] // 4, mouse_cursor.shape[0] // 4)
                 mouse_cursor = cv2.resize(mouse_cursor, new_size, interpolation=cv2.INTER_AREA)
-                x, y = get_mouse_location()
+                x, y = io_env.get_mouse_position()
                 x = max(region['left'], min(x, region['left'] + region['width'] - mouse_cursor.shape[1]))
                 y = max(region['top'], min(y, region['top'] + region['height'] - mouse_cursor.shape[0]))
                 image_array = np.array(image)
@@ -121,6 +129,7 @@ def take_screenshot(tid : float,
 
     return screen_image_filename, minimap_image_filename
 
+
 def clip_minimap(minimap_image_filename):
 
     image = cv2.imread(minimap_image_filename)
@@ -153,7 +162,9 @@ def clip_minimap(minimap_image_filename):
     # Save the result
     cv2.imwrite(minimap_image_filename, masked_image)
 
+
 __all__ = [
+    "switch_to_game",
     "take_screenshot",
     "clip_minimap"
 ]

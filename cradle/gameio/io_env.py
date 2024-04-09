@@ -10,7 +10,7 @@ import time
 from cradle.utils import Singleton
 from cradle.config import Config
 from cradle.log import Logger
-from cradle.gameio.gui_utils import get_named_windows, get_screen_size, mouse_button_down, mouse_button_up, key_down, key_up, mouse_click, get_mouse_location, mouse_move_to
+from cradle.gameio.gui_utils import get_named_windows, get_named_windows_fallback, get_screen_size, mouse_button_down, mouse_button_up, key_down, key_up, mouse_click, get_mouse_location, mouse_move_to
 
 config = Config()
 logger = Logger()
@@ -270,7 +270,7 @@ class IOEnvironment(metaclass=Singleton):
 
         logger.debug(f'noormalized game coord x {x} y {y} relative {relative} fc {from_center}')
 
-        w, h = config.game_resolution
+        w, h = config.env_resolution
 
         offset = 0
         if from_center is True:
@@ -285,7 +285,7 @@ class IOEnvironment(metaclass=Singleton):
     # If either relative or not, always pass in-game coordinates
     # This implementation is not fully functional and was intended to address game-category specific issues first
     def mouse_move(self, x, y, duration = -1, relative=False):
-        mouse_move_to(x, y, duration, relative, config.screen_resolution, config.game_region)
+        mouse_move_to(x, y, duration, relative, config.screen_resolution, config.env_region)
 
 
     def mouse_move_horizontal_angle(self, theta):
@@ -343,7 +343,7 @@ class IOEnvironment(metaclass=Singleton):
         pixels = _theta_calculation(theta)
         mx, _ = self.get_mouse_position()
 
-        if pixels > 0 and mx + pixels > config.game_resolution[0]:
+        if pixels > 0 and mx + pixels > config.env_resolution[0]:
             result = True
         elif pixels < 0 and mx + pixels < 0:
             result = True
@@ -544,6 +544,10 @@ class IOEnvironment(metaclass=Singleton):
 
     def get_windows_by_name(self, env_name):
         return get_named_windows(env_name)
+
+
+    def get_windows_by_config(self):
+        return get_named_windows_fallback(config.env_name, config.win_name_pattern)
 
 
 def _theta_calculation(theta):

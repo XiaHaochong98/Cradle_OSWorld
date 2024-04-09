@@ -168,3 +168,4 @@ runs/
 /res/tool/subfinder/
 test*/
 test*
+/tmp
