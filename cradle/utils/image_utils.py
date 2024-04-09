@@ -1,9 +1,12 @@
 import numpy as np
 import cv2
+from PIL import Image, ImageDraw
 
 from cradle.config import Config
+from cradle.log import Logger
 
 config = Config()
+logger = Logger()
 
 
 def show_image(img):
@@ -48,3 +51,38 @@ def minimap_movement_detection(image_path1, image_path2, threshold = 30):
 
     change_detected = average_distance > (threshold * config.resolution_ratio) or np.allclose(average_distance, 0, atol=1e-3)
     return change_detected, img_matches, average_distance
+
+def draw_rectangle(draw, coords, outline="red", width=50):
+    x1, y1, x2, y2 = coords
+    draw.line([x1, y1, x2, y1], fill=outline, width=width) 
+    draw.line([x1, y2, x2, y2], fill=outline, width=width) 
+    draw.line([x1, y1, x1, y2], fill=outline, width=width) 
+    draw.line([x2, y1, x2, y2], fill=outline, width=width) 
+
+def draw_on_image(image_path, coords_str, pic_name):
+
+    coords = eval(coords_str)
+    
+    image = Image.open(image_path)
+    canvas = ImageDraw.Draw(image)
+    width, height = image.size
+    
+    if len(coords) == 2:
+        x, y = coords[0] * width, coords[1] * height
+        draw_rectangle(canvas, [x-1, y-1, x+1, y+1])
+    elif len(coords) == 4:
+        x1, y1, x2, y2 = coords[0] * width, coords[1] * height, coords[2] * width, coords[3] * height
+        draw_rectangle(canvas, [x1, y1, x2, y2], width=5)
+    else:
+        logger.error("Coordinates must be two- or four-digit tuples")
+        raise ValueError("Coordinates must be two- or four-digit tuples")
+
+    from datetime import datetime
+    time = datetime.now().strftime("%Y%m%d%H%M%S")
+    # save the image where the original image is, add the pic_name and time to the new image name
+    save_path = image_path.rsplit('.', 1)[0] + "_"+ pic_name + "_"+ time +"." + image_path.rsplit('.', 1)[1]
+    image.save(save_path)
+    logger.debug(f"Picture saved：{save_path}")
+
+# use the function like:
+# draw_on_image("xinrun_test\screen_1712665070.840515.jpg", "(0.03, 0.07)", "picture")
