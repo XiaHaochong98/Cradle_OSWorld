@@ -1,6 +1,8 @@
 import numpy as np
 import cv2
-from PIL import Image, ImageDraw
+import os
+from datetime import datetime
+from PIL import Image, ImageDraw, ImageChops
 
 from cradle.config import Config
 from cradle.log import Logger
@@ -77,12 +79,66 @@ def draw_on_image(image_path, coords_str, pic_name):
         logger.error("Coordinates must be two- or four-digit tuples")
         raise ValueError("Coordinates must be two- or four-digit tuples")
 
-    from datetime import datetime
     time = datetime.now().strftime("%Y%m%d%H%M%S")
     # save the image where the original image is, add the pic_name and time to the new image name
     save_path = image_path.rsplit('.', 1)[0] + "_"+ pic_name + "_"+ time +"." + image_path.rsplit('.', 1)[1]
     image.save(save_path)
-    logger.debug(f"Picture saved：{save_path}")
+    logger.debug(f"Picture saved: {save_path}")
 
-# use the function like:
-# draw_on_image("xinrun_test\screen_1712665070.840515.jpg", "(0.03, 0.07)", "picture")
+def calculate_image_diff(path_1, path_2):
+
+    if not os.path.exists(path_1):
+        logger.error(f"The file at {path_1} does not exist.")
+        raise FileNotFoundError(f"The file at {path_1} does not exist.")
+    if not os.path.exists(path_2):
+        logger.error(f"The file at {path_2} does not exist.")
+        raise FileNotFoundError(f"The file at {path_2} does not exist.")
+
+    img1 = Image.open(path_1)
+    img2 = Image.open(path_2)
+
+    if img1.size != img2.size:
+        logger.error("Images do not have the same size.")
+        raise ValueError("Images do not have the same size.")
+    
+    diff = ImageChops.difference(img1, img2)
+    diff = diff.convert("RGBA")
+
+    pixels = diff.load()
+    width, height = diff.size
+    for y in range(height):
+        for x in range(width):
+            r, g, b, a = pixels[x, y]
+            if r == g == b == 0:
+                pixels[x, y] = (0, 0, 0, 0)
+            else:
+                pixels[x, y] = (r, g, b, 255)
+
+    return diff
+
+def save_image_diff(path_1, path_2):
+    diff = calculate_image_diff(path_1, path_2)
+
+    img1_name = os.path.splitext(os.path.basename(path_1))[0]
+    img2_name = os.path.splitext(os.path.basename(path_2))[0]
+
+    output_filename = f"diff_{img1_name}_{img2_name}.png"
+    output_path = os.path.join(os.path.dirname(path_1), output_filename)
+    diff.save(output_path)
+    logger.debug(f"Picture saved: {output_path}")
+
+    return output_path
+
+def calculate_pixel_diff(output_path):
+    img = Image.open(output_path).convert("RGBA")
+    pixels = img.load()
+    width, height = img.size
+    
+    non_transparent_count = 0
+    for y in range(height):
+        for x in range(width):
+            _, _, _, a = pixels[x, y]
+            if a != 0:
+                non_transparent_count += 1
+    
+    return non_transparent_count
