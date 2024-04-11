@@ -11,7 +11,8 @@ from cradle.provider import GdProvider
 from cradle.config import Config
 from cradle.log import Logger
 from cradle.gameio import IOEnvironment
-from cradle.environment.rdr2.lifecycle.ui_control import CircleDetector, pause_game, take_screenshot
+from cradle.gameio.lifecycle.ui_control import take_screenshot
+from cradle.environment.rdr2.lifecycle.ui_control import CircleDetector
 from cradle.environment.rdr2.atomic_skills.combat import aim, shoot
 from cradle.environment.rdr2.atomic_skills.move import turn
 from cradle.environment.rdr2.skill_registry import register_skill

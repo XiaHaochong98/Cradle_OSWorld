@@ -457,6 +457,11 @@ class IOEnvironment(metaclass=Singleton):
         self.pop_held_keys(key)
 
 
+    def keys_type(self, text):
+        for c in text:
+            self.key_press(c)
+
+
     def release_held_keys(self):
         for i in range(len(self.held_keys)):
             self.held_keys.pop()

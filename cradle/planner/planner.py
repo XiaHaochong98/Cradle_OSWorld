@@ -172,6 +172,7 @@ class GatherInformation():
 
 
     def __call__(self, *args, input: Dict[str, Any] = None, class_=None, **kwargs) -> Dict[str, Any]:
+
         gather_infromation_configurations = input["gather_information_configurations"]
 
         frame_extractor_gathered_information = None
@@ -179,17 +180,18 @@ class GatherInformation():
         object_detector_gathered_information = None
         llm_description_gathered_information = None
 
-
         input = self.input_map if input is None else input
         input = self._pre(input=input)
 
-        image_files = []
+        image_files: List[str] = []
         if "image_introduction" in input.keys():
             for image_info in input["image_introduction"]:
                 image_files.append(image_info["path"])
 
         flag = True
         processed_response = {}
+
+        all_task_guidance = []
 
         # Gather information by frame extractor
         if gather_infromation_configurations["frame_extractor"] is True:
@@ -286,7 +288,9 @@ class GatherInformation():
 
         # Gather information by LLM provider
         if gather_infromation_configurations["llm_description"] is True:
-            logger.write(f"Using llm description to gather information")
+
+            logger.write(f"Using LLM description to gather information")
+
             try:
                 # Call the LLM provider for gather information json
                 message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)

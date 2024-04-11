@@ -10,64 +10,39 @@
     "previous_reasoning": "",
     "few_shots": [
         {
-            "introduction": "Here are some examples of the positions of the bounding box shown in the image.",
+            "introduction": "",
             "path": "",
             "assistant": ""
-        },
-        {
-            "introduction": "This is an example: The bounding box is clearly on the left side (not slightly left) of the image.",
-            "path": "./res/rdr2/samples/few_shot_leftside.jpg",
-            "assistant": "Yes, it is clearly on the left side."
-        },
-        {
-            "introduction": "This is an example: The bounding box is slightly on the left side (not clearly left) of the image.",
-            "path": "./res/rdr2/samples/few_shot_slightly_leftside.jpg",
-            "assistant": "Yes, it is slightly on the left side."
-        },
-        {
-            "introduction": "This is an example: The bounding box is clearly on the right side (not slightly right) of the image.",
-            "path": "./res/rdr2/samples/few_shot_rightside.jpg",
-            "assistant": "Yes, it is clearly on the right side."
-        },
-        {
-            "introduction": "This is an example: The bounding box is slightly on the right side (not clearly right) of the image.",
-            "path": "./res/rdr2/samples/few_shot_slightly_rightside.jpg",
-            "assistant": "Yes, it is slightly on the right side."
-        },
-        {
-            "introduction": "This is an example: The bounding box is on the central of the image.",
-            "path": "./res/rdr2/samples/few_shot_central.jpg",
-            "assistant": "Yes, it is on the central side."
         }
     ],
     "image_introduction":[
         {
-            "introduction": "Now, I will give you five screenshots for decision making.",
+            "introduction": "Here are some previous screenshots to help in decision making.",
             "path": "",
             "assistant": ""
         },
         {
-            "introduction": "This screenshot is five steps before the current step of the game",
+            "introduction": "This screenshot is four steps before the current step in the application.",
             "path": "",
             "assistant": ""
         },
         {
-            "introduction": "This screenshot is three steps before the current step of the game",
+            "introduction": "This screenshot is three steps before the current step in the application.",
             "path": "",
             "assistant": ""
         },
         {
-            "introduction": "This screenshot is two steps before the current step of the game",
+            "introduction": "This screenshot is two steps before the current step in the application.",
             "path": "",
             "assistant": ""
         },
         {
-            "introduction": "This screenshot is the previous step of the game",
+            "introduction": "This screenshot is the previous step in the application.",
             "path": "",
             "assistant": ""
         },
         {
-            "introduction": "This screenshot is the current step of the game",
+            "introduction": "This screenshot is the current step in the application.",
             "path": "",
             "resolution": "high",
             "assistant": ""

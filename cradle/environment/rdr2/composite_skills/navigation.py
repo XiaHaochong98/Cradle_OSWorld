@@ -7,8 +7,8 @@ import numpy as np
 
 from cradle.config import Config
 from cradle.log import Logger
+from cradle.gameio.lifecycle.ui_control import take_screenshot
 from cradle.environment.rdr2.atomic_skills.move import turn, move_forward, stop_horse
-from cradle.environment.rdr2.lifecycle.ui_control import take_screenshot
 from cradle.environment.rdr2.skill_registry import register_skill
 from cradle.environment.rdr2.composite_skills.go_to_icon import match_template
 

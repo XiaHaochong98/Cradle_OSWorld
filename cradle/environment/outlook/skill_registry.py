@@ -28,7 +28,10 @@ SKILL_CODE_KEY = 'skill_code'
 SKILL_CODE_HASH_KEY = 'skill_code_base64'
 EXPL_SKILL_LIB_FILE='skill_lib.json'
 BASIC_SKILL_LIB_FILE='skill_lib_basic.json'
-BASIC_SKILLS = []
+BASIC_SKILLS = [
+    "click_at",
+    "type_text"
+]
 DENY_LIST_TERMS = []
 ALLOW_LIST_TERMS = []
 
@@ -84,7 +87,7 @@ class SkillRegistry:
 
         if self.from_local:
             if not os.path.exists(os.path.join(self.local_path, self.skill_library_filename)):
-                logger.error(f"{os.path.join(self.local_path, self.skill_library_filename)} does not exist.")
+                logger.error(f"Skill library file {os.path.join(self.local_path, self.skill_library_filename)} does not exist.")
                 self.filter_skill_library()
                 self.store_skills(os.path.join(self.local_path, self.skill_library_filename))
             else:
@@ -316,6 +319,7 @@ class SkillRegistry:
             del self.skill_registry[skill_name]
             position = next((i for i, skill in enumerate(self.skill_index) if skill[SKILL_NAME_KEY] == skill_name), None)
             self.skill_index.pop(position)
+
         if skill_name in self.recent_skills:
             position = self.recent_skills.index(skill_name)
             self.recent_skills.pop(position)
@@ -354,10 +358,12 @@ class SkillRegistry:
             if skill_key not in candidates:
                 del self.skill_registry[skill_key]
         self.skill_index_t = []
+
         for skill in self.skill_index:
             if skill[SKILL_NAME_KEY] in candidates:
                 self.skill_index_t.append(skill)
         self.skill_index = copy.deepcopy(self.skill_index_t)
+
         del self.skill_index_t
 
 

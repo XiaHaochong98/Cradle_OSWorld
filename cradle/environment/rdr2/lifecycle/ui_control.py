@@ -8,13 +8,12 @@ import numpy as np
 import torch
 from torchvision.ops import box_convert
 import supervision as sv
-import mss
-import mss.tools
 from MTM import matchTemplates
 
 from cradle.config import Config
 from cradle.log import Logger
 from cradle.gameio import IOEnvironment
+from cradle.gameio.lifecycle.ui_control import take_screenshot
 from cradle.utils.template_matching import match_template_image
 
 config = Config()
@@ -88,82 +87,6 @@ def switch_to_game():
     time.sleep(1)
     unpause_game()
     time.sleep(1)
-
-
-def take_screenshot(tid : float,
-                    screen_region : tuple[int, int, int, int] = None,
-                    minimap_region : tuple[int, int, int, int] = None,
-                    include_minimap = True,
-                    draw_axis = False):
-
-    if screen_region is None:
-        screen_region = config.env_region
-
-    if minimap_region is None:
-        minimap_region = config.base_minimap_region
-
-    region = screen_region
-    region = {
-        "left": region[0],
-        "top": region[1],
-        "width": region[2],
-        "height": region[3],
-    }
-
-    output_dir = config.work_dir
-
-    # Save screenshots
-    screen_image_filename = output_dir + "/screen_" + str(tid) + ".jpg"
-
-    with mss.mss() as sct:
-        screen_image = sct.grab(region)
-        image = Image.frombytes("RGB", screen_image.size, screen_image.bgra, "raw", "BGRX")
-        image.save(screen_image_filename)
-
-    minimap_image_filename = ""
-
-    if include_minimap:
-        minimap_image_filename = output_dir + "/minimap_" + str(tid) + ".jpg"
-
-        mm_region = minimap_region
-        mm_region = {
-            "left": mm_region[0],
-            "top": mm_region[1],
-            "width": mm_region[2],
-            "height": mm_region[3],
-        }
-
-        with mss.mss() as sct:
-            minimap_image = sct.grab(mm_region)
-            mm_image = Image.frombytes("RGB", minimap_image.size, minimap_image.bgra, "raw", "BGRX")
-            mm_image.save(minimap_image_filename)
-
-        clip_minimap(minimap_image_filename)
-
-    if draw_axis:
-        # Draw axis on the screenshot
-        draw = ImageDraw.Draw(screen_image)
-        width, height = screen_image.size
-        cx, cy = width // 2, height // 2
-
-        draw.line((cx, 0, cx, height), fill="blue", width=3)  # Y
-        draw.line((0, cy, width, cy), fill="blue", width=3)  # X
-
-        font = ImageFont.truetype("arial.ttf", 30)
-        offset_for_text = 30
-        interval = 0.1
-
-        for i in range(10):
-            if i > 0:
-                draw.text((cx + interval * (i ) * width // 2, cy), str(i ), fill="blue", font = font)
-                draw.text((cx - interval * (i) * width // 2, cy), str(-i), fill="blue", font = font)
-                draw.text((cx - offset_for_text - 10, cy + interval * (i ) * height // 2), str(-i), fill="blue", font = font)
-            draw.text((cx - offset_for_text, cy - interval * (i ) * height // 2), str(i), fill="blue", font = font)
-
-        axes_image_filename = output_dir + "/axes_screen_" + str(tid) + ".jpg"
-        screen_image.save(axes_image_filename)
-
-    return screen_image_filename, minimap_image_filename
 
 
 def segment_minimap(screenshot_path):

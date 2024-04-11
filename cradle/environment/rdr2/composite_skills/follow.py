@@ -6,10 +6,11 @@ import cv2
 
 from cradle.config import Config
 from cradle.log import Logger
+from cradle.gameio.lifecycle.ui_control import take_screenshot
 from cradle.utils.image_utils import minimap_movement_detection
 from cradle import constants
 from cradle.environment.rdr2.atomic_skills.move import turn, move_forward
-from cradle.environment.rdr2.lifecycle.ui_control import take_screenshot, CircleDetector
+from cradle.environment.rdr2.lifecycle.ui_control import CircleDetector
 from cradle.environment.rdr2.skill_registry import register_skill
 
 config = Config()

@@ -52,7 +52,7 @@ def register_skill(name):
     return decorator
 
 
-def post_skill_wait(wait_time: config.DEFAULT_POST_ACTION_WAIT_TIME):
+def post_skill_wait(wait_time = config.DEFAULT_POST_ACTION_WAIT_TIME):
     """Wait for skill to finish. Like if there is an animation"""
     time.sleep(wait_time)
 

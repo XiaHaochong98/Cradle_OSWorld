@@ -103,8 +103,8 @@ class PipelineRunner():
         self.videocapture.start_capture()
         start_frame_id = self.videocapture.get_current_frame_id()
 
-        cur_screen_shot_path, _ = self.gm.capture_screen()
-        self.memory.add_recent_history("image", cur_screen_shot_path)
+        cur_screenshot_path, _ = self.gm.capture_screen()
+        self.memory.add_recent_history("image", cur_screenshot_path)
 
         success = False
 
@@ -115,7 +115,7 @@ class PipelineRunner():
         params.update({
             "start_frame_id": start_frame_id,
             "end_frame_id": end_frame_id,
-            "cur_screen_shot_path": cur_screen_shot_path,
+            "cur_screenshot_path": cur_screenshot_path,
             "exec_info": {
                 "errors": False,
                 "errors_info": ""
@@ -203,7 +203,7 @@ class PipelineRunner():
         # Get params
         start_frame_id = params["start_frame_id"]
         end_frame_id = params["end_frame_id"]
-        cur_screen_shot_path = params["cur_screen_shot_path"]
+        cur_screenshot_path = params["cur_screenshot_path"]
 
         # Gather information preparation
         logger.write(f'Gather Information Start Frame ID: {start_frame_id}, End Frame ID: {end_frame_id}')
@@ -294,11 +294,11 @@ class PipelineRunner():
             object_name_reasoning = ""
 
         if "boxes" in response_keys:
-            image_source, image = load_image(cur_screen_shot_path)
+            image_source, image = load_image(cur_screenshot_path)
             boxes = data['res_dict']["boxes"]
             logits = data['res_dict']["logits"]
             phrases = data['res_dict']["phrases"]
-            directory, filename = os.path.split(cur_screen_shot_path)
+            directory, filename = os.path.split(cur_screenshot_path)
             bb_image_path = os.path.join(directory, "bb_" + filename)
             self.gd_detector.save_annotate_frame(image_source, boxes, logits, phrases, target_object_name.title(),
                                                  bb_image_path)
@@ -502,7 +502,7 @@ class PipelineRunner():
 
         exec_info = self.gm.execute_actions(skill_steps)
 
-        cur_screen_shot_path, _ = self.gm.capture_screen()
+        cur_screenshot_path, _ = self.gm.capture_screen()
 
         end_frame_id = self.videocapture.get_current_frame_id()
         self.gm.pause_game(screen_classification.lower())
@@ -528,7 +528,7 @@ class PipelineRunner():
             "exec_info": exec_info,
             "start_frame_id": start_frame_id,
             "end_frame_id": end_frame_id,
-            "cur_screen_shot_path": cur_screen_shot_path,
+            "cur_screenshot_path": cur_screenshot_path,
         }
 
         return res_params
@@ -537,7 +537,7 @@ class PipelineRunner():
     def information_summary(self, params: Dict[str, Any]):
 
         task_description = params["task_description"]
-        cur_screen_shot_path = params["cur_screen_shot_path"]
+        cur_screenshot_path = params["cur_screenshot_path"]
 
         # Information summary preparation
         if (self.use_information_summary and len(self.memory.get_recent_history("decision_making_reasoning",
@@ -572,7 +572,7 @@ class PipelineRunner():
             logger.write(f'R: entities_and_behaviors: {entities_and_behaviors}')
             self.memory.add_summarization(info_summary)
 
-        self.memory.add_recent_history("image", cur_screen_shot_path)
+        self.memory.add_recent_history("image", cur_screenshot_path)
 
         res_params = {}
         return res_params

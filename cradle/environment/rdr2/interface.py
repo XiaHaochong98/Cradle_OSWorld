@@ -2,9 +2,7 @@ from cradle.config import Config
 from cradle.log import Logger
 from cradle.gameio import IOEnvironment
 
-from cradle.environment.rdr2.lifecycle.ui_control import (take_screenshot,
-                                                          segment_minimap,
-                                                          switch_to_game,
+from cradle.environment.rdr2.lifecycle.ui_control import (segment_minimap,
                                                           pause_game,
                                                           unpause_game,
                                                           exit_back_to_pause,
@@ -23,9 +21,7 @@ class Interface():
     def __init__(self):
 
         # load ui control in lifecycle
-        self.take_screenshot = take_screenshot
         self.segment_minimap = segment_minimap
-        self.switch_to_game = switch_to_game
         self.pause_game = pause_game
         self.unpause_game = unpause_game
         self.exit_back_to_pause = exit_back_to_pause

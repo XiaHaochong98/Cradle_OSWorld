@@ -12,6 +12,7 @@ import mss.tools
 from cradle.config import Config
 from cradle.log import Logger
 from cradle.gameio import IOEnvironment
+from cradle.utils.image_utils import draw_mouse_pointer
 
 config = Config()
 logger = Logger()
@@ -19,15 +20,20 @@ io_env = IOEnvironment()
 
 
 def switch_to_game():
-    target_window = io_env.get_windows_by_name(config.env_name)[0]
-    try:
-        target_window.activate()
-    except Exception as e:
-        if "Error code from Windows: 0" in str(e):
-            # Handle pygetwindow exception
-            pass
-        else:
-            raise e
+    named_windows = io_env.get_windows_by_config()
+    if len(named_windows) == 0:
+        error_msg = f"Cannot find the game window {config.env_name}!"
+        logger.error(error_msg)
+        raise EnvironmentError(error_msg)
+    else:
+        try:
+            named_windows[0].activate()
+        except Exception as e:
+            if "Error code from Windows: 0" in str(e):
+                # Handle pygetwindow exception
+                pass
+            else:
+                raise e
 
     time.sleep(1)
 
@@ -63,29 +69,7 @@ def take_screenshot(tid : float,
         image = Image.frombytes("RGB", screen_image.size, screen_image.bgra, "raw", "BGRX")
 
         if show_mouse_in_screenshot:
-            mouse_cursor = cv2.imread('./res/icons/pink_mouse.png', cv2.IMREAD_UNCHANGED)
-            if mouse_cursor is None:
-                logger.error("Failed to read mouse cursor image file.")
-            else:
-                new_size = (mouse_cursor.shape[1] // 4, mouse_cursor.shape[0] // 4)
-                mouse_cursor = cv2.resize(mouse_cursor, new_size, interpolation=cv2.INTER_AREA)
-                x, y = io_env.get_mouse_position()
-                image_array = np.array(image)
-
-                if x + mouse_cursor.shape[1] > 0 and y + mouse_cursor.shape[0] > 0 and x < image_array.shape[1] and y < image_array.shape[0]:
-                    x_start = max(x, 0)
-                    y_start = max(y, 0)
-                    x_end = min(x + mouse_cursor.shape[1], image_array.shape[1])
-                    y_end = min(y + mouse_cursor.shape[0], image_array.shape[0])
-                    mouse_cursor_part = mouse_cursor[max(0, -y):y_end-y, max(0, -x):x_end-x]
-            
-                    for c in range(3): 
-                        alpha_channel = mouse_cursor_part[:, :, 3] / 255.0
-                        image_array[y_start:y_end, x_start:x_end, c] = \
-                            alpha_channel * mouse_cursor_part[:, :, c] + \
-                            (1 - alpha_channel) * image_array[y_start:y_end, x_start:x_end, c]
-
-                    image = Image.fromarray(image_array)
+            image = draw_mouse_pointer(image)
 
         image.save(screen_image_filename)
 

@@ -6,9 +6,9 @@ from MTM import matchTemplates
 
 from cradle.config import Config
 from cradle.log import Logger
+from cradle.gameio.lifecycle.ui_control import take_screenshot
 from cradle.utils.file_utils import assemble_project_path
 from cradle.environment.rdr2.atomic_skills.move import turn, move_forward
-from cradle.environment.rdr2.lifecycle.ui_control import take_screenshot
 from cradle.environment.rdr2.skill_registry import register_skill
 
 config = Config()

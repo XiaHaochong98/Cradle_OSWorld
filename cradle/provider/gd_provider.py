@@ -90,7 +90,7 @@ class GdProvider(metaclass=Singleton):
         return image_source, boxes, logits, phrases
 
 
-    def save_annotate_frame(self, image_source, boxes, logits, phrases, text_prompt, cur_screen_shot_path):
+    def save_annotate_frame(self, image_source, boxes, logits, phrases, text_prompt, cur_screenshot_path):
 
         # Remove the main character itself from boxes
         if "person" in text_prompt.lower():
@@ -112,7 +112,7 @@ class GdProvider(metaclass=Singleton):
                 phrases.pop(index)
 
                 annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes_[:,:], logits=logits_[:], phrases=phrases)
-                cv2.imwrite(cur_screen_shot_path, annotated_frame)
+                cv2.imwrite(cur_screenshot_path, annotated_frame)
 
             elif len(boxes)==1:
 
@@ -121,14 +121,14 @@ class GdProvider(metaclass=Singleton):
                 logits_ = torch.tensor(logits[1:])
 
                 annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes_[:,:], logits=logits_[:], phrases=phrases)
-                cv2.imwrite(cur_screen_shot_path, annotated_frame)
+                cv2.imwrite(cur_screenshot_path, annotated_frame)
             else:
                 annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes[:,:], logits=logits[:], phrases=phrases)
-                cv2.imwrite(cur_screen_shot_path, annotated_frame)
+                cv2.imwrite(cur_screenshot_path, annotated_frame)
 
         else:
             annotated_frame = annotate_with_coordinates(image_source=image_source, boxes=boxes[:,:], logits=logits[:], phrases=phrases)
-            cv2.imwrite(cur_screen_shot_path, annotated_frame)
+            cv2.imwrite(cur_screenshot_path, annotated_frame)
 
 
     # Process current minimap for detect red points, yellow points and yellow region. return the angle to turn.

@@ -31,6 +31,8 @@ class LocalMemory(BaseMemory):
         self.memory_path = memory_path
         self.task_duration = 3
 
+        # @TODO First memory summary should be based on environment spec
+
         self.recent_history = {"image": [],
                                constants.AUGMENTED_IMAGES_MEM_BUCKET:[],
                                "action": [],
@@ -42,7 +44,7 @@ class LocalMemory(BaseMemory):
                                "dialogue":[],
                                "task_description":[],
                                "skill_library":[],
-                               "summarization":"The player is playing the game Red Dead Redemption for the PC.",
+                               "summarization":"The user is using the target application on the PC.",
                                "long_horizon_task":"",
                                "last_task_guidance":"",
                                "last_task_duration": self.task_duration}

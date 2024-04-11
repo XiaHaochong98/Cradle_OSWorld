@@ -2,7 +2,8 @@ import os
 import time
 from copy import deepcopy
 import argparse
-from typing import Dict, Any
+from typing import Dict, Any, List
+import atexit
 
 from cradle import constants
 from cradle.log import Logger
@@ -13,7 +14,8 @@ from cradle.provider.openai import OpenAIProvider
 from cradle.gameio.io_env import IOEnvironment
 from cradle.gameio.game_manager import GameManager
 from cradle.gameio.video.VideoRecorder import VideoRecorder
-from cradle.environment.outlook.lifecycle.ui_control import switch_to_game
+from cradle.gameio.lifecycle.ui_control import switch_to_game
+import cradle.environment.outlook
 
 config = Config()
 logger = Logger()
@@ -89,18 +91,19 @@ class PipelineRunner():
 
 
     def run(self):
-        self.task_description = "Open File menu"
+
+        self.task_description = "Select View menu"  # "Open File menu"
         params = {}
 
-        # Switch to game
-        self.interface.switch_to_game()
+        # Switch to target environment
+        switch_to_game()
 
         # Prepare
         self.videocapture.start_capture()
         start_frame_id = self.videocapture.get_current_frame_id()
 
-        cur_screen_shot_path = self.gm.capture_screen()
-        self.memory.add_recent_history("image", cur_screen_shot_path)
+        cur_screenshot_path, _ = self.gm.capture_screen()
+        self.memory.add_recent_history("image", cur_screenshot_path)
 
         success = False
 
@@ -110,7 +113,7 @@ class PipelineRunner():
         params.update({
             "start_frame_id": start_frame_id,
             "end_frame_id": end_frame_id,
-            "cur_screen_shot_path": cur_screen_shot_path,
+            "cur_screenshot_path": cur_screenshot_path,
             "exec_info": {
                 "errors": False,
                 "errors_info": ""
@@ -118,7 +121,9 @@ class PipelineRunner():
             "pre_action": "",
             "pre_screen_classification": "",
             "pre_decision_making_reasoning": "",
-            "pre_self_reflection_reasoning": ""
+            "pre_self_reflection_reasoning": "",
+            "task_description": self.task_description,
+            "summarization": "",
         })
 
         while not success:
@@ -127,9 +132,9 @@ class PipelineRunner():
                 gather_information_params = self.gather_information(params, debug=False)
                 params.update(gather_information_params)
 
-                # # Self reflection
-                # self_reflection_params = self.self_reflection(params)
-                # params.update(self_reflection_params)
+                # Self reflection
+                self_reflection_params = self.self_reflection(params)
+                params.update(self_reflection_params)
 
                 # # Skill retrieval
                 # skill_retrieval_params = self.skill_retrieval(params)
@@ -154,12 +159,102 @@ class PipelineRunner():
 
             except KeyboardInterrupt:
                 logger.write('KeyboardInterrupt Ctrl+C detected, exiting.')
-                self.gm.cleanup_io()
-                self.videocapture.finish_capture()
+                self.pipeline_shutdown()
                 break
 
+        self.pipeline_shutdown()
+
+
+    def self_reflection(self, params: Dict[str, Any]):
+
+        start_frame_id = params["start_frame_id"]
+        end_frame_id = params["end_frame_id"]
+
+        #task_description = params["task_description"]
+        task_description = params["task_description"]
+        pre_action = params["pre_action"]
+        pre_decision_making_reasoning = params["pre_decision_making_reasoning"]
+        exec_info = params["exec_info"]
+
+        self_reflection_reasoning = ""
+        if self.use_self_reflection and start_frame_id > -1:
+            input = self.planner.self_reflection_.input_map
+            action_frames = []
+            video_frames = self.videocapture.get_frames(start_frame_id, end_frame_id)
+
+            # if len(video_frames) <= config.max_images_in_self_reflection * config.duplicate_frames + 1:
+            #     action_frames = [frame[1] for frame in video_frames[1::config.duplicate_frames]]
+            # else:
+            #     for i in range(config.max_images_in_self_reflection):
+            #         step = len(video_frames) // config.max_images_in_self_reflection * i + 1
+            #         action_frames.append(video_frames[step][1])
+
+            # only use the first and last frame for self-reflection
+            # add grid and color band to the frames
+            action_frames.append(self.gm.interface.augment_image(video_frames[0][1]))
+            action_frames.append(self.gm.interface.augment_image(video_frames[-1][1]))
+
+            image_introduction = [
+                {
+                    "introduction": "Here are the sequential frames of the character executing the last action.",
+                    "path": action_frames,
+                    "assistant": "",
+                    "resolution": "low"
+                }]
+
+            input["image_introduction"] = image_introduction
+            input["task_description"] = task_description
+            input['skill_library'] = self.skill_library
+            input["previous_reasoning"] = pre_decision_making_reasoning
+
+            if pre_action:
+
+                pre_action_name = []
+                pre_action_code = []
+
+                skill = self.gm.skill_registry.convert_expression_to_skill(pre_action)
+
+                name, params = skill
+                action_code, action_info = self.gm.get_skill_library_in_code(name)
+                pre_action_name.append(name)
+                pre_action_code.append(action_code if action_code is not None else action_info)
+
+                input["previous_action"] = ",".join(pre_action_name)
+                input["previous_action_call"] = pre_action
+                input['action_code'] = "\n".join(list(set(pre_action_code)))
+            else:
+                input["previous_action"] = ""
+                input["previous_action_call"] = ""
+                input['action_code'] = ""
+
+            if exec_info["errors"]:
+                input['executing_action_error'] = exec_info["errors_info"]
+            else:
+                input['executing_action_error'] = ""
+
+            # >> Calling SELF REFLECTION
+            logger.write(f'>> Calling SELF REFLECTION')
+            reflection_data = self.planner.self_reflection(input=input)
+
+            if 'reasoning' in reflection_data['res_dict'].keys():
+                self_reflection_reasoning = reflection_data['res_dict']['reasoning']
+            else:
+                self_reflection_reasoning = ""
+
+            self.memory.add_recent_history("self_reflection_reasoning", self_reflection_reasoning)
+            logger.write(f'Self-reflection reason: {self_reflection_reasoning}')
+
+        res_params = {
+            "pre_self_reflection_reasoning": self_reflection_reasoning
+        }
+
+        return res_params
+
+
+    def pipeline_shutdown(self):
         self.gm.cleanup_io()
         self.videocapture.finish_capture()
+        logger.write('>>> Bye.')
 
 
     # def skill_retrieval(self, params: Dict[str, Any]):
@@ -198,23 +293,22 @@ class PipelineRunner():
         # Get params
         start_frame_id = params["start_frame_id"]
         end_frame_id = params["end_frame_id"]
-        cur_screen_shot_path = params["cur_screen_shot_path"]
+        cur_screenshot_path: List[str] = params["cur_screenshot_path"]
 
         # Gather information preparation
         logger.write(f'Gather Information Start Frame ID: {start_frame_id}, End Frame ID: {end_frame_id}')
         input = self.planner.gather_information_.input_map
 
-
         # Configure the test
-        # if you want to test with a pre-defined screenshot, you can replace the cur_screen_shot_path with the path to the screenshot
+        # if you want to test with a pre-defined screenshot, you can replace the cur_screenshot_path with the path to the screenshot
         pre_defined_sreenshot = None
         if pre_defined_sreenshot is not None:
-            cur_screen_shot_path = pre_defined_sreenshot
+            cur_screenshot_path = pre_defined_sreenshot
         else:
-            cur_screen_shot_path = params['cur_screen_shot_path']
+            cur_screenshot_path = params['cur_screenshot_path']
 
-        # # Modify the general input for gather_information here
-        input["image_introduction"][0]["path"] = cur_screen_shot_path
+        # Modify the general input for gather_information here
+        input["image_introduction"][0]["path"] = cur_screenshot_path
 
         # Configure the gather_information module
         gather_information_configurations = {
@@ -224,7 +318,6 @@ class PipelineRunner():
             "object_detector": False
         }
         input["gather_information_configurations"] = gather_information_configurations
-
 
         # >> Calling INFORMATION GATHERING
         logger.write(f'>> Calling INFORMATION GATHERING')
@@ -253,12 +346,11 @@ class PipelineRunner():
             image_description = "No description"
             screen_classification = "None"
 
-        self.memory.add_recent_history(key=constants.IMAGES_MEM_BUCKET, info=cur_screen_shot_path)
+        self.memory.add_recent_history(key=constants.IMAGES_MEM_BUCKET, info=cur_screenshot_path)
 
         logger.write('Gather Information response: ', data['res_dict'])
         logger.write(f'Image Description: {image_description}')
         logger.write(f'Screen Classification: {screen_classification}')
-
 
         res_params = {
             "screen_classification": screen_classification,
@@ -267,6 +359,7 @@ class PipelineRunner():
         }
 
         return res_params
+
 
     def decision_making(self, params: Dict[str, Any]):
 
@@ -311,13 +404,23 @@ class PipelineRunner():
         input["image_introduction"] = image_introduction
         input["task_description"] = self.task_description
 
+        # >> Calling DECISION MAKING
+        logger.write(f'>> Calling DECISION MAKING')
         data = self.planner.decision_making(input = input)
 
+        pre_decision_making_reasoning = ''
+        if 'res_dict' in data.keys() and 'reasoning' in data['res_dict'].keys():
+            pre_decision_making_reasoning = data['res_dict']['reasoning']
+
+        # For such cases with no expected response, we should define a retry limit
+        logger.write(f'Decision reasoning: {pre_decision_making_reasoning}')
+
+        # Try to execute selected skills
         skill_steps = data['res_dict']['actions']
         if skill_steps is None:
             skill_steps = []
 
-        logger.write(f'R: {skill_steps}')
+        logger.write(f'Response steps: {skill_steps}')
 
         # Filter nop actions in list
         skill_steps = [ i for i in skill_steps if i != '']
@@ -327,33 +430,20 @@ class PipelineRunner():
         skill_steps = skill_steps[:number_of_execute_skills]
         logger.write(f'Skill Steps: {skill_steps}')
 
-        # @TODO: Rename GENERAL_GAME_INTERFACE
-        if (pre_screen_classification.lower() == constants.GENERAL_GAME_INTERFACE and
-                (screen_classification.lower() == constants.MAP_INTERFACE or
-                 screen_classification.lower() == constants.SATCHEL_INTERFACE) and pre_action):
-            exec_info = self.gm.execute_actions([pre_action])
-
         start_frame_id = self.videocapture.get_current_frame_id()
 
         exec_info = self.gm.execute_actions(skill_steps)
 
-        cur_screen_shot_path = self.gm.capture_screen()
+        cur_screenshot_path, _ = self.gm.capture_screen(draw_mouse=True)
 
         end_frame_id = self.videocapture.get_current_frame_id()
 
         # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
         pre_action = exec_info["last_skill"]
 
-        pre_decision_making_reasoning = ''
-        if 'res_dict' in data.keys() and 'reasoning' in data['res_dict'].keys():
-            pre_decision_making_reasoning = data['res_dict']['reasoning']
-
         pre_screen_classification = screen_classification
         self.memory.add_recent_history("action", pre_action)
         self.memory.add_recent_history("decision_making_reasoning", pre_decision_making_reasoning)
-
-        # For such cases with no expected response, we should define a retry limit
-        logger.write(f'Decision reasoning: {pre_decision_making_reasoning}')
 
         res_params = {
             "pre_action": pre_action,
@@ -362,15 +452,16 @@ class PipelineRunner():
             "exec_info": exec_info,
             "start_frame_id": start_frame_id,
             "end_frame_id": end_frame_id,
-            "cur_screen_shot_path": cur_screen_shot_path,
+            "cur_screenshot_path": cur_screenshot_path,
         }
 
         return res_params
 
+
     # def information_summary(self, params: Dict[str, Any]):
 
     #     task_description = params["task_description"]
-    #     cur_screen_shot_path = params["cur_screen_shot_path"]
+    #     cur_screenshot_path = params["cur_screenshot_path"]
 
     #     # Information summary preparation
     #     if (self.use_information_summary and len(self.memory.get_recent_history("decision_making_reasoning",
@@ -405,7 +496,7 @@ class PipelineRunner():
     #         logger.write(f'R: entities_and_behaviors: {entities_and_behaviors}')
     #         self.memory.add_summarization(info_summary)
 
-    #     self.memory.add_recent_history("image", cur_screen_shot_path)
+    #     self.memory.add_recent_history("image", cur_screenshot_path)
 
     #     res_params = {}
     #     return res_params
@@ -462,6 +553,11 @@ class PipelineRunner():
     #     return res_params
 
 
+def exit_cleanup(runner):
+    logger.write("Exiting pipeline.")
+    runner.pipeline_shutdown()
+
+
 def get_args_parser():
 
     parser = argparse.ArgumentParser("Cradle Prototype Runner")
@@ -479,17 +575,19 @@ def main(args):
     config.ocr_enabled = False
     config.skill_retrieval = True
     config.skill_from_local = True
-    config.skill_scope = "Basic"
 
     pipelineRunner = PipelineRunner(args.providerConfig,
                                     use_success_detection = False,
-                                    use_self_reflection = False,
+                                    use_self_reflection = True,
                                     use_information_summary = False)
+
+    atexit.register(exit_cleanup, pipelineRunner)
 
     pipelineRunner.run()
 
 
 if __name__ == '__main__':
+
     args = get_args_parser()
     args = args.parse_args()
     main(args)
