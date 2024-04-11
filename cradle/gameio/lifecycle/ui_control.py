@@ -70,17 +70,22 @@ def take_screenshot(tid : float,
                 new_size = (mouse_cursor.shape[1] // 4, mouse_cursor.shape[0] // 4)
                 mouse_cursor = cv2.resize(mouse_cursor, new_size, interpolation=cv2.INTER_AREA)
                 x, y = io_env.get_mouse_position()
-                x = max(region['left'], min(x, region['left'] + region['width'] - mouse_cursor.shape[1]))
-                y = max(region['top'], min(y, region['top'] + region['height'] - mouse_cursor.shape[0]))
                 image_array = np.array(image)
 
-                for c in range(0, 3):
-                    image_array[y:y + mouse_cursor.shape[0], x:x + mouse_cursor.shape[1], c] = \
-                        mouse_cursor[:, :, c] * (mouse_cursor[:, :, 3] / 255.0) + \
-                        image_array[y:y + mouse_cursor.shape[0], x:x + mouse_cursor.shape[1], c] * \
-                        (1.0 - mouse_cursor[:, :, 3] / 255.0)
+                if x + mouse_cursor.shape[1] > 0 and y + mouse_cursor.shape[0] > 0 and x < image_array.shape[1] and y < image_array.shape[0]:
+                    x_start = max(x, 0)
+                    y_start = max(y, 0)
+                    x_end = min(x + mouse_cursor.shape[1], image_array.shape[1])
+                    y_end = min(y + mouse_cursor.shape[0], image_array.shape[0])
+                    mouse_cursor_part = mouse_cursor[max(0, -y):y_end-y, max(0, -x):x_end-x]
+            
+                    for c in range(3): 
+                        alpha_channel = mouse_cursor_part[:, :, 3] / 255.0
+                        image_array[y_start:y_end, x_start:x_end, c] = \
+                            alpha_channel * mouse_cursor_part[:, :, c] + \
+                            (1 - alpha_channel) * image_array[y_start:y_end, x_start:x_end, c]
 
-                image = Image.fromarray(image_array)
+                    image = Image.fromarray(image_array)
 
         image.save(screen_image_filename)
 
