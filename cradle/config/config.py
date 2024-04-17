@@ -99,6 +99,12 @@ class Config(metaclass=Singleton):
             "navigate_path"
         ]
 
+        # SAM parameters
+        self.sam_model_name = "default"
+        self.sam_pred_iou_thresh = 0.5
+        self.sam_contrast_level = 1.8
+        self.sam_resize_ratio = 0.05
+
         self.show_mouse_in_screenshot = False
 
         # Just for convenience of testing, will be removed in final version.
