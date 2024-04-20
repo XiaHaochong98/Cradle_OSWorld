@@ -15,8 +15,8 @@ io_env = IOEnvironment()
 @register_environment("outlook")
 class Interface():
 
-    def draw_mouse_pointer(self, frame):
-        return draw_mouse_pointer(frame)
+    def draw_mouse_pointer(self, frame, encoding):
+        return draw_mouse_pointer(frame, encoding)
 
 
     def __init__(self):

@@ -191,6 +191,7 @@ class VideoRecorder():
                     for i in range(config.duplicate_frames):
                         self.current_frame_id += 1
                         frame_buffer.add_frame(self.current_frame_id, frame)
+
                     time.sleep(config.duplicate_frames / config.video_fps - 0.05) # 0.05: time for taking a screenshots
 
                     # Check the flag at regular intervals

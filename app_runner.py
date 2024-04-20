@@ -5,6 +5,8 @@ import argparse
 from typing import Dict, Any, List
 import atexit
 
+import cv2
+
 from cradle import constants
 from cradle.log import Logger
 from cradle.planner.planner import Planner
@@ -191,8 +193,8 @@ class PipelineRunner():
 
             # only use the first and last frame for self-reflection
             # add grid and color band to the frames
-            action_frames.append(self.gm.interface.augment_image(video_frames[0][1]))
-            action_frames.append(self.gm.interface.augment_image(video_frames[-1][1]))
+            action_frames.append(self.gm.interface.augment_image(video_frames[0][1], cv2.COLOR_BGRA2RGB))
+            action_frames.append(self.gm.interface.augment_image(video_frames[-1][1], cv2.COLOR_BGRA2RGB))
 
             image_introduction = [
                 {

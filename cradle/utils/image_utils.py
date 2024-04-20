@@ -1,5 +1,6 @@
 import os
-from datetime import datetime
+import datetime
+import io
 
 import numpy as np
 import cv2
@@ -17,8 +18,10 @@ logger = Logger()
 
 
 def show_image(img):
+
     if isinstance(img, str):
         img = cv2.imread(img)
+
     cv2.namedWindow("display", cv2.WINDOW_NORMAL)
     cv2.imshow("display", img)
     cv2.waitKey(0)
@@ -99,9 +102,21 @@ def draw_region_on_image(image_path, coordinates, pic_name):
     logger.debug(f"Picture saved: {output_path}")
 
 
-def draw_mouse_pointer(image):
+def draw_mouse_pointer(image, encoding = None):
 
     mouse_cursor = cv2.imread('./res/icons/pink_mouse.png', cv2.IMREAD_UNCHANGED)
+
+    if isinstance(image, bytes):  # mss grab bytes
+        image = Image.frombytes('RGB', image.size, image.bgra, 'raw', 'BGRX')
+        buffered = io.BytesIO()
+        image.save(buffered, format="JPEG")
+    elif isinstance(image, Image.Image):  # PIL image
+        buffered = io.BytesIO()
+        image.save(buffered, format="JPEG")
+    else:
+        # Assume cv2 image array
+        if encoding is not None:
+            image = cv2.cvtColor(image, encoding)
 
     if mouse_cursor is None:
         logger.error("Failed to read mouse cursor image file.")
@@ -214,16 +229,16 @@ def resize_image(image: str | np.ndarray, resize_ratio) -> Image:
 def overlay_image_on_background(annotations: list, shape) -> Image:
     if len(annotations) == 0:
         return
-    
+
     img_data = np.ones((shape[0], shape[1], 4), dtype=np.uint8)
-    
+
     sorted_anns = sorted(annotations, key=lambda x: x["area"], reverse=True)
-    
+
     for ann in sorted_anns:
         m = ann["segmentation"]
         color_mask = np.concatenate([np.random.rand(3) * 255, [89]])
         img_data[m] = color_mask
-    
+
     # Convert the NumPy array to a PIL Image and save
     img = Image.fromarray(img_data.astype('uint8'), 'RGBA')
 
@@ -276,7 +291,7 @@ def display_binary_images_grid(images: list[np.ndarray], grid_size = None, margi
     """
     if grid_size is None:
         grid_size = (int(np.ceil(np.sqrt(len(images)))),) * 2
-    
+
     if cell_size is None:
         # Determine max dimensions of images in the list and use that as cell size
         cell_width = max(image.shape[1] for image in images) + margin
@@ -314,7 +329,7 @@ def display_binary_images_grid(images: list[np.ndarray], grid_size = None, margi
 def remove_border_masks(masks: list[np.ndarray], threshold_percent: float = 5.0) -> list[np.ndarray]:
     """
     Removes masks whose "on" pixels are close to the mask borders on all four sides.
-    
+
     Parameters:
     - masks: A list of ndarrays, where each ndarray is a binary mask.
     - threshold_percent: A float indicating how close the "on" pixels can be to the border,
@@ -327,24 +342,24 @@ def remove_border_masks(masks: list[np.ndarray], threshold_percent: float = 5.0)
         # Determine actual threshold in pixels based on the percentage
         threshold_rows = int(mask.shape[0] * (threshold_percent / 100))
         threshold_cols = int(mask.shape[1] * (threshold_percent / 100))
-        
+
         # Check for "on" pixels close to each border
         top = np.any(mask[:threshold_rows, :])
         bottom = np.any(mask[-threshold_rows:, :])
         left = np.any(mask[:, :threshold_cols])
         right = np.any(mask[:, -threshold_cols:])
-        
+
         # If "on" pixels are close to all borders, return True
         return top and bottom and left and right
 
-    logger.debug(f"{len(masks)=}") 
+    logger.debug(f"{len(masks)=}")
 
     filtered_masks = []
     for mask in masks:
         # Only add mask if it is not close to all borders
         if not is_close_to_all_borders(mask, threshold_percent):
             filtered_masks.append(mask)
-    
+
     logger.debug(f"{len(filtered_masks)=}")
     return filtered_masks
 
@@ -372,10 +387,10 @@ def filter_thin_ragged_masks(masks: list[np.ndarray], kernel_size: int = 3, iter
         eroded_mask = cv2.erode(mask_uint8, kernel, iterations=iterations)
         # Perform dilation
         dilated_mask = cv2.dilate(eroded_mask, kernel, iterations=iterations)
-        
+
         # Convert back to boolean mask and add to the filtered list
         filtered_masks.append(dilated_mask > 0)
-    
+
     logger.debug(f"{len(filtered_masks)=}")
     return filtered_masks
 
@@ -505,7 +520,7 @@ def plot_som(screenshot_filename, bounding_boxes):
 
     text_to_draw = []
     min_distance_from_edge = 30
-    
+
     # Draw each bounding box on the image
     for i, bbox in enumerate(bounding_boxes):
         if len(bbox) == 0:

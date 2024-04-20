@@ -37,6 +37,7 @@ class SamProvider(metaclass=Singleton):
         except Exception as e:
             logger.error(f"Failed to load the grounding model. Make sure you follow the instructions on README to download the necessary files.\n{e}")
 
+
     def get_som(self, screenshot_path):
         image_resized = resize_image(screenshot_path, resize_ratio=config.sam_resize_ratio)
         contrasted_image = enhance_contrast(image_resized, config.sam_contrast_level)
