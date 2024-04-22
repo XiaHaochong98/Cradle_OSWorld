@@ -3,7 +3,7 @@ from typing import Tuple
 
 from cradle.config import Config
 from cradle.gameio import IOEnvironment
-from cradle.gameio.lifecycle.ui_control import take_screenshot
+from cradle.gameio.lifecycle.ui_control import take_screenshot, draw_mouse_pointer_file
 from cradle.log import Logger
 from cradle import constants
 from cradle.environment import ENVIORNMENT_REGISTRY
@@ -159,10 +159,10 @@ class GameManager:
         time.sleep(1)
 
 
-    def capture_screen(self, include_minimap = False, draw_mouse = False):
+    def capture_screen(self, include_minimap = False):
         tid = time.time()
-        return take_screenshot(tid, include_minimap=include_minimap, show_mouse_in_screenshot=draw_mouse)
-
+        return take_screenshot(tid, include_minimap=include_minimap)
+        
 
     def extract_minimap(self, screenshot_path):
         return self.interface.segment_minimap(screenshot_path)

@@ -102,7 +102,7 @@ def draw_region_on_image(image_path, coordinates, pic_name):
     logger.debug(f"Picture saved: {output_path}")
 
 
-def draw_mouse_pointer(image, encoding = None):
+def draw_mouse_pointer(image, x, y, encoding = None):
 
     mouse_cursor = cv2.imread('./res/icons/pink_mouse.png', cv2.IMREAD_UNCHANGED)
 
@@ -120,10 +120,11 @@ def draw_mouse_pointer(image, encoding = None):
 
     if mouse_cursor is None:
         logger.error("Failed to read mouse cursor image file.")
+    elif x is None or y is None:
+        logger.warn("Mouse coordinates are missing.")
     else:
         new_size = (mouse_cursor.shape[1] // 4, mouse_cursor.shape[0] // 4)
         mouse_cursor = cv2.resize(mouse_cursor, new_size, interpolation=cv2.INTER_AREA)
-        x, y = io_env.get_mouse_position()
         image_array = np.array(image)
 
         if x + mouse_cursor.shape[1] > 0 and y + mouse_cursor.shape[0] > 0 and x < image_array.shape[1] and y < image_array.shape[0]:
@@ -139,9 +140,18 @@ def draw_mouse_pointer(image, encoding = None):
                     alpha_channel * mouse_cursor_part[:, :, c] + \
                     (1 - alpha_channel) * image_array[y_start:y_end, x_start:x_end, c]
 
-            image = Image.fromarray(image_array)
+        image = Image.fromarray(image_array)
 
     return image
+
+def draw_mouse_pointer_file_(image_path: str, x, y) -> str:
+
+    image = cv2.imread(image_path)
+    img = draw_mouse_pointer(image, x, y)
+    draw_mouse_img_path = image_path.replace(".jpg", f"_with_mouse.jpg")
+    img.save(draw_mouse_img_path)
+
+    return draw_mouse_img_path
 
 
 def calculate_image_diff(path_1, path_2):
@@ -593,3 +603,16 @@ def enhance_contrast(image: Image, contrast_level: float) -> Image:
     enhancer = ImageEnhance.Contrast(image)
     contrasted_image = enhancer.enhance(contrast_level)
     return contrasted_image
+
+def crop_grow_image(image_path: str, crop_area_border: tuple[int, int, int, int] = (8, 1, 8, 8), overwrite_flag: bool = False):
+    with Image.open(image_path) as img:
+        width, height = img.size
+        crop_area = (crop_area_border[0], crop_area_border[1], width-crop_area_border[2], height-crop_area_border[3])
+        cropped_img = img.crop(crop_area)
+        cropped_img = cropped_img.resize(config.DEFAULT_ENV_RESOLUTION, Image.ANTIALIAS)
+        if overwrite_flag:
+            crop_screenshot_path = image_path
+        else:
+            crop_screenshot_path = image_path.replace(".jpg", f"_crop.jpg")
+        cropped_img.save(crop_screenshot_path)
+        return crop_screenshot_path

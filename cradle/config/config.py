@@ -100,10 +100,11 @@ class Config(metaclass=Singleton):
         ]
 
         # SAM parameters
+        self.use_sam_flag = True
         self.sam_model_name = "default"
-        self.sam_pred_iou_thresh = 0.5
-        self.sam_contrast_level = 1.8
-        self.sam_resize_ratio = 0.05
+        self.sam_pred_iou_thresh = 0.4
+        self.sam_resize_ratio = 0.4
+        self.sam_contrast_level = 0.6
 
         self.show_mouse_in_screenshot = False
 

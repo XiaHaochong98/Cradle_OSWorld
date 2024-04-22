@@ -23,6 +23,10 @@ RADIAL_INTERFACE = 'radial menu'
 LAST_TASK_GUIDANCE = 'last_task_guidance'
 LAST_TASK_HORIZON = 'task_horizon'
 TASK_DESCRIPTION = 'task_description'
+SOM_IMAGE_PATH = 'som_image_path'
+SOM_MAP = 'som_map'
+MOUSE_X_POSITION = 'mouse_x_position'
+MOUSE_Y_POSITION = 'mouse_y_position'
 
 # Tags used in prompt templates
 IMAGES_INPUT_TAG_NAME = 'image_introduction'

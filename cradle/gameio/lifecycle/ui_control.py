@@ -12,7 +12,7 @@ import mss.tools
 from cradle.config import Config
 from cradle.log import Logger
 from cradle.gameio import IOEnvironment
-from cradle.utils.image_utils import draw_mouse_pointer
+from cradle.utils.image_utils import draw_mouse_pointer_file_, crop_grow_image
 
 config = Config()
 logger = Logger()
@@ -43,7 +43,7 @@ def take_screenshot(tid : float,
                     minimap_region : tuple[int, int, int, int] = None,
                     include_minimap = False,
                     draw_axis = False,
-                    show_mouse_in_screenshot = config.show_mouse_in_screenshot):
+                    crop_border: bool = False):
 
     if screen_region is None:
         screen_region = config.env_region
@@ -67,10 +67,6 @@ def take_screenshot(tid : float,
     with mss.mss() as sct:
         screen_image = sct.grab(region)
         image = Image.frombytes("RGB", screen_image.size, screen_image.bgra, "raw", "BGRX")
-
-        if show_mouse_in_screenshot:
-            image = draw_mouse_pointer(image)
-
         image.save(screen_image_filename)
 
     minimap_image_filename = ""
@@ -116,6 +112,9 @@ def take_screenshot(tid : float,
         axes_image_filename = output_dir + "/axes_screen_" + str(tid) + ".jpg"
         screen_image.save(axes_image_filename)
 
+    if crop_border:
+        screen_image_filename = crop_grow_image(screen_image_filename)
+
     return screen_image_filename, minimap_image_filename
 
 
@@ -152,8 +151,21 @@ def clip_minimap(minimap_image_filename):
     cv2.imwrite(minimap_image_filename, masked_image)
 
 
+def normalize_coordinates(window_coorindates : tuple[int, int]) -> tuple[float, float]:
+    x, y = window_coorindates 
+    default_resolution = config.DEFAULT_ENV_RESOLUTION
+    x, y = x / default_resolution[0], y / default_resolution[1]
+    return (x, y)
+
+
+def draw_mouse_pointer_file(img_path: str, x, y) -> str:
+    return draw_mouse_pointer_file_(img_path, x, y)
+
+
 __all__ = [
     "switch_to_game",
     "take_screenshot",
-    "clip_minimap"
+    "clip_minimap",
+    "normalize_coordinates",
+    "draw_mouse_pointer_file"
 ]

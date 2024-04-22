@@ -3,7 +3,6 @@ from segment_anything import (
     SamAutomaticMaskGenerator,
     SamPredictor,
     sam_model_registry,
-    enhance_contrast,
 )
 
 from cradle.utils import Singleton
@@ -16,6 +15,7 @@ from cradle.utils.image_utils import (
     refine_masks,
     calculate_bounding_boxes,
     plot_som,
+    enhance_contrast
 )
 
 config = Config()
@@ -54,9 +54,6 @@ class SamProvider(metaclass=Singleton):
         bounding_boxes, centroids = calculate_bounding_boxes(refined_masks)
 
         som_img = plot_som(screenshot_path, bounding_boxes)
-        som_screenshot_path = screenshot_path.replace(".jpg", f"_som.jpg")
-        som_img.save(som_screenshot_path)
-
         centroids_map = {str(i + 1): centroid for i, centroid in enumerate(centroids)}
 
-        return som_screenshot_path, centroids_map
+        return som_img, centroids_map

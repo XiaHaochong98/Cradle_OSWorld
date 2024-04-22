@@ -13,10 +13,12 @@ from cradle.planner.planner import Planner
 from cradle.config import Config
 from cradle.memory import LocalMemory
 from cradle.provider.openai import OpenAIProvider
+from cradle.provider.sam_provider import SamProvider
 from cradle.gameio.io_env import IOEnvironment
 from cradle.gameio.game_manager import GameManager
 from cradle.gameio.video.VideoRecorder import VideoRecorder
-from cradle.gameio.lifecycle.ui_control import switch_to_game
+from cradle.gameio.lifecycle.ui_control import switch_to_game, normalize_coordinates, draw_mouse_pointer_file
+import cradle.environment.chrome
 import cradle.environment.outlook
 
 config = Config()
@@ -50,6 +52,9 @@ class PipelineRunner():
 
         # Init GD provider (not used in this example)
         self.gd_detector = None
+
+        # Init Sam provider
+        self.sam_provider = SamProvider()
 
         # Init video frame extractor (not used in this example)
         self.frame_extractor = None
@@ -94,7 +99,7 @@ class PipelineRunner():
 
     def run(self):
 
-        self.task_description = "Select View menu"  # "Open File menu"
+        self.task_description = "Select Menu Icon"  # "Open File menu"
         params = {}
 
         # Switch to target environment
@@ -175,6 +180,7 @@ class PipelineRunner():
         #task_description = params["task_description"]
         task_description = params["task_description"]
         pre_action = params["pre_action"]
+        response = params["response"]
         pre_decision_making_reasoning = params["pre_decision_making_reasoning"]
         exec_info = params["exec_info"]
 
@@ -193,8 +199,8 @@ class PipelineRunner():
 
             # only use the first and last frame for self-reflection
             # add grid and color band to the frames
-            action_frames.append(self.gm.interface.augment_image(video_frames[0][1], cv2.COLOR_BGRA2RGB))
-            action_frames.append(self.gm.interface.augment_image(video_frames[-1][1], cv2.COLOR_BGRA2RGB))
+            action_frames.append(self.gm.interface.augment_image(video_frames[0][1], x = response[constants.MOUSE_X_POSITION], y = response[constants.MOUSE_Y_POSITION], encoding = cv2.COLOR_BGRA2RGB))
+            action_frames.append(self.gm.interface.augment_image(video_frames[-1][1], x = response[constants.MOUSE_X_POSITION], y = response[constants.MOUSE_Y_POSITION], encoding = cv2.COLOR_BGRA2RGB))
 
             image_introduction = [
                 {
@@ -310,7 +316,11 @@ class PipelineRunner():
             cur_screenshot_path = params['cur_screenshot_path']
 
         # Modify the general input for gather_information here
-        input["image_introduction"][0]["path"] = cur_screenshot_path
+        x, y = io_env.get_mouse_position()
+        if config.show_mouse_in_screenshot:
+            input["image_introduction"][0]["path"] = draw_mouse_pointer_file(cur_screenshot_path, x, y)
+        else: 
+            input["image_introduction"][0]["path"] = cur_screenshot_path
 
         # Configure the gather_information module
         gather_information_configurations = {
@@ -353,6 +363,16 @@ class PipelineRunner():
         logger.write('Gather Information response: ', data['res_dict'])
         logger.write(f'Image Description: {image_description}')
         logger.write(f'Screen Classification: {screen_classification}')
+
+        data['res_dict'][constants.MOUSE_X_POSITION], data['res_dict'][constants.MOUSE_Y_POSITION] = x, y
+
+        if config.use_sam_flag:
+            som_img, som_map = self.sam_provider.get_som(cur_screenshot_path)
+            som_img_path = cur_screenshot_path.replace(".jpg", f"_som.jpg")
+            som_img.save(som_img_path)
+            logger.debug(f"Saved the SOM screenshot to {som_img_path}")
+            data['res_dict'][constants.SOM_IMAGE_PATH] = som_img_path
+            data['res_dict'][constants.SOM_MAP] = som_map
 
         res_params = {
             "screen_classification": screen_classification,
@@ -405,6 +425,14 @@ class PipelineRunner():
 
         input["image_introduction"] = image_introduction
         input["task_description"] = self.task_description
+        if config.use_sam_flag:
+            som_img_path = response[constants.SOM_IMAGE_PATH]
+            input["image_introduction"][-1]["path"] = som_img_path
+        
+        if config.show_mouse_in_screenshot:
+            input["image_introduction"][-1]["path"] = draw_mouse_pointer_file(input["image_introduction"][-1]["path"], response[constants.MOUSE_X_POSITION], response[constants.MOUSE_Y_POSITION])
+        else: 
+            input["image_introduction"][-1]["path"] = som_img_path
 
         # >> Calling DECISION MAKING
         logger.write(f'>> Calling DECISION MAKING')
@@ -430,13 +458,18 @@ class PipelineRunner():
             skill_steps = ['']
 
         skill_steps = skill_steps[:number_of_execute_skills]
+
+        skill_steps = pre_process_skill_steps(skill_steps, response[constants.SOM_MAP])
+
         logger.write(f'Skill Steps: {skill_steps}')
 
         start_frame_id = self.videocapture.get_current_frame_id()
 
         exec_info = self.gm.execute_actions(skill_steps)
 
-        cur_screenshot_path, _ = self.gm.capture_screen(draw_mouse=True)
+        cur_screenshot_path, _ = self.gm.capture_screen()
+        if config.show_mouse_in_screenshot:
+            cur_screenshot_path = draw_mouse_pointer_file(cur_screenshot_path, x = response[constants.MOUSE_X_POSITION], y = response[constants.MOUSE_Y_POSITION])
 
         end_frame_id = self.videocapture.get_current_frame_id()
 
@@ -554,6 +587,20 @@ class PipelineRunner():
     #     }
     #     return res_params
 
+def pre_process_skill_steps(skill_steps: list, som_map) -> list:
+    processed_skill_steps = skill_steps
+    for i in range(len(processed_skill_steps)):
+        if 'click_on_label' in processed_skill_steps[i]:
+            skill = processed_skill_steps[i]
+            suffix_str = skill.split(',')[1]
+            raw_box_id  = str(skill.split('box_id=')[1].split(',')[0])
+            box_id = raw_box_id.replace("'", "").replace('"', "").replace(" ", "")
+            if box_id in som_map:
+                x, y = normalize_coordinates(som_map[box_id])
+                processed_skill_steps[i] = f'click_at_position(x={x}, y={y}, ' + suffix_str
+            else:
+                processed_skill_steps[i] = ''       
+    return processed_skill_steps
 
 def exit_cleanup(runner):
     logger.write("Exiting pipeline.")
@@ -564,7 +611,7 @@ def get_args_parser():
 
     parser = argparse.ArgumentParser("Cradle Prototype Runner")
     parser.add_argument("--providerConfig", type=str, default="./conf/openai_config.json", help="The path to the provider config file")
-    parser.add_argument("--envConfig", type=str, default="./conf/env_config_outlook.json", help="The path to the environment config file")
+    parser.add_argument("--envConfig", type=str, default="./conf/env_config_chrome.json", help="The path to the environment config file")
     return parser
 
 
