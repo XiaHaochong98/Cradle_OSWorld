@@ -16,8 +16,8 @@ io_env = IOEnvironment()
 @register_environment("chrome")
 class Interface():
 
-    def draw_mouse_pointer(self, frame, x, y, encoding = None):
-        return draw_mouse_pointer(frame, x, y, encoding = None)
+    def draw_mouse_pointer(self, frame, x, y):
+        return draw_mouse_pointer(frame, x, y)
 
 
     def __init__(self):

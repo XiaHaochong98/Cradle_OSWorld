@@ -102,7 +102,7 @@ def draw_region_on_image(image_path, coordinates, pic_name):
     logger.debug(f"Picture saved: {output_path}")
 
 
-def draw_mouse_pointer(image: cv2.typing.MatLike, x, y, encoding = None):
+def draw_mouse_pointer(image: cv2.typing.MatLike, x, y):
 
     mouse_cursor = cv2.imread('./res/icons/pink_mouse.png', cv2.IMREAD_UNCHANGED)
 

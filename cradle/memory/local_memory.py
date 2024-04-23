@@ -73,6 +73,9 @@ class LocalMemory(BaseMemory):
 
         if len(self.recent_history[key]) == 0:
             return [""]
+        
+        if k is None:
+            k = 1
 
         return self.recent_history[key][-k:] if len(self.recent_history[key]) >= k else self.recent_history[key]
 

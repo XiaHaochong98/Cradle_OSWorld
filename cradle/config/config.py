@@ -82,6 +82,7 @@ class Config(metaclass=Singleton):
 
         # Self-reflection image count
         self.max_images_in_self_reflection = 4
+        self.self_reflection_image_num = None
 
         # Decision-making image count
         self.decision_making_image_num = 2

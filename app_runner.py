@@ -101,6 +101,10 @@ class PipelineRunner():
     def run(self):
 
         self.task_description = "Open my calendar and create a meeting at 2pm" # "Select Menu Icon"  # "Open File menu"
+        # self.task_description = """1. Click search box.
+        #                            2. Search for an article starting with "Towards General Computer Control" and go to the PDF page.
+        #                            3. Download the PDF file.
+        #                         """ # Chrome Task #3
         params = {}
 
         # Switch to target environment
@@ -184,11 +188,12 @@ class PipelineRunner():
         task_description = params["task_description"]
         pre_action = params["pre_action"]
 
-        response = params["response"]
         augmentation = params[constants.AUGMENTATION_INFO]
 
         pre_decision_making_reasoning = params["pre_decision_making_reasoning"]
         exec_info = params["exec_info"]
+
+        image_memory = self.memory.get_recent_history("image", k=config.self_reflection_image_num)
 
         self_reflection_reasoning = ""
         if self.use_self_reflection and start_frame_id > -1:
@@ -205,10 +210,16 @@ class PipelineRunner():
 
             # only use the first and last frame for self-reflection
             # add grid and color band to the frames
-            mouse_x = kget(augmentation, constants.MOUSE_X)
-            mouse_y = kget(augmentation, constants.MOUSE_Y)
-            action_frames.append(self.gm.interface.augment_image(video_frames[0][1], x = mouse_x, y = mouse_y, encoding = cv2.COLOR_BGRA2RGB))
-            action_frames.append(self.gm.interface.augment_image(video_frames[-1][1], x = mouse_x, y = mouse_y, encoding = cv2.COLOR_BGRA2RGB))
+            # action_frames.append(self.gm.interface.augment_image(video_frames[0][1], x = response[constants.MOUSE_X_POSITION], y = response[constants.MOUSE_Y_POSITION], encoding = cv2.COLOR_BGRA2RGB))
+            # action_frames.append(self.gm.interface.augment_image(video_frames[-1][1], x = response[constants.MOUSE_X_POSITION], y = response[constants.MOUSE_Y_POSITION], encoding = cv2.COLOR_BGRA2RGB))
+            for i in range(len(image_memory), 0, -1):
+                if config.show_mouse_in_screenshot:
+                    with_mouse_img_path = image_memory[-i].replace(".jpg", f"_with_mouse.jpg")
+                    if not os.path.exists(with_mouse_img_path):
+                        with_mouse_img_path = draw_mouse_pointer_file(image_memory[-i], augmentation[constants.MOUSE_X], augmentation[constants.MOUSE_Y])
+                    action_frames.append(with_mouse_img_path)
+                else:
+                    action_frames.append(image_memory[-i])
 
             image_introduction = [
                 {
@@ -447,12 +458,24 @@ class PipelineRunner():
 
         input["image_introduction"] = image_introduction
         input["task_description"] = self.task_description
-        if config.use_sam_flag:
-            som_img_path = augmentation[constants.SOM_IMAGE_PATH]
-            input["image_introduction"][-1]["path"] = som_img_path
 
-        if config.show_mouse_in_screenshot:
-            input["image_introduction"][-1]["path"] = draw_mouse_pointer_file(input["image_introduction"][-1]["path"], augmentation[constants.MOUSE_X], augmentation[constants.MOUSE_Y])
+        for i in range(len(image_memory), 0, -1):
+            if config.use_sam_flag:
+                som_img_path = image_memory[-i].replace(".jpg", f"_som.jpg")
+                if not os.path.exists(som_img_path):
+
+                    som_img, som_map = self.sam_provider.get_som(som_img_path)
+                    som_img.save(som_img_path)
+                    logger.debug(f"Saved the SOM screenshot to {som_img_path}")
+
+                    augmentation[constants.SOM_IMAGE_PATH] = som_img_path
+                    augmentation[constants.SOM_MAP] = som_map
+
+                input["image_introduction"][-i]["path"] = som_img_path
+
+            if config.show_mouse_in_screenshot:
+                som_with_mouse_img_path = draw_mouse_pointer_file(input["image_introduction"][-i]["path"], augmentation[constants.MOUSE_X], augmentation[constants.MOUSE_Y])
+                input["image_introduction"][-i]["path"] = som_with_mouse_img_path
 
         # >> Calling DECISION MAKING
         logger.write(f'>> Calling DECISION MAKING')
@@ -622,6 +645,7 @@ def pre_process_skill_steps(skill_steps: list, som_map) -> list:
                 x, y = normalize_coordinates(som_map[box_id])
                 processed_skill_steps[i] = f'click_at_position(x={x}, y={y}, ' + suffix_str
             else:
+                logger.debug(f"Box ID {box_id} not found in SOM map.")
                 processed_skill_steps[i] = ''
 
     return processed_skill_steps
@@ -651,6 +675,9 @@ def main(args):
     config.skill_from_local = True
 
     config.show_mouse_in_screenshot = True
+
+    # Set the number of images to be used in self-reflection
+    config.self_reflection_image_num = 2
 
     pipelineRunner = PipelineRunner(args.providerConfig,
                                     use_success_detection = False,
