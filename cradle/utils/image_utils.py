@@ -102,21 +102,9 @@ def draw_region_on_image(image_path, coordinates, pic_name):
     logger.debug(f"Picture saved: {output_path}")
 
 
-def draw_mouse_pointer(image, x, y, encoding = None):
+def draw_mouse_pointer(image: cv2.typing.MatLike, x, y, encoding = None):
 
     mouse_cursor = cv2.imread('./res/icons/pink_mouse.png', cv2.IMREAD_UNCHANGED)
-
-    if isinstance(image, bytes):  # mss grab bytes
-        image = Image.frombytes('RGB', image.size, image.bgra, 'raw', 'BGRX')
-        buffered = io.BytesIO()
-        image.save(buffered, format="JPEG")
-    elif isinstance(image, Image.Image):  # PIL image
-        buffered = io.BytesIO()
-        image.save(buffered, format="JPEG")
-    else:
-        # Assume cv2 image array
-        if encoding is not None:
-            image = cv2.cvtColor(image, encoding)
 
     if mouse_cursor is None:
         logger.error("Failed to read mouse cursor image file.")
@@ -125,7 +113,7 @@ def draw_mouse_pointer(image, x, y, encoding = None):
     else:
         new_size = (mouse_cursor.shape[1] // 4, mouse_cursor.shape[0] // 4)
         mouse_cursor = cv2.resize(mouse_cursor, new_size, interpolation=cv2.INTER_AREA)
-        image_array = np.array(image)
+        image_array = image
 
         if x + mouse_cursor.shape[1] > 0 and y + mouse_cursor.shape[0] > 0 and x < image_array.shape[1] and y < image_array.shape[0]:
             x_start = max(x, 0)
@@ -140,16 +128,18 @@ def draw_mouse_pointer(image, x, y, encoding = None):
                     alpha_channel * mouse_cursor_part[:, :, c] + \
                     (1 - alpha_channel) * image_array[y_start:y_end, x_start:x_end, c]
 
-        image = Image.fromarray(image_array)
+            image = cv2.cvtColor(image_array, cv2.COLOR_BGRA2BGR)
 
     return image
+
 
 def draw_mouse_pointer_file_(image_path: str, x, y) -> str:
 
     image = cv2.imread(image_path)
-    img = draw_mouse_pointer(image, x, y)
+    image_with_mouse = draw_mouse_pointer(image, x, y)
+
     draw_mouse_img_path = image_path.replace(".jpg", f"_with_mouse.jpg")
-    img.save(draw_mouse_img_path)
+    cv2.imwrite(draw_mouse_img_path, image_with_mouse)
 
     return draw_mouse_img_path
 
@@ -603,6 +593,7 @@ def enhance_contrast(image: Image, contrast_level: float) -> Image:
     enhancer = ImageEnhance.Contrast(image)
     contrasted_image = enhancer.enhance(contrast_level)
     return contrasted_image
+
 
 def crop_grow_image(image_path: str, crop_area_border: tuple[int, int, int, int] = (8, 1, 8, 8), overwrite_flag: bool = False):
     with Image.open(image_path) as img:

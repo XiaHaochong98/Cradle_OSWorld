@@ -25,8 +25,9 @@ LAST_TASK_HORIZON = 'task_horizon'
 TASK_DESCRIPTION = 'task_description'
 SOM_IMAGE_PATH = 'som_image_path'
 SOM_MAP = 'som_map'
-MOUSE_X_POSITION = 'mouse_x_position'
-MOUSE_Y_POSITION = 'mouse_y_position'
+MOUSE_X = 'mouse_x'
+MOUSE_Y = 'mouse_y'
+AUGMENTATION_INFO = "augmentation_info"
 
 # Tags used in prompt templates
 IMAGES_INPUT_TAG_NAME = 'image_introduction'

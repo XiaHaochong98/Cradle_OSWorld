@@ -20,6 +20,7 @@ from cradle.gameio.video.VideoRecorder import VideoRecorder
 from cradle.gameio.lifecycle.ui_control import switch_to_game, normalize_coordinates, draw_mouse_pointer_file
 import cradle.environment.chrome
 import cradle.environment.outlook
+from cradle.utils.dict_utils import kget
 
 config = Config()
 logger = Logger()
@@ -99,7 +100,7 @@ class PipelineRunner():
 
     def run(self):
 
-        self.task_description = "Select Menu Icon"  # "Open File menu"
+        self.task_description = "Open my calendar and create a meeting at 2pm" # "Select Menu Icon"  # "Open File menu"
         params = {}
 
         # Switch to target environment
@@ -109,7 +110,9 @@ class PipelineRunner():
         self.videocapture.start_capture()
         start_frame_id = self.videocapture.get_current_frame_id()
 
+        # First sense
         cur_screenshot_path, _ = self.gm.capture_screen()
+        mouse_x, mouse_y = io_env.get_mouse_position()
         self.memory.add_recent_history("image", cur_screenshot_path)
 
         success = False
@@ -121,6 +124,7 @@ class PipelineRunner():
             "start_frame_id": start_frame_id,
             "end_frame_id": end_frame_id,
             "cur_screenshot_path": cur_screenshot_path,
+            "mouse_position" : (mouse_x, mouse_y),
             "exec_info": {
                 "errors": False,
                 "errors_info": ""
@@ -177,10 +181,12 @@ class PipelineRunner():
         start_frame_id = params["start_frame_id"]
         end_frame_id = params["end_frame_id"]
 
-        #task_description = params["task_description"]
         task_description = params["task_description"]
         pre_action = params["pre_action"]
+
         response = params["response"]
+        augmentation = params[constants.AUGMENTATION_INFO]
+
         pre_decision_making_reasoning = params["pre_decision_making_reasoning"]
         exec_info = params["exec_info"]
 
@@ -199,8 +205,10 @@ class PipelineRunner():
 
             # only use the first and last frame for self-reflection
             # add grid and color band to the frames
-            action_frames.append(self.gm.interface.augment_image(video_frames[0][1], x = response[constants.MOUSE_X_POSITION], y = response[constants.MOUSE_Y_POSITION], encoding = cv2.COLOR_BGRA2RGB))
-            action_frames.append(self.gm.interface.augment_image(video_frames[-1][1], x = response[constants.MOUSE_X_POSITION], y = response[constants.MOUSE_Y_POSITION], encoding = cv2.COLOR_BGRA2RGB))
+            mouse_x = kget(augmentation, constants.MOUSE_X)
+            mouse_y = kget(augmentation, constants.MOUSE_Y)
+            action_frames.append(self.gm.interface.augment_image(video_frames[0][1], x = mouse_x, y = mouse_y, encoding = cv2.COLOR_BGRA2RGB))
+            action_frames.append(self.gm.interface.augment_image(video_frames[-1][1], x = mouse_x, y = mouse_y, encoding = cv2.COLOR_BGRA2RGB))
 
             image_introduction = [
                 {
@@ -253,7 +261,8 @@ class PipelineRunner():
             logger.write(f'Self-reflection reason: {self_reflection_reasoning}')
 
         res_params = {
-            "pre_self_reflection_reasoning": self_reflection_reasoning
+            "pre_self_reflection_reasoning": self_reflection_reasoning,
+            "augmentation_info": augmentation,
         }
 
         return res_params
@@ -316,11 +325,23 @@ class PipelineRunner():
             cur_screenshot_path = params['cur_screenshot_path']
 
         # Modify the general input for gather_information here
-        x, y = io_env.get_mouse_position()
+        augmentation_info = dict()
+
+        main_screenshot = cur_screenshot_path
+
         if config.show_mouse_in_screenshot:
-            input["image_introduction"][0]["path"] = draw_mouse_pointer_file(cur_screenshot_path, x, y)
-        else: 
-            input["image_introduction"][0]["path"] = cur_screenshot_path
+            mouse_pos = kget(params, 'mouse_position')
+            if mouse_pos is not None:
+                mouse_x = mouse_pos[0]
+                mouse_y = mouse_pos[1]
+                main_screenshot = draw_mouse_pointer_file(cur_screenshot_path, mouse_x, mouse_y)
+
+                augmentation_info[constants.MOUSE_X] = mouse_x
+                augmentation_info[constants.MOUSE_Y] = mouse_y
+            else:
+                logger.warn("No mouse position to draw in info gathering augmentation!")
+
+        input["image_introduction"][0]["path"] = main_screenshot
 
         # Configure the gather_information module
         gather_information_configurations = {
@@ -364,20 +385,20 @@ class PipelineRunner():
         logger.write(f'Image Description: {image_description}')
         logger.write(f'Screen Classification: {screen_classification}')
 
-        data['res_dict'][constants.MOUSE_X_POSITION], data['res_dict'][constants.MOUSE_Y_POSITION] = x, y
-
         if config.use_sam_flag:
             som_img, som_map = self.sam_provider.get_som(cur_screenshot_path)
             som_img_path = cur_screenshot_path.replace(".jpg", f"_som.jpg")
             som_img.save(som_img_path)
             logger.debug(f"Saved the SOM screenshot to {som_img_path}")
-            data['res_dict'][constants.SOM_IMAGE_PATH] = som_img_path
-            data['res_dict'][constants.SOM_MAP] = som_map
+
+            augmentation_info[constants.SOM_IMAGE_PATH] = som_img_path
+            augmentation_info[constants.SOM_MAP] = som_map
 
         res_params = {
             "screen_classification": screen_classification,
             "response_keys": response_keys,
             "response": data['res_dict'],
+            "augmentation_info": augmentation_info,
         }
 
         return res_params
@@ -387,6 +408,7 @@ class PipelineRunner():
 
         response_keys = params["response_keys"]
         response = params["response"]
+        augmentation = params[constants.AUGMENTATION_INFO]
         pre_action = params["pre_action"]
         pre_self_reflection_reasoning = params["pre_self_reflection_reasoning"]
         pre_screen_classification = params["pre_screen_classification"]
@@ -426,13 +448,11 @@ class PipelineRunner():
         input["image_introduction"] = image_introduction
         input["task_description"] = self.task_description
         if config.use_sam_flag:
-            som_img_path = response[constants.SOM_IMAGE_PATH]
+            som_img_path = augmentation[constants.SOM_IMAGE_PATH]
             input["image_introduction"][-1]["path"] = som_img_path
-        
+
         if config.show_mouse_in_screenshot:
-            input["image_introduction"][-1]["path"] = draw_mouse_pointer_file(input["image_introduction"][-1]["path"], response[constants.MOUSE_X_POSITION], response[constants.MOUSE_Y_POSITION])
-        else: 
-            input["image_introduction"][-1]["path"] = som_img_path
+            input["image_introduction"][-1]["path"] = draw_mouse_pointer_file(input["image_introduction"][-1]["path"], augmentation[constants.MOUSE_X], augmentation[constants.MOUSE_Y])
 
         # >> Calling DECISION MAKING
         logger.write(f'>> Calling DECISION MAKING')
@@ -459,7 +479,7 @@ class PipelineRunner():
 
         skill_steps = skill_steps[:number_of_execute_skills]
 
-        skill_steps = pre_process_skill_steps(skill_steps, response[constants.SOM_MAP])
+        skill_steps = pre_process_skill_steps(skill_steps, augmentation[constants.SOM_MAP])
 
         logger.write(f'Skill Steps: {skill_steps}')
 
@@ -467,9 +487,9 @@ class PipelineRunner():
 
         exec_info = self.gm.execute_actions(skill_steps)
 
+        # Sense here to avoid changes in state after action execution completes
         cur_screenshot_path, _ = self.gm.capture_screen()
-        if config.show_mouse_in_screenshot:
-            cur_screenshot_path = draw_mouse_pointer_file(cur_screenshot_path, x = response[constants.MOUSE_X_POSITION], y = response[constants.MOUSE_Y_POSITION])
+        mouse_x, mouse_y = io_env.get_mouse_position()
 
         end_frame_id = self.videocapture.get_current_frame_id()
 
@@ -488,6 +508,7 @@ class PipelineRunner():
             "start_frame_id": start_frame_id,
             "end_frame_id": end_frame_id,
             "cur_screenshot_path": cur_screenshot_path,
+            "mouse_position" : (mouse_x, mouse_y),
         }
 
         return res_params
@@ -587,7 +608,9 @@ class PipelineRunner():
     #     }
     #     return res_params
 
+
 def pre_process_skill_steps(skill_steps: list, som_map) -> list:
+
     processed_skill_steps = skill_steps
     for i in range(len(processed_skill_steps)):
         if 'click_on_label' in processed_skill_steps[i]:
@@ -599,8 +622,10 @@ def pre_process_skill_steps(skill_steps: list, som_map) -> list:
                 x, y = normalize_coordinates(som_map[box_id])
                 processed_skill_steps[i] = f'click_at_position(x={x}, y={y}, ' + suffix_str
             else:
-                processed_skill_steps[i] = ''       
+                processed_skill_steps[i] = ''
+
     return processed_skill_steps
+
 
 def exit_cleanup(runner):
     logger.write("Exiting pipeline.")
@@ -624,6 +649,8 @@ def main(args):
     config.ocr_enabled = False
     config.skill_retrieval = True
     config.skill_from_local = True
+
+    config.show_mouse_in_screenshot = True
 
     pipelineRunner = PipelineRunner(args.providerConfig,
                                     use_success_detection = False,
