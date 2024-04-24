@@ -29,8 +29,15 @@ SKILL_CODE_HASH_KEY = 'skill_code_base64'
 EXPL_SKILL_LIB_FILE='skill_lib.json'
 BASIC_SKILL_LIB_FILE='skill_lib_basic.json'
 BASIC_SKILLS = [
-    "click_at",
-    "type_text"
+    "click_at_position",
+    "move_mouse_to_position",
+    "mouse_drag",
+    "type_text",
+    "press_key",
+    "press_keys_combined",
+
+    "click_on_label",
+    "hover_over_label",
 ]
 DENY_LIST_TERMS = []
 ALLOW_LIST_TERMS = []

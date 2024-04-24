@@ -14,31 +14,13 @@ Target_object_name: Assume you can use an object detection model to detect the m
 
 Reasoning_of_object: Why was this object chosen, or why is there no need to detect an object?
 
-Description: Please describe the screenshot image in detail. Pay attention to any details in the image, if any, especially critical icons, or created items. If there are multiple images, please focus on the last one.
+Description: Please describe the screenshot image in detail. Pay attention to any details in the image, if any, especially critical icons, or created items. Pay attention to all UI items and contents in the image. Do not make assumptions about layout. If there are multiple images, please focus on the last one. If the image includes a mouse cursor, pay attention to the coordinates of the pointer tip, not the center of the mouse cursor.
 
 Screen_classification: Please select the class that best describes the screenshot among "Main screen", "Dialog open", "Menu overlay", and "General interface without special UI". Output the class of the screenshot in the output of Screen_classification.
 
 Reasoning_of_screen: Why was this class chosen for the current screenshot?
 
 Movement: Does the current task require moving the cursor or mouse somewhere?
-
-Noun_and_Verb: The number of nouns and verbs in the current task.
-
-Task_horizon: Please judge the horizon of the current task, i.e., whether this task needs multiple or only one interaction.
-There are two horizon types: long-horizon and short-horizon. For long-horizon tasks, the output should be 1. For short-horizon tasks, the output should be 0. You should obey the following rules:
-1. If the task contains only nouns without verbs, it is short-horizon.
-2. If the task contains more than one verb, it is long-horizon.
-3. If the task requires the character to go somewhere, it is long-horizon.
-Short-horizon tasks are sub-goals during a long-horizon task, which only need one interaction. There are some examples of short-horizon tasks:
-1. Pick up something: To complete this task, the character needs to execute the action "pick up" only once, so it is short-horizon.
-2. Use or press [B] key: The character needs to press the key [B] only once to talk, so it is short-horizon.
-3. Talk to somebody: The character needs to press a certain button once to complete this task, so it is short-horizon.
-Long-horizon tasks are long-term goals, which usually need many interactions. There are some examples of long-horizon tasks.
-1. Go outside: The character should go outside step by step, so it is long-horizon.
-2. Approach something: The character should move closer to the target step by step, so it is long-horizon.
-3. Keep away from something, shoot, take down, or battle with something: The character must engage in a series of interactions, so it is long-horizon.
-
-Reasoning_of_task: Why do you make such a judgment of task_horizon?
 
 You should only respond in the format described below and not output comments or other information.
 Target_object_name:
@@ -57,11 +39,3 @@ Reasoning_of_screen:
 ...
 Movement:
 Yes or No
-Noun_and_Verb:
-1 noun 1 verb
-Task_horizon:
-1
-Reasoning_of_task:
-1. ...
-2. ...
-...

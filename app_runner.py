@@ -326,6 +326,7 @@ class PipelineRunner():
         # Gather information preparation
         logger.write(f'Gather Information Start Frame ID: {start_frame_id}, End Frame ID: {end_frame_id}')
         input = self.planner.gather_information_.input_map
+        input["task_description"] = self.task_description
 
         # Configure the test
         # if you want to test with a pre-defined screenshot, you can replace the cur_screenshot_path with the path to the screenshot
@@ -636,17 +637,27 @@ def pre_process_skill_steps(skill_steps: list, som_map) -> list:
 
     processed_skill_steps = skill_steps
     for i in range(len(processed_skill_steps)):
-        if 'click_on_label' in processed_skill_steps[i]:
-            skill = processed_skill_steps[i]
-            suffix_str = skill.split(',')[1]
-            raw_box_id  = str(skill.split('box_id=')[1].split(',')[0])
-            box_id = raw_box_id.replace("'", "").replace('"', "").replace(" ", "")
-            if box_id in som_map:
-                x, y = normalize_coordinates(som_map[box_id])
-                processed_skill_steps[i] = f'click_at_position(x={x}, y={y}, ' + suffix_str
+        step = processed_skill_steps[i]
+        if '_label(' in  step:
+            skill = step
+            tokens = skill.split('(')
+            args_suffix_str = tokens[1]
+            func_str = tokens[0]
+            label_id = str(args_suffix_str.split('label=')[1].split(',')[0].split(')')[0]).replace("'", "").replace('"', "").replace(" ", "")
+
+            if label_id in som_map:
+                x, y = normalize_coordinates(som_map[label_id])
+                args_suffix_str = args_suffix_str.replace(f'label={label_id}', f'x={x}, y={y}').replace(",)", ")")
+                if func_str.startswith('click_'):
+                    processed_skill_steps[i] = f'click_at_position({args_suffix_str}'
+                else:
+                    processed_skill_steps[i] = f'move_mouse_to_position({args_suffix_str}'
             else:
                 logger.debug(f"Box ID {box_id} not found in SOM map.")
                 processed_skill_steps[i] = ''
+
+    if processed_skill_steps != skill_steps:
+        logger.write(f'> {skill_steps} -> {processed_skill_steps} <')
 
     return processed_skill_steps
 
@@ -660,7 +671,7 @@ def get_args_parser():
 
     parser = argparse.ArgumentParser("Cradle Prototype Runner")
     parser.add_argument("--providerConfig", type=str, default="./conf/openai_config.json", help="The path to the provider config file")
-    parser.add_argument("--envConfig", type=str, default="./conf/env_config_chrome.json", help="The path to the environment config file")
+    parser.add_argument("--envConfig", type=str, default="./conf/env_config_outlook.json", help="The path to the environment config file")
     return parser
 
 

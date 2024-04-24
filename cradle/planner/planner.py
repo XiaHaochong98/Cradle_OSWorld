@@ -410,6 +410,7 @@ class GatherInformation():
 
 
 class DecisionMaking():
+
     def __init__(self,
                  input_map: Dict = None,
                  template: Dict = None,
@@ -470,6 +471,7 @@ class DecisionMaking():
 
 
 class SuccessDetection():
+
     def __init__(self,
                  input_map: Dict = None,
                  template: Dict = None,

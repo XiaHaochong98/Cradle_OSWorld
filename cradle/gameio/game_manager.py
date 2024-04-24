@@ -159,10 +159,10 @@ class GameManager:
         time.sleep(1)
 
 
-    def capture_screen(self, include_minimap = False):
+    def capture_screen(self, include_minimap: bool = False) -> Tuple[str, str]:
         tid = time.time()
         return take_screenshot(tid, include_minimap=include_minimap)
-        
+
 
     def extract_minimap(self, screenshot_path):
         return self.interface.segment_minimap(screenshot_path)

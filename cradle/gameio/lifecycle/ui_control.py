@@ -1,5 +1,5 @@
 import time
-from typing import Any
+from typing import Any, Tuple
 
 from PIL import Image, ImageDraw, ImageFont
 import mss
@@ -38,12 +38,12 @@ def switch_to_game():
     time.sleep(1)
 
 
-def take_screenshot(tid : float,
-                    screen_region : tuple[int, int, int, int] = None,
-                    minimap_region : tuple[int, int, int, int] = None,
-                    include_minimap = False,
-                    draw_axis = False,
-                    crop_border: bool = False):
+def take_screenshot(tid: float,
+                    screen_region: tuple[int, int, int, int] = None,
+                    minimap_region: tuple[int, int, int, int] = None,
+                    include_minimap: bool = False,
+                    draw_axis: bool = False,
+                    crop_border: bool = False) -> Tuple[str, str]:
 
     if screen_region is None:
         screen_region = config.env_region
@@ -118,7 +118,7 @@ def take_screenshot(tid : float,
     return screen_image_filename, minimap_image_filename
 
 
-def clip_minimap(minimap_image_filename):
+def clip_minimap(minimap_image_filename: str):
 
     image = cv2.imread(minimap_image_filename)
 
@@ -152,13 +152,13 @@ def clip_minimap(minimap_image_filename):
 
 
 def normalize_coordinates(window_coorindates : tuple[int, int]) -> tuple[float, float]:
-    x, y = window_coorindates 
+    x, y = window_coorindates
     default_resolution = config.DEFAULT_ENV_RESOLUTION
     x, y = x / default_resolution[0], y / default_resolution[1]
     return (x, y)
 
 
-def draw_mouse_pointer_file(img_path: str, x, y) -> str:
+def draw_mouse_pointer_file(img_path: str, x: int, y: int) -> str:
     return draw_mouse_pointer_file_(img_path, x, y)
 
 
