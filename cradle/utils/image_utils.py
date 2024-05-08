@@ -140,6 +140,7 @@ def draw_mouse_pointer_file_(image_path: str, x, y) -> str:
 
     draw_mouse_img_path = image_path.replace(".jpg", f"_with_mouse.jpg")
     cv2.imwrite(draw_mouse_img_path, image_with_mouse)
+    logger.debug(f"The image with mouse pointer is saved at {draw_mouse_img_path}")
 
     return draw_mouse_img_path
 
@@ -382,7 +383,11 @@ def filter_thin_ragged_masks(masks: list[np.ndarray], kernel_size: int = 3, iter
 
     for mask in masks:
         # Convert boolean mask to uint8
-        mask_uint8 = mask.astype(np.uint8) * 255
+        try:
+            mask_uint8 = mask.astype(np.uint8) * 255
+        except MemoryError:
+            logger.error("MemoryError: Mask is too large to convert to uint8.")
+            continue
         # Perform erosion
         eroded_mask = cv2.erode(mask_uint8, kernel, iterations=iterations)
         # Perform dilation

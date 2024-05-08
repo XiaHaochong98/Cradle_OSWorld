@@ -35,7 +35,6 @@ BASIC_SKILLS = [
     "type_text",
     "press_key",
     "press_keys_combined",
-
     "click_on_label",
     "hover_over_label",
 ]

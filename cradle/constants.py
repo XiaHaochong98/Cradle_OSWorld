@@ -23,11 +23,26 @@ RADIAL_INTERFACE = 'radial menu'
 LAST_TASK_GUIDANCE = 'last_task_guidance'
 LAST_TASK_HORIZON = 'task_horizon'
 TASK_DESCRIPTION = 'task_description'
-SOM_IMAGE_PATH = 'som_image_path'
-SOM_MAP = 'som_map'
-MOUSE_X = 'mouse_x'
-MOUSE_Y = 'mouse_y'
-AUGMENTATION_INFO = "augmentation_info"
+
+# Two instances of augmentation info dict
+PREVIOUS_AUGMENTATION_INFO = "previous_augmentation_info"
+CURRENT_AUGMENTATION_INFO = "current_augmentation_info"
+
+# SAM2SOM parameters
+SAM2SOM_CONFIG = 'sam2som_config'
+SAM_PRED_IOU_THRESH = 'sam_pred_iou_thresh'
+SAM_RESIZE_RATIO = 'sam_resize_ratio'
+SAM_CONTRAST_LEVEL = 'sam_contrast_level'
+SAM_MAX_AREA = 'sam_max_area'
+
+# Augmentation info dict attributes
+AUG_MOUSE_X = 'mouse_x'
+AUG_MOUSE_Y = 'mouse_y'
+AUG_BASE_IMAGE_PATH='image_path'
+AUG_SOM_MOUSE_IMG_PATH = 'som_mouse_img_path'
+AUG_MOUSE_IMG_PATH = 'mouse_img_path'
+AUG_SOM_IMAGE_PATH = 'som_image_path'
+AUG_SOM_MAP = 'som_map'
 
 # Tags used in prompt templates
 IMAGES_INPUT_TAG_NAME = 'image_introduction'

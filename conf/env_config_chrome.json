@@ -1,5 +1,11 @@
 {
     "env_name": "Google Chrome",
     "sub_path": "chrome",
-    "env_short_name": "chrome"
+    "env_short_name": "chrome",
+    "sam2som_config": {
+        "sam_pred_iou_thresh": 0.4, 
+        "sam_resize_ratio": 0.4, 
+        "sam_contrast_level": 0.6,
+         "sam_max_area": 0.05
+    }
 }

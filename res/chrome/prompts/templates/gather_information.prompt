@@ -7,7 +7,7 @@ Assume you are a helpful AI assistant integrated with 'Google Chrome' on the PC,
 Current task:
 <$task_description$>
 
-Target_object_name: Assume you can use an object detection model to detect the most relevant object or UI item for completing the current task, if needed. What item should be detected to complete the task based on the current screenshot and the current task? You should obey the following rules:
+Target_object_name: Assume you can use an object detection model to detect the most relevant object or UI item for completing the current task if needed. What item should be detected to complete the task based on the current screenshot and the current task? You should obey the following rules:
 1. The item should be relevant to the current target or the intermediate target of the current task. Just give one name without any modifiers.
 2. If no explicit item is specified, only output "null".
 3. If there is no need to detect an object, only output "null".
@@ -16,28 +16,15 @@ Reasoning_of_object: Why was this object chosen, or why is there no need to dete
 
 Description: 
 1. Please describe the screenshot image in detail. Pay attention to any details in the image, if any, especially critical icons, or created items. 
-2. If there is a mouse in the screenshot, please describe what UI element the mouse is currently located near. Pay attention to the tip of the mouse, not the center of the mouse.
-3. If there are multiple images, please focus on the last one.
+2. If the image includes a mouse cursor, please describe what UI element the mouse is currently located near. Pay attention to the coordinates of the pointer tip, not the center of the mouse cursor.
+3. Pay attention to all UI items and contents in the image. Do not make assumptions about the layout. 
+4. If there are multiple images, please focus on the last one. 
 
 Screen_classification: Please select the class that best describes the screenshot among "Main screen", "Dialog open", "Menu overlay", and "General interface without special UI". Output the class of the screenshot in the output of Screen_classification.
 
 Reasoning_of_screen: Why was this class chosen for the current screenshot?
 
 Movement: Does the current task require moving the cursor or mouse somewhere?
-
-Noun_and_Verb: The number of nouns and verbs in the current task.
-
-Task_horizon: Please judge the horizon of the current task, i.e., whether this task needs multiple (long horizon) or only one keyboard or mouse operation (short horizon). 
-Short-horizon tasks are sub-goals during a long-horizon task, which only need one interaction. There are some examples of short-horizon tasks:
-1. Click the download icon: You only need to complete the mouse click action on the download icon.
-2. Drop-down page: Just scroll down with the mouse on the current page.
-3. Enter a string: perform keyboard operations and enter the corresponding characters.
-Long-horizon tasks are long-term goals, which usually need many operation. There are some examples of long-horizon tasks.
-1. Download files to the Downloads folder: Click the Download icon, select the Downloads folder, and click the Save button.
-2. Find this month’s bestseller: Click the search box, enter this month’s bestseller, click the search button (or press Enter), click on the most relevant page to find the answer.
-3. Save the current page to the bookmark bar: click the star icon, select Folder as favorite bar, and click Done.
-
-Reasoning_of_task: Why do you make such a judgment of task_horizon? 
 
 You should only respond in the format described below and not output comments or other information.
 Target_object_name:
@@ -47,9 +34,6 @@ Reasoning_of_object:
 2. ...
 ...
 Description:
-1. ...
-2. ...
-...
 The image shows...
 Screen_classification:
 Class of the screenshot
@@ -59,11 +43,3 @@ Reasoning_of_screen:
 ...
 Movement:
 Yes or No
-Noun_and_Verb:
-1 noun 1 verb
-Task_horizon:
-1
-Reasoning_of_task:
-1. ...
-2. ...
-...

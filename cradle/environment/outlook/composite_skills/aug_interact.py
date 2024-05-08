@@ -12,28 +12,28 @@ sam_provider = SamProvider()
 
 
 @register_skill("click_on_label")
-def click_on_label(label, mouse_button):
+def click_on_label(label_id, mouse_button):
     """
     Moves the mouse to the position of the specified box id inside the application window and clicks.
 
     Parameters:
-    - label: The numerical label id of the bounding box to click at.
+    - label_id: The numerical label id of the bounding box to click at.
     - mouse_button: The mouse button to be clicked. It should be one of the following values: "left", "right", "middle".
     """
-    label = str(label)
+    label_id = str(label_id)
     x, y = 0.5, 0.5
     click_at_position(x, y, mouse_button)
 
 
 @register_skill("hover_over_label")
-def hover_over_label(label):
+def hover_over_label(label_id):
     """
     Moves the mouse to the position of the specified box id inside the application window, to hover over the UI item without clicking on it.
 
     Parameters:
-    - label: The numerical label id of the bounding box to click at.
+    - label_id: The numerical label id of the bounding box to click at.
     """
-    label = str(label)
+    label_id = str(label_id)
     x, y = 0.5, 0.5
     move_mouse_to_position(x, y)
 

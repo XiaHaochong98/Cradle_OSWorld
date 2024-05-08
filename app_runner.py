@@ -41,6 +41,15 @@ class PipelineRunner():
         self.use_self_reflection = use_self_reflection
         self.use_information_summary = use_information_summary
 
+        # Success flag
+        self.success = False
+
+        # Count the number of turns
+        self.count_turns = 0
+        # Count the consecutive times the action is empty
+        self.count_empty_action = 0
+        self.count_empty_action_threshold = 3
+
         # Init internal params
         self.set_internal_params()
 
@@ -101,10 +110,19 @@ class PipelineRunner():
     def run(self):
 
         self.task_description = "Open my calendar and create a meeting at 2pm" # "Select Menu Icon"  # "Open File menu"
-        # self.task_description = """1. Click search box.
-        #                            2. Search for an article starting with "Towards General Computer Control" and go to the PDF page.
-        #                            3. Download the PDF file.
-        #                         """ # Chrome Task #3
+        
+        # self.task_description = "Search directly for an article with title containing \"Towards General Computer Control\" and download its PDF file." # Chrome task #1
+        # self.task_description =  "Post \"It\'s a good day.\" on my Twitter." # Chrome task #2
+        # self.task_description = "Open the first page of recently closed history." # Chrome task #3
+        # self.task_description = "Change mode to dark." # Chrome task #4
+        # self.task_description = "Find and navigate to tellarin\'s homepage on GitHub." # Chrome task #5
+
+        # # subtask of Chrome task #1
+        # self.task_description = "Click search box"
+        # self.task_description = "Search for an article starting with \"Towards General Computer Control\""
+        # self.task_description = "Go to the PDF page of an article starting with \"Towards General Computer Control\""
+        # self.task_description = "Download the PDF file"
+
         params = {}
 
         # Switch to target environment
@@ -118,8 +136,6 @@ class PipelineRunner():
         cur_screenshot_path, _ = self.gm.capture_screen()
         mouse_x, mouse_y = io_env.get_mouse_position()
         self.memory.add_recent_history("image", cur_screenshot_path)
-
-        success = False
 
         time.sleep(2)
         end_frame_id = self.videocapture.get_current_frame_id()
@@ -139,9 +155,10 @@ class PipelineRunner():
             "pre_self_reflection_reasoning": "",
             "task_description": self.task_description,
             "summarization": "",
+            f"{constants.PREVIOUS_AUGMENTATION_INFO}": None,
         })
 
-        while not success:
+        while not self.success:
             try:
                 # Gather information
                 gather_information_params = self.gather_information(params, debug=False)
@@ -188,8 +205,9 @@ class PipelineRunner():
         task_description = params["task_description"]
         pre_action = params["pre_action"]
 
-        augmentation = params[constants.AUGMENTATION_INFO]
-
+        previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
+        current_augmentation = params[constants.CURRENT_AUGMENTATION_INFO]
+        
         pre_decision_making_reasoning = params["pre_decision_making_reasoning"]
         exec_info = params["exec_info"]
 
@@ -212,14 +230,12 @@ class PipelineRunner():
             # add grid and color band to the frames
             # action_frames.append(self.gm.interface.augment_image(video_frames[0][1], x = response[constants.MOUSE_X_POSITION], y = response[constants.MOUSE_Y_POSITION], encoding = cv2.COLOR_BGRA2RGB))
             # action_frames.append(self.gm.interface.augment_image(video_frames[-1][1], x = response[constants.MOUSE_X_POSITION], y = response[constants.MOUSE_Y_POSITION], encoding = cv2.COLOR_BGRA2RGB))
-            for i in range(len(image_memory), 0, -1):
-                if config.show_mouse_in_screenshot:
-                    with_mouse_img_path = image_memory[-i].replace(".jpg", f"_with_mouse.jpg")
-                    if not os.path.exists(with_mouse_img_path):
-                        with_mouse_img_path = draw_mouse_pointer_file(image_memory[-i], augmentation[constants.MOUSE_X], augmentation[constants.MOUSE_Y])
-                    action_frames.append(with_mouse_img_path)
-                else:
-                    action_frames.append(image_memory[-i])
+            if config.show_mouse_in_screenshot:
+                action_frames.append(previous_augmentation[constants.AUG_MOUSE_IMG_PATH])
+                action_frames.append(current_augmentation[constants.AUG_MOUSE_IMG_PATH])
+            else:
+                action_frames.append(previous_augmentation[constants.AUG_BASE_IMAGE_PATH])
+                action_frames.append(current_augmentation[constants.AUG_BASE_IMAGE_PATH])
 
             image_introduction = [
                 {
@@ -273,7 +289,8 @@ class PipelineRunner():
 
         res_params = {
             "pre_self_reflection_reasoning": self_reflection_reasoning,
-            "augmentation_info": augmentation,
+            f"{constants.CURRENT_AUGMENTATION_INFO}": current_augmentation,
+            f"{constants.PREVIOUS_AUGMENTATION_INFO}": previous_augmentation,
         }
 
         return res_params
@@ -323,6 +340,9 @@ class PipelineRunner():
         end_frame_id = params["end_frame_id"]
         cur_screenshot_path: List[str] = params["cur_screenshot_path"]
 
+        previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
+        current_augmentation = dict()
+
         # Gather information preparation
         logger.write(f'Gather Information Start Frame ID: {start_frame_id}, End Frame ID: {end_frame_id}')
         input = self.planner.gather_information_.input_map
@@ -336,24 +356,40 @@ class PipelineRunner():
         else:
             cur_screenshot_path = params['cur_screenshot_path']
 
-        # Modify the general input for gather_information here
-        augmentation_info = dict()
-
-        main_screenshot = cur_screenshot_path
+        current_augmentation[constants.AUG_BASE_IMAGE_PATH] = cur_screenshot_path
+        input["image_introduction"][0]["path"] = cur_screenshot_path
 
         if config.show_mouse_in_screenshot:
             mouse_pos = kget(params, 'mouse_position')
             if mouse_pos is not None:
                 mouse_x = mouse_pos[0]
                 mouse_y = mouse_pos[1]
-                main_screenshot = draw_mouse_pointer_file(cur_screenshot_path, mouse_x, mouse_y)
+                current_augmentation[constants.AUG_MOUSE_IMG_PATH] = draw_mouse_pointer_file(cur_screenshot_path, mouse_x, mouse_y)
 
-                augmentation_info[constants.MOUSE_X] = mouse_x
-                augmentation_info[constants.MOUSE_Y] = mouse_y
+                current_augmentation[constants.AUG_MOUSE_X] = mouse_x
+                current_augmentation[constants.AUG_MOUSE_Y] = mouse_y
             else:
                 logger.warn("No mouse position to draw in info gathering augmentation!")
+            
+            input["image_introduction"][0]["path"] = current_augmentation[constants.AUG_MOUSE_IMG_PATH]
 
-        input["image_introduction"][0]["path"] = main_screenshot
+        if config.use_sam_flag:
+            som_img_path = cur_screenshot_path.replace(".jpg", f"_som.jpg")
+            som_img, som_map = self.sam_provider.get_som(cur_screenshot_path)
+            som_img.save(som_img_path)
+            logger.debug(f"Saved the SOM screenshot to {som_img_path}")
+            current_augmentation[constants.AUG_SOM_IMAGE_PATH] = som_img_path
+            current_augmentation[constants.AUG_SOM_MAP] = som_map
+
+            if config.show_mouse_in_screenshot:
+                mouse_pos = kget(params, 'mouse_position')
+                if mouse_pos is not None:
+                    current_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH] = draw_mouse_pointer_file(som_img_path, mouse_x, mouse_y)
+                else:
+                    logger.warn("No mouse position to draw in info gathering augmentation!")
+
+        if previous_augmentation is None:
+            previous_augmentation = current_augmentation
 
         # Configure the gather_information module
         gather_information_configurations = {
@@ -397,20 +433,12 @@ class PipelineRunner():
         logger.write(f'Image Description: {image_description}')
         logger.write(f'Screen Classification: {screen_classification}')
 
-        if config.use_sam_flag:
-            som_img, som_map = self.sam_provider.get_som(cur_screenshot_path)
-            som_img_path = cur_screenshot_path.replace(".jpg", f"_som.jpg")
-            som_img.save(som_img_path)
-            logger.debug(f"Saved the SOM screenshot to {som_img_path}")
-
-            augmentation_info[constants.SOM_IMAGE_PATH] = som_img_path
-            augmentation_info[constants.SOM_MAP] = som_map
-
         res_params = {
             "screen_classification": screen_classification,
             "response_keys": response_keys,
             "response": data['res_dict'],
-            "augmentation_info": augmentation_info,
+            f"{constants.CURRENT_AUGMENTATION_INFO}": current_augmentation,
+            f"{constants.PREVIOUS_AUGMENTATION_INFO}": previous_augmentation,
         }
 
         return res_params
@@ -420,7 +448,8 @@ class PipelineRunner():
 
         response_keys = params["response_keys"]
         response = params["response"]
-        augmentation = params[constants.AUGMENTATION_INFO]
+        current_augmentation = params[constants.CURRENT_AUGMENTATION_INFO]
+        previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
         pre_action = params["pre_action"]
         pre_self_reflection_reasoning = params["pre_self_reflection_reasoning"]
         pre_screen_classification = params["pre_screen_classification"]
@@ -460,23 +489,15 @@ class PipelineRunner():
         input["image_introduction"] = image_introduction
         input["task_description"] = self.task_description
 
-        for i in range(len(image_memory), 0, -1):
-            if config.use_sam_flag:
-                som_img_path = image_memory[-i].replace(".jpg", f"_som.jpg")
-                if not os.path.exists(som_img_path):
-
-                    som_img, som_map = self.sam_provider.get_som(som_img_path)
-                    som_img.save(som_img_path)
-                    logger.debug(f"Saved the SOM screenshot to {som_img_path}")
-
-                    augmentation[constants.SOM_IMAGE_PATH] = som_img_path
-                    augmentation[constants.SOM_MAP] = som_map
-
-                input["image_introduction"][-i]["path"] = som_img_path
-
+        if config.show_mouse_in_screenshot:
+            input["image_introduction"][0]["path"] = previous_augmentation[constants.AUG_MOUSE_IMG_PATH]
+            input["image_introduction"][-1]["path"] = current_augmentation[constants.AUG_MOUSE_IMG_PATH]
+        if config.use_sam_flag:
+            input["image_introduction"][0]["path"] = previous_augmentation[constants.AUG_SOM_IMAGE_PATH]
+            input["image_introduction"][-1]["path"] = current_augmentation[constants.AUG_SOM_IMAGE_PATH]
             if config.show_mouse_in_screenshot:
-                som_with_mouse_img_path = draw_mouse_pointer_file(input["image_introduction"][-i]["path"], augmentation[constants.MOUSE_X], augmentation[constants.MOUSE_Y])
-                input["image_introduction"][-i]["path"] = som_with_mouse_img_path
+                input["image_introduction"][0]["path"] = previous_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH]
+                input["image_introduction"][-1]["path"] = current_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH]
 
         # >> Calling DECISION MAKING
         logger.write(f'>> Calling DECISION MAKING')
@@ -490,7 +511,12 @@ class PipelineRunner():
         logger.write(f'Decision reasoning: {pre_decision_making_reasoning}')
 
         # Try to execute selected skills
-        skill_steps = data['res_dict']['actions']
+        try:
+            skill_steps = data['res_dict']['actions']
+        except KeyError:
+            logger.error(f'No actions found in decision making response.')
+            skill_steps = None
+            
         if skill_steps is None:
             skill_steps = []
 
@@ -503,9 +529,17 @@ class PipelineRunner():
 
         skill_steps = skill_steps[:number_of_execute_skills]
 
-        skill_steps = pre_process_skill_steps(skill_steps, augmentation[constants.SOM_MAP])
+        skill_steps = pre_process_skill_steps(skill_steps, current_augmentation[constants.AUG_SOM_MAP])
 
         logger.write(f'Skill Steps: {skill_steps}')
+
+        if skill_steps == ['']:
+            self.count_empty_action += 1
+        else:
+            self.count_empty_action = 0
+        if self.count_empty_action >= self.count_empty_action_threshold:
+            self.success = True
+            logger.write(f'Empty action count reached {self.count_empty_action_threshold} times. Task is considered successful.')
 
         start_frame_id = self.videocapture.get_current_frame_id()
 
@@ -523,6 +557,7 @@ class PipelineRunner():
         pre_screen_classification = screen_classification
         self.memory.add_recent_history("action", pre_action)
         self.memory.add_recent_history("decision_making_reasoning", pre_decision_making_reasoning)
+        previous_augmentation = current_augmentation
 
         res_params = {
             "pre_action": pre_action,
@@ -533,7 +568,11 @@ class PipelineRunner():
             "end_frame_id": end_frame_id,
             "cur_screenshot_path": cur_screenshot_path,
             "mouse_position" : (mouse_x, mouse_y),
+            f"{constants.PREVIOUS_AUGMENTATION_INFO}" : previous_augmentation,
         }
+
+        self.count_turns += 1
+        logger.write(f'-----------------------------Count turns: {self.count_turns} ----------------------------------')
 
         return res_params
 
@@ -643,18 +682,23 @@ def pre_process_skill_steps(skill_steps: list, som_map) -> list:
             tokens = skill.split('(')
             args_suffix_str = tokens[1]
             func_str = tokens[0]
-            label_id = str(args_suffix_str.split('label=')[1].split(',')[0].split(')')[0]).replace("'", "").replace('"', "").replace(" ", "")
+            label_id = str(args_suffix_str.split('label_id=')[1].split(',')[0].split(')')[0]).replace("'", "").replace('"', "").replace(" ", "")
 
             if label_id in som_map:
                 x, y = normalize_coordinates(som_map[label_id])
-                args_suffix_str = args_suffix_str.replace(f'label={label_id}', f'x={x}, y={y}').replace(",)", ")")
+                args_suffix_str = args_suffix_str.replace(f'label_id={label_id}', f'x={x}, y={y}').replace(",)", ")")
                 if func_str.startswith('click_'):
                     processed_skill_steps[i] = f'click_at_position({args_suffix_str}'
                 else:
                     processed_skill_steps[i] = f'move_mouse_to_position({args_suffix_str}'
             else:
-                logger.debug(f"Box ID {box_id} not found in SOM map.")
+                logger.debug(f"Box ID {label_id} not found in SOM map.")
                 processed_skill_steps[i] = ''
+
+        # Change keyboard and mouse combination
+        if '+' in step and 'key' in step:
+            skill = step.replace('+', ",")
+            processed_skill_steps[i] = skill
 
     if processed_skill_steps != skill_steps:
         logger.write(f'> {skill_steps} -> {processed_skill_steps} <')

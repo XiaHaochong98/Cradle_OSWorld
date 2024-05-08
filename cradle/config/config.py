@@ -104,9 +104,11 @@ class Config(metaclass=Singleton):
         # SAM parameters
         self.use_sam_flag = True
         self.sam_model_name = "default"
+        # for default
         self.sam_pred_iou_thresh = 0.4
         self.sam_resize_ratio = 0.4
         self.sam_contrast_level = 0.6
+        self.sam_max_area = 0.10
 
         self.show_mouse_in_screenshot = False
 
@@ -146,6 +148,18 @@ class Config(metaclass=Singleton):
         self.skill_num = 10
         self.skill_scope = 'Full' #'Full', 'Basic', and None
 
+        # SAM2SOM parameters for specif app
+        sam2som_config = kget(env_config, constants.SAM2SOM_CONFIG, 
+                                 default={constants.SAM_PRED_IOU_THRESH: self.sam_pred_iou_thresh, 
+                                          constants.SAM_RESIZE_RATIO: self.sam_resize_ratio, 
+                                          constants.SAM_CONTRAST_LEVEL: self.sam_contrast_level, 
+                                          constants.SAM_MAX_AREA: self.sam_max_area}
+                                )
+        self.sam_pred_iou_thresh = sam2som_config[constants.SAM_PRED_IOU_THRESH]
+        self.sam_resize_ratio = sam2som_config[constants.SAM_RESIZE_RATIO]
+        self.sam_contrast_level = sam2som_config[constants.SAM_CONTRAST_LEVEL]
+        self.sam_max_area = sam2som_config[constants.SAM_MAX_AREA]
+        
 
     def set_env_name(self, env_name: str) -> None:
         """Set the environment name."""

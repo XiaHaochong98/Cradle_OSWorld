@@ -62,12 +62,13 @@ class Interface():
 
         # init skill library
         self.skill_library = [
-            "click_on_label",
             "click_at_position",
+            "mouse_drag",
             "type_text",
-            "press_enter",
-            "print_file",
-            "download_file",
+            "press_key",
+            "save_page",
+            "press_keys_combined",
+            "click_on_label",
         ]
 
         # init task description
