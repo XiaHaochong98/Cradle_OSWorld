@@ -59,7 +59,7 @@ def cv_follow_circles(
 
         timestep = time.time()
 
-        _, minimap_image_filename = take_screenshot(timestep, config.env_region, config.minimap_region, draw_axis=False)
+        _, minimap_image_filename = take_screenshot(timestep, config.env_region, config.minimap_region, include_minimap = True, draw_axis=False)
         minimap_image_filename_q.append(minimap_image_filename)
 
         adjacent_minimaps = list(minimap_image_filename_q)[::max_q_size-1] if len(minimap_image_filename_q)>=max_q_size else None

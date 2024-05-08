@@ -68,6 +68,9 @@ def parse_semi_formatted_text(text):
     in_code_flag = False
 
     for line in lines:
+
+        line = line.replace("**", "") # Remove bold in Markdown formatting
+
         # Check if the line indicates a new key
         if line.endswith(":") and in_code_flag == False:
             # If there's a previous key, process its values

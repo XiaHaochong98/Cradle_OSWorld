@@ -79,6 +79,7 @@ class Config(metaclass=Singleton):
         # Video
         self.video_fps = 8
         self.duplicate_frames = 4
+        self.frames_per_slice = 1000
 
         # Self-reflection image count
         self.max_images_in_self_reflection = 4

@@ -1,7 +1,6 @@
 import threading
 import os
 import time
-from typing import Tuple
 
 import spacy
 import numpy as np
@@ -14,7 +13,6 @@ from cradle.gameio.video.VideoEasyOCRExtractor import VideoEasyOCRExtractor
 
 config = Config()
 logger = Logger()
-
 
 class FrameBuffer():
 
@@ -78,6 +76,8 @@ class VideoRecorder():
         self.fps = config.video_fps
         self.max_size = 10000
         self.video_path = video_path
+        self.frames_per_slice = config.frames_per_slice
+        self.frames_count = 0
         self.screen_region = config.env_region
         self.frame_size = (self.screen_region[2], self.screen_region[3])
 
@@ -93,6 +93,8 @@ class VideoRecorder():
         )
         self.thread.daemon = True
 
+        self.video_path_dir = os.path.join(os.path.dirname(self.video_path), 'videos')
+        os.makedirs(self.video_path_dir, exist_ok=True)
         self.video_splits_dir = os.path.join(os.path.dirname(self.video_path), 'video_splits')
         os.makedirs(self.video_splits_dir, exist_ok=True)
 
@@ -141,7 +143,10 @@ class VideoRecorder():
 
     def capture_screen(self, frame_buffer: FrameBuffer):
         logger.write('Screen capture started')
-        video_writer = cv2.VideoWriter(self.video_path,
+
+        video_name = os.path.split(self.video_path)[1].split('.')[0]
+        video_slice_path = os.path.join(self.video_path_dir, video_name + '_slice_{:06d}.mp4'.format(self.frames_count // self.frames_per_slice))
+        video_writer = cv2.VideoWriter(video_slice_path,
                                        cv2.VideoWriter_fourcc(*'mp4v'),
                                        self.fps,
                                        self.frame_size)
@@ -186,6 +191,18 @@ class VideoRecorder():
 
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
                     video_writer.write(frame)
+                    self.frames_count += 1
+
+                    if self.frames_count % self.frames_per_slice == 0:
+                        # Release the previous video writer
+                        video_writer.release()
+
+                        # Create a new video writer
+                        video_slice_path = os.path.join(self.video_path_dir, video_name + '_slice_{:06d}.mp4'.format(self.frames_count // self.frames_per_slice))
+                        video_writer = cv2.VideoWriter(video_slice_path,
+                                                       cv2.VideoWriter_fourcc(*'mp4v'),
+                                                       self.fps,
+                                                       self.frame_size)
 
                     self.current_frame = frame
                     for i in range(config.duplicate_frames):
@@ -219,10 +236,10 @@ class VideoRecorder():
 
 
 if __name__ == '__main__':
-    capture_video = VideoRecorder('test.mp4', config)
+    capture_video = VideoRecorder('test.mp4')
 
     capture_video.start_capture()
-    config.ocr_enabled = True
+    config.ocr_enabled = False
 
     time.sleep(10)
     capture_video.get_video(start_frame_id=0)

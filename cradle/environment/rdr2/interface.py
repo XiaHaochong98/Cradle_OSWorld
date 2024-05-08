@@ -3,6 +3,7 @@ from cradle.log import Logger
 from cradle.gameio import IOEnvironment
 
 from cradle.environment.rdr2.lifecycle.ui_control import (segment_minimap,
+                                                          switch_to_game,
                                                           pause_game,
                                                           unpause_game,
                                                           exit_back_to_pause,
@@ -24,6 +25,7 @@ class Interface():
         self.segment_minimap = segment_minimap
         self.pause_game = pause_game
         self.unpause_game = unpause_game
+        self.switch_to_game = switch_to_game
         self.exit_back_to_pause = exit_back_to_pause
         self.IconReplacer = IconReplacer
 
