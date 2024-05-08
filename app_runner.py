@@ -20,6 +20,7 @@ from cradle.gameio.video.VideoRecorder import VideoRecorder
 from cradle.gameio.lifecycle.ui_control import switch_to_game, normalize_coordinates, draw_mouse_pointer_file
 import cradle.environment.chrome
 import cradle.environment.outlook
+import cradle.environment.capcut
 from cradle.utils.dict_utils import kget
 
 config = Config()
@@ -117,11 +118,13 @@ class PipelineRunner():
         # self.task_description = "Change mode to dark." # Chrome task #4
         # self.task_description = "Find and navigate to tellarin\'s homepage on GitHub." # Chrome task #5
 
-        # # subtask of Chrome task #1
+        # subtask of Chrome task #1
         # self.task_description = "Click search box"
         # self.task_description = "Search for an article starting with \"Towards General Computer Control\""
         # self.task_description = "Go to the PDF page of an article starting with \"Towards General Computer Control\""
         # self.task_description = "Download the PDF file"
+
+        self.task_description = "Click new project button" # CapCut task #1
 
         params = {}
 
