@@ -2,7 +2,7 @@ from cradle.config import Config
 from cradle.gameio.lifecycle.ui_control import switch_to_game
 from cradle.log import Logger
 from cradle.gameio import IOEnvironment
-from cradle.environment.outlook.skill_registry import register_skill, post_skill_wait
+from cradle.environment.feishu.skill_registry import register_skill, post_skill_wait
 
 config = Config()
 logger = Logger()

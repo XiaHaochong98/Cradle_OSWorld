@@ -101,10 +101,11 @@ class Config(metaclass=Singleton):
             "navigate_path"
         ]
 
-        # SAM parameters
+        # SAM2SOM parameters
         self.use_sam_flag = True
         self.sam_model_name = "default"
-        # for default
+
+        # Default parameters. Can be updated by environment specific configuration.
         self.sam_pred_iou_thresh = 0.4
         self.sam_resize_ratio = 0.4
         self.sam_contrast_level = 0.6
@@ -112,12 +113,14 @@ class Config(metaclass=Singleton):
 
         self.show_mouse_in_screenshot = False
 
-        # Just for convenience of testing, will be removed in final version.
+        # Just for convenience of testing, should be removed in final version.
         self.use_latest_memory_path = False
         if self.use_latest_memory_path:
             self._set_latest_memory_path()
 
         self._set_dirs()
+
+        self.env_window = None  # Default value init for window handle
 
 
     def load_env_config(self, env_config_path):
@@ -149,17 +152,17 @@ class Config(metaclass=Singleton):
         self.skill_scope = 'Full' #'Full', 'Basic', and None
 
         # SAM2SOM parameters for specif app
-        sam2som_config = kget(env_config, constants.SAM2SOM_CONFIG, 
-                                 default={constants.SAM_PRED_IOU_THRESH: self.sam_pred_iou_thresh, 
-                                          constants.SAM_RESIZE_RATIO: self.sam_resize_ratio, 
-                                          constants.SAM_CONTRAST_LEVEL: self.sam_contrast_level, 
+        sam2som_config = kget(env_config, constants.SAM2SOM_CONFIG,
+                                 default={constants.SAM_PRED_IOU_THRESH: self.sam_pred_iou_thresh,
+                                          constants.SAM_RESIZE_RATIO: self.sam_resize_ratio,
+                                          constants.SAM_CONTRAST_LEVEL: self.sam_contrast_level,
                                           constants.SAM_MAX_AREA: self.sam_max_area}
                                 )
         self.sam_pred_iou_thresh = sam2som_config[constants.SAM_PRED_IOU_THRESH]
         self.sam_resize_ratio = sam2som_config[constants.SAM_RESIZE_RATIO]
         self.sam_contrast_level = sam2som_config[constants.SAM_CONTRAST_LEVEL]
         self.sam_max_area = sam2som_config[constants.SAM_MAX_AREA]
-        
+
 
     def set_env_name(self, env_name: str) -> None:
         """Set the environment name."""
@@ -215,6 +218,7 @@ class Config(metaclass=Singleton):
             assert self._min_resolution_check(env_window), 'The resolution of env window should at least be 1920 X 1080.'
             assert self._aspect_ration_check(env_window), 'The screen ratio should be 16:9.'
 
+        self.env_window = env_window
         self.env_resolution = (env_window.width, env_window.height)
         self.env_region = (env_window.left, env_window.top, env_window.width, env_window.height)
         self.resolution_ratio = self.env_resolution[0] / self.base_resolution[0]
@@ -233,7 +237,7 @@ class Config(metaclass=Singleton):
 
 
     def _calc_minimap_region(self, screen_region):
-        return [int(x * self.resolution_ratio ) for x in self.base_minimap_region]
+        return [int(x * self.resolution_ratio) for x in self.base_minimap_region]
 
 
     def _config_warn(self, message):

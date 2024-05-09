@@ -10,7 +10,7 @@ import time
 from cradle.utils import Singleton
 from cradle.config import Config
 from cradle.log import Logger
-from cradle.gameio.gui_utils import get_named_windows, get_named_windows_fallback, get_screen_size, mouse_button_down, mouse_button_up, key_down, key_up, mouse_click, get_mouse_location, mouse_move_to
+from cradle.gameio.gui_utils import get_named_windows, get_named_windows_fallback, get_screen_size, mouse_button_down, mouse_button_up, key_down, key_up, type_keys, mouse_click, get_mouse_location, mouse_move_to
 
 config = Config()
 logger = Logger()
@@ -458,8 +458,8 @@ class IOEnvironment(metaclass=Singleton):
 
 
     def keys_type(self, text):
-        for c in text:
-            self.key_press(c)
+        if text is not None and text != '':
+            type_keys(text)
 
 
     def release_held_keys(self):
@@ -475,7 +475,7 @@ class IOEnvironment(metaclass=Singleton):
     ALIASES_RIGHT_MOUSE = ['right', 'rightbutton', 'rightmousebutton', 'r', 'rbutton', 'rmouse', 'rightmouse', 'rm', 'mouseright', 'mouserightbutton']
     ALIASES_LEFT_MOUSE = ['left', 'leftbutton', 'leftmousebutton', 'l', 'lbutton', 'lmouse', 'leftmouse', 'lm', 'mouseleft', 'mouseleftbutton']
     ALIASES_CENTER_MOUSE = ['middle', 'middelbutton', 'middlemousebutton', 'm', 'mbutton', 'mmouse', 'middlemouse', 'center', 'c', 'centerbutton', 'centermouse', 'cm', 'mousecenter', 'mousecenterbutton']
-    ALIASES_MOUSE_REDIRECT = set(ALIASES_RIGHT_MOUSE + ALIASES_LEFT_MOUSE + ALIASES_CENTER_MOUSE) - set(['r', 'l', 'm', 'c'])
+    ALIASES_MOUSE_REDIRECT = set()  # set(ALIASES_RIGHT_MOUSE + ALIASES_LEFT_MOUSE + ALIASES_CENTER_MOUSE) - set(['r', 'l', 'm', 'c'])
 
     # @TODO mapping can be improved
     def map_button(self, button):

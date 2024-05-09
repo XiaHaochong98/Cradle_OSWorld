@@ -5,8 +5,6 @@ import argparse
 from typing import Dict, Any, List
 import atexit
 
-import cv2
-
 from cradle import constants
 from cradle.log import Logger
 from cradle.planner.planner import Planner
@@ -18,9 +16,10 @@ from cradle.gameio.io_env import IOEnvironment
 from cradle.gameio.game_manager import GameManager
 from cradle.gameio.video.VideoRecorder import VideoRecorder
 from cradle.gameio.lifecycle.ui_control import switch_to_game, normalize_coordinates, draw_mouse_pointer_file
-import cradle.environment.chrome
 import cradle.environment.outlook
+import cradle.environment.chrome
 import cradle.environment.capcut
+import cradle.environment.feishu
 from cradle.utils.dict_utils import kget
 
 config = Config()
@@ -43,7 +42,7 @@ class PipelineRunner():
         self.use_information_summary = use_information_summary
 
         # Success flag
-        self.success = False
+        self.stop_flag = False
 
         # Count the number of turns
         self.count_turns = 0
@@ -111,7 +110,7 @@ class PipelineRunner():
     def run(self):
 
         self.task_description = "Open my calendar and create a meeting at 2pm" # "Select Menu Icon"  # "Open File menu"
-        
+
         # self.task_description = "Search directly for an article with title containing \"Towards General Computer Control\" and download its PDF file." # Chrome task #1
         # self.task_description =  "Post \"It\'s a good day.\" on my Twitter." # Chrome task #2
         # self.task_description = "Open the first page of recently closed history." # Chrome task #3
@@ -161,7 +160,8 @@ class PipelineRunner():
             f"{constants.PREVIOUS_AUGMENTATION_INFO}": None,
         })
 
-        while not self.success:
+        while not self.stop_flag:
+
             try:
                 # Gather information
                 gather_information_params = self.gather_information(params, debug=False)
@@ -210,7 +210,7 @@ class PipelineRunner():
 
         previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
         current_augmentation = params[constants.CURRENT_AUGMENTATION_INFO]
-        
+
         pre_decision_making_reasoning = params["pre_decision_making_reasoning"]
         exec_info = params["exec_info"]
 
@@ -373,7 +373,7 @@ class PipelineRunner():
                 current_augmentation[constants.AUG_MOUSE_Y] = mouse_y
             else:
                 logger.warn("No mouse position to draw in info gathering augmentation!")
-            
+
             input["image_introduction"][0]["path"] = current_augmentation[constants.AUG_MOUSE_IMG_PATH]
 
         if config.use_sam_flag:
@@ -474,7 +474,7 @@ class PipelineRunner():
         input['skill_library'] = self.skill_library
         input['info_summary'] = self.memory.get_summarization()
 
-        # @TODO: few shots should be REMOVED in prompt decision making
+        # @TODO: few shots should be REMOVED in prompt decision making if not used
         input['few_shots'] = []
 
         # @TODO Temporary solution with fake augmented entries if no bounding box exists. Ideally it should read images, then check for possible augmentation.
@@ -519,7 +519,7 @@ class PipelineRunner():
         except KeyError:
             logger.error(f'No actions found in decision making response.')
             skill_steps = None
-            
+
         if skill_steps is None:
             skill_steps = []
 
@@ -541,15 +541,22 @@ class PipelineRunner():
         else:
             self.count_empty_action = 0
         if self.count_empty_action >= self.count_empty_action_threshold:
-            self.success = True
+            self.stop_flag = True
             logger.write(f'Empty action count reached {self.count_empty_action_threshold} times. Task is considered successful.')
 
         start_frame_id = self.videocapture.get_current_frame_id()
 
-        exec_info = self.gm.execute_actions(skill_steps)
+        exec_info = self.gm.execute_actions(skill_steps)  # @HERE
 
         # Sense here to avoid changes in state after action execution completes
-        cur_screenshot_path, _ = self.gm.capture_screen()
+
+        # First, check if interaction left the target environment
+        if not self.gm.check_active_window():
+            logger.warn(f"Target environment window is no longer active!")
+            cur_screenshot_path = self.gm.get_out_screen()
+        else:
+            cur_screenshot_path, _ = self.gm.capture_screen()
+
         mouse_x, mouse_y = io_env.get_mouse_position()
 
         end_frame_id = self.videocapture.get_current_frame_id()

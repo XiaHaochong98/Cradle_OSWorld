@@ -27,7 +27,9 @@ def switch_to_game():
         raise EnvironmentError(error_msg)
     else:
         try:
-            named_windows[0].activate()
+            env_window = named_windows[0]
+            env_window.activate()
+            config.env_window = env_window
         except Exception as e:
             if "Error code from Windows: 0" in str(e):
                 # Handle pygetwindow exception
@@ -36,6 +38,27 @@ def switch_to_game():
                 raise e
 
     time.sleep(1)
+
+
+def check_active_window():
+    result = False
+
+    if config.env_window is not None:
+        result = config.env_window.is_active()
+
+    logger.debug(f"Active window check: {result}")
+
+    if result == False:
+        named_windows = io_env.get_windows_by_config()
+
+        # Temporary hardcode due to CapCut behaviour of creating new windows under some actions
+        if "CapCut" in config.env_name:
+            switch_to_game()
+            config.env_window = named_windows[0]
+            result = True
+            logger.debug(f"Active window check after app-specific re-acquiring: {result}")
+
+    return result
 
 
 def take_screenshot(tid: float,

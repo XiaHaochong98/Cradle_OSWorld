@@ -1,3 +1,4 @@
+from typing import Dict, Any, List
 import platform
 import ctypes
 import re
@@ -281,6 +282,7 @@ class TargetWindow():
 
         if _isWin():
             self.window.resizeTo(set_width, set_height)
+
         elif _isMac():
             env_name = self.title
 
@@ -382,11 +384,15 @@ def key_up(key):
         pyautogui.keyUp(key)
 
 
+def type_keys(keys):
+    pyautogui.typewrite(keys)
+
+
 def get_screen_size():
     return pyautogui.size()
 
 
-def get_named_windows(env_name):
+def get_named_windows(env_name) -> List[TargetWindow]:
 
     clean_name = strip_anchor_chars(env_name)
 
@@ -416,7 +422,7 @@ def get_named_windows(env_name):
         raise ValueError(f"Platform {platform.system()} not supported yet")
 
 
-def get_named_windows_fallback(win_name, win_name_pattern):
+def get_named_windows_fallback(win_name, win_name_pattern) -> List[TargetWindow]:
     # Get window candidates by name alternatives
     named_windows = get_named_windows(win_name)
 

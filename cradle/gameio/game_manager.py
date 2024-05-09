@@ -1,12 +1,13 @@
 import time
 from typing import Tuple
 
-from cradle.config import Config
-from cradle.gameio import IOEnvironment
-from cradle.gameio.lifecycle.ui_control import take_screenshot, draw_mouse_pointer_file
-from cradle.log import Logger
 from cradle import constants
+from cradle.config import Config
+from cradle.log import Logger
+from cradle.gameio import IOEnvironment
+from cradle.gameio.lifecycle.ui_control import check_active_window, take_screenshot, draw_mouse_pointer_file
 from cradle.environment import ENVIORNMENT_REGISTRY
+from cradle.utils.file_utils import assemble_project_path
 
 config = Config()
 logger = Logger()
@@ -47,6 +48,10 @@ class GameManager:
 
     def switch_to_game(self):
         self.interface.switch_to_game()
+
+
+    def check_active_window(self):
+        return check_active_window()
 
 
     def exit_back_to_pause(self):
@@ -157,6 +162,12 @@ class GameManager:
     def post_action_wait(self):
         #time.sleep(config.DEFAULT_POST_ACTION_WAIT_TIME)
         time.sleep(1)
+
+
+    def get_out_screen(self):
+        out_screen_file = "./res/software/samples/out_of_target_screen.jpg"
+        full_path = assemble_project_path(out_screen_file)
+        return full_path
 
 
     def capture_screen(self, include_minimap: bool = False) -> Tuple[str, str]:

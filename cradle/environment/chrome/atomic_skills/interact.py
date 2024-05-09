@@ -1,4 +1,5 @@
 from cradle.config import Config
+from cradle.gameio.lifecycle.ui_control import switch_to_game
 from cradle.log import Logger
 from cradle.gameio import IOEnvironment
 from cradle.environment.chrome.skill_registry import register_skill, post_skill_wait
@@ -79,15 +80,28 @@ def type_text(text):
 
     post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
+
 @register_skill("save_page")
 def save_page():
     """
     Save the current page.
     """
-
     io_env.key_press("ctrl, s")
 
+
+@register_skill("go_back_to_target_application")
+def go_back_to_target_application():
+    """
+    This function can be used to return to the target application, if some previous action opened a different application.
+    """
+    switch_to_game()
+
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
+
+
 __all__ = [
+    "go_back_to_target_application",
     "click_at_position",
     "mouse_drag",
     "press_key",
