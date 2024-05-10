@@ -13,6 +13,10 @@ from cradle.config import Config
 from cradle.log import Logger
 from cradle.gameio import IOEnvironment
 from cradle.gameio.io_env import IOEnvironment
+import cradle.environment.outlook
+import cradle.environment.chrome
+import cradle.environment.capcut
+import cradle.environment.feishu
 
 config = Config()
 logger = Logger()

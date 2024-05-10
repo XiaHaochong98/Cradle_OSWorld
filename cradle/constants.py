@@ -10,7 +10,7 @@ ITEM_STATUS = 'item_status'
 TASK_GUIDANCE = 'task_guidance'
 DIALOGUE = 'dialogue'
 GATHER_TEXT_REASONING = 'reasoning'
-IMAGE_DESCRIPTION = 'description'
+IMAGE_DESCRIPTION = 'image_description'
 TARGET_OBJECT_NAME = 'target_object_name'
 GATHER_INFO_REASONING = 'reasoning_of_object'
 SCREEN_CLASSIFICATION = 'screen_classification'
@@ -74,3 +74,12 @@ MESSAGE_CONSTRUCTION_MODE_PARAGRAPH = 'paragraph'
 # Prompts when output is None
 NONE_TASK_OUTPUT = "null"
 NONE_TARGET_OBJECT_OUTPUT = "null"
+
+# keys in exec_info
+EXECUTED_SKILLS = 'executed_skills'
+LAST_SKILL = 'last_skill'
+ERRORS = 'errors'
+ERRORS_INFO = 'errors_info'
+
+# info in pre process action
+INVALID_BBOX = 'invalid_bbox'

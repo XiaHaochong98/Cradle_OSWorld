@@ -110,20 +110,7 @@ class PipelineRunner():
     def run(self):
 
         self.task_description = "Open my calendar and create a meeting at 2pm" # "Select Menu Icon"  # "Open File menu"
-
-        # self.task_description = "Search directly for an article with title containing \"Towards General Computer Control\" and download its PDF file." # Chrome task #1
-        # self.task_description =  "Post \"It\'s a good day.\" on my Twitter." # Chrome task #2
-        # self.task_description = "Open the first page of recently closed history." # Chrome task #3
-        # self.task_description = "Change mode to dark." # Chrome task #4
-        # self.task_description = "Find and navigate to tellarin\'s homepage on GitHub." # Chrome task #5
-
-        # subtask of Chrome task #1
-        # self.task_description = "Click search box"
-        # self.task_description = "Search for an article starting with \"Towards General Computer Control\""
-        # self.task_description = "Go to the PDF page of an article starting with \"Towards General Computer Control\""
-        # self.task_description = "Download the PDF file"
-
-        self.task_description = "Click new project button" # CapCut task #1
+        self.memory.add_recent_history("task_description", self.task_description)
 
         params = {}
 
@@ -137,7 +124,6 @@ class PipelineRunner():
         # First sense
         cur_screenshot_path, _ = self.gm.capture_screen()
         mouse_x, mouse_y = io_env.get_mouse_position()
-        self.memory.add_recent_history("image", cur_screenshot_path)
 
         time.sleep(2)
         end_frame_id = self.videocapture.get_current_frame_id()
@@ -258,16 +244,16 @@ class PipelineRunner():
                 pre_action_name = []
                 pre_action_code = []
 
-                skill = self.gm.skill_registry.convert_expression_to_skill(pre_action)
+                for action in pre_action:
+                    skill = self.gm.skill_registry.convert_expression_to_skill(action)
+                    name, params = skill
+                    action_code, action_info = self.gm.get_skill_library_in_code(name)
+                    pre_action_name.append(name)
+                    pre_action_code.append(action_code if action_code is not None else action_info)
 
-                name, params = skill
-                action_code, action_info = self.gm.get_skill_library_in_code(name)
-                pre_action_name.append(name)
-                pre_action_code.append(action_code if action_code is not None else action_info)
-
-                input["previous_action"] = ",".join(pre_action_name)
-                input["previous_action_call"] = pre_action
-                input['action_code'] = "\n".join(list(set(pre_action_code)))
+                    input["previous_action"] = ",".join(pre_action_name)
+                    input["previous_action_call"] = pre_action
+                    input['action_code'] = "\n".join(list(set(pre_action_code)))
             else:
                 input["previous_action"] = ""
                 input["previous_action_call"] = ""
@@ -342,6 +328,7 @@ class PipelineRunner():
         start_frame_id = params["start_frame_id"]
         end_frame_id = params["end_frame_id"]
         cur_screenshot_path: List[str] = params["cur_screenshot_path"]
+        self.memory.add_recent_history(key=constants.IMAGES_MEM_BUCKET, info=cur_screenshot_path)
 
         previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
         current_augmentation = dict()
@@ -394,6 +381,8 @@ class PipelineRunner():
         if previous_augmentation is None:
             previous_augmentation = current_augmentation
 
+        self.memory.add_recent_history(constants.AUGMENTED_IMAGES_MEM_BUCKET, {cur_screenshot_path: current_augmentation})
+
         # Configure the gather_information module
         gather_information_configurations = {
             "frame_extractor": False,  # extract text from the video clip
@@ -410,7 +399,7 @@ class PipelineRunner():
             # Do not call GPT-4V, just take the screenshot
             data = {
                 "res_dict": {
-                    "image_description": "No description",
+                    f"{constants.IMAGE_DESCRIPTION}": "No description",
                     "screen_classification": "None"
                 }
             }
@@ -429,8 +418,8 @@ class PipelineRunner():
             logger.warn(f"No {constants.IMAGE_DESCRIPTION} in response.")
             image_description = "No description"
             screen_classification = "None"
-
-        self.memory.add_recent_history(key=constants.IMAGES_MEM_BUCKET, info=cur_screenshot_path)
+            
+        self.memory.add_recent_history(constants.IMAGE_DESCRIPTION, image_description)
 
         logger.write('Gather Information response: ', data['res_dict'])
         logger.write(f'Image Description: {image_description}')
@@ -562,7 +551,7 @@ class PipelineRunner():
         end_frame_id = self.videocapture.get_current_frame_id()
 
         # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
-        pre_action = exec_info["last_skill"]
+        pre_action = exec_info[constants.EXECUTED_SKILLS]
 
         pre_screen_classification = screen_classification
         self.memory.add_recent_history("action", pre_action)
@@ -687,13 +676,14 @@ def pre_process_skill_steps(skill_steps: list, som_map) -> list:
     processed_skill_steps = skill_steps
     for i in range(len(processed_skill_steps)):
         step = processed_skill_steps[i]
+
         if '_label(' in  step:
             skill = step
             tokens = skill.split('(')
             args_suffix_str = tokens[1]
             func_str = tokens[0]
             label_id = str(args_suffix_str.split('label_id=')[1].split(',')[0].split(')')[0]).replace("'", "").replace('"', "").replace(" ", "")
-
+            
             if label_id in som_map:
                 x, y = normalize_coordinates(som_map[label_id])
                 args_suffix_str = args_suffix_str.replace(f'label_id={label_id}', f'x={x}, y={y}').replace(",)", ")")
@@ -702,8 +692,8 @@ def pre_process_skill_steps(skill_steps: list, som_map) -> list:
                 else:
                     processed_skill_steps[i] = f'move_mouse_to_position({args_suffix_str}'
             else:
-                logger.debug(f"Box ID {label_id} not found in SOM map.")
-                processed_skill_steps[i] = ''
+                logger.debug(f"Label ID {label_id} not found in SOM map.")
+                processed_skill_steps[i] = processed_skill_steps[i] + f"# {constants.INVALID_BBOX} for label_id: {label_id}"
 
         # Change keyboard and mouse combination
         if '+' in step and 'key' in step:

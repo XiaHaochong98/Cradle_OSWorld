@@ -67,8 +67,10 @@ class Interface():
             "type_text",
             "press_key",
             "save_page",
+            "return_to_previous_page",
             "press_keys_combined",
             "click_on_label",
+            "go_back_to_target_application"
         ]
 
         # init task description

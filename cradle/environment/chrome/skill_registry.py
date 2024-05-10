@@ -33,9 +33,11 @@ BASIC_SKILLS = [
     "mouse_drag",
     "type_text",
     "save_page",
+    "return_to_previous_page",
     "press_key",
     "press_keys_combined",
     "click_on_label",
+    "go_back_to_target_application"
 ]
 DENY_LIST_TERMS = []
 ALLOW_LIST_TERMS = []

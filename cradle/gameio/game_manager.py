@@ -101,10 +101,10 @@ class GameManager:
     def execute_actions(self, actions):
 
         exec_info = {
-            "executed_skills" : [],
-            "last_skill" : '',
-            "errors" : False,
-            "errors_info": ""
+            constants.EXECUTED_SKILLS: [],
+            constants.LAST_SKILL: '',
+            constants.ERRORS : False,
+            constants.ERRORS_INFO: ""
         }
 
         io_env.update_timeouts()
@@ -113,8 +113,8 @@ class GameManager:
             logger.warn(f"No actions to execute! Executing nop.")
             self.skill_registry.execute_nop_skill()
 
-            exec_info["errors"] = True
-            exec_info["errors_info"] = "No actions to execute!"
+            exec_info[constants.ERRORS] = True
+            exec_info[constants.ERRORS_INFO] = "No actions to execute!"
             return exec_info
 
         skill_name = '-'
@@ -122,6 +122,12 @@ class GameManager:
 
         try:
             for skill in actions:
+
+                if constants.INVALID_BBOX in skill:
+                    exec_info[constants.ERRORS] = True
+                    label_id = skill.split(": ")[1]
+                    exec_info[constants.ERRORS_INFO] = f"Label ID {label_id} not found in SOM map."
+                    return exec_info
 
                 skill_name, skill_params = self.skill_registry.convert_expression_to_skill(skill)
 
@@ -141,8 +147,8 @@ class GameManager:
                 else:
                     self.skill_registry.execute_skill(name=skill_name, params=skill_params)
 
-                exec_info["executed_skills"].append(skill)
-                exec_info["last_skill"] = skill
+                exec_info[constants.EXECUTED_SKILLS].append(skill)
+                exec_info[constants.LAST_SKILL] = skill
 
                 self.post_action_wait()
                 logger.write(f"Finished executing skill: {skill} and wait.")
@@ -150,8 +156,8 @@ class GameManager:
         except Exception as e:
             msg = f'Error executing skill {skill_name} with params {skill_params} (from actions: {actions}):\n{e}'
             logger.error(msg)
-            exec_info["errors"] = True
-            exec_info["errors_info"] = msg
+            exec_info[constants.ERRORS] = True
+            exec_info[constants.ERRORS_INFO] = msg
 
         # @TODO re-add hold timeout check call
 

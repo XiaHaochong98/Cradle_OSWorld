@@ -33,7 +33,7 @@ class LocalMemory(BaseMemory):
 
         # @TODO First memory summary should be based on environment spec
 
-        self.recent_history = {"image": [],
+        self.recent_history = {constants.IMAGES_MEM_BUCKET: [],
                                constants.AUGMENTED_IMAGES_MEM_BUCKET:[],
                                "action": [],
                                "decision_making_reasoning": [],

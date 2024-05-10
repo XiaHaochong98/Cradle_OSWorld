@@ -89,6 +89,15 @@ def save_page():
     io_env.key_press("ctrl, s")
 
 
+@register_skill("return_to_previous_page")
+def return_to_previous_page():
+    """
+    Return to the previous page.
+    """
+    
+    io_env.key_press("alt, left")
+    
+
 @register_skill("go_back_to_target_application")
 def go_back_to_target_application():
     """
@@ -107,5 +116,6 @@ __all__ = [
     "press_key",
     "press_keys_combined",
     "type_text",
-    "save_page"
+    "save_page",
+    "return_to_previous_page"
 ]
