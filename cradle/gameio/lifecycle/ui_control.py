@@ -10,6 +10,7 @@ import mss
 import mss.tools
 
 from cradle.config import Config
+from cradle.gameio.gui_utils import _get_active_window_name
 from cradle.log import Logger
 from cradle.gameio import IOEnvironment
 from cradle.utils.image_utils import draw_mouse_pointer_file_, crop_grow_image
@@ -57,6 +58,15 @@ def check_active_window():
             config.env_window = named_windows[0]
             result = True
             logger.debug(f"Active window check after app-specific re-acquiring: {result}")
+
+        # Workaround for dialogs until we can map sub-window to window/process
+        if result == False:
+            dialog_names = ["Open", "Save", "Save As"]
+            actice_win = _get_active_window_name()
+
+            if actice_win in dialog_names:
+                logger.debug(f"Dialog {actice_win} is open and active.")
+                result = True
 
     return result
 

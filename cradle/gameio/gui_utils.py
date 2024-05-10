@@ -398,6 +398,7 @@ def get_named_windows(env_name) -> List[TargetWindow]:
 
     if _isWin():
         windows = pyautogui.getWindowsWithTitle(clean_name)
+
         if clean_name == env_name:
             windows = [TargetWindow(window) for window in windows]
         else:
@@ -430,3 +431,7 @@ def get_named_windows_fallback(win_name, win_name_pattern) -> List[TargetWindow]
         named_windows = get_named_windows(win_name_pattern)
 
     return named_windows
+
+
+def _get_active_window_name() -> str:
+    return pyautogui.getActiveWindowTitle()
