@@ -70,7 +70,7 @@ def check_active_window():
 
         # Workaround for dialogs until we can map sub-window to window/process
         if result == False:
-            dialog_names = ["Open", "Save", "Save As",]
+            dialog_names = ["Open", "Save", "Save As", "Select a media resource"]
 
             if active_win.title in dialog_names:
                 logger.debug(f"Dialog {active_win} is open and active.")

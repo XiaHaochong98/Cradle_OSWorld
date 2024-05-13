@@ -113,6 +113,9 @@ class Config(metaclass=Singleton):
 
         self.show_mouse_in_screenshot = False
 
+        # Parameters for comparing images
+        self.pixel_diff_threshold = 100
+
         # Just for convenience of testing, should be removed in final version.
         self.use_latest_memory_path = False
         if self.use_latest_memory_path:

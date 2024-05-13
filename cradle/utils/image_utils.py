@@ -193,7 +193,7 @@ def save_image_diff(path_1, path_2):
     return output_path
 
 
-def calculate_pixel_diff(output_path):
+def calculate_pixel_diff_with_diffimage_path(output_path):
     img = Image.open(output_path).convert("RGBA")
     pixels = img.load()
     width, height = img.size
@@ -207,6 +207,9 @@ def calculate_pixel_diff(output_path):
 
     return non_transparent_count
 
+def calculate_pixel_diff(path_1, path_2):
+    diff_image_path = save_image_diff(path_1, path_2)
+    return calculate_pixel_diff_with_diffimage_path(diff_image_path)
 
 def resize_image(image: str | np.ndarray, resize_ratio) -> Image:
     """Resize the given image.
@@ -265,7 +268,6 @@ def process_image_for_masks(original_image: Image) -> list[np.ndarray]:
 
     # Find unique colors in the image, each unique color corresponds to a unique mask
     unique_colors = np.unique(original_image_np.reshape(-1, original_image_np.shape[2]), axis=0)
-    logger.debug(f"{len(unique_colors)=}")
 
     masks = []
     for color in unique_colors:
@@ -273,7 +275,6 @@ def process_image_for_masks(original_image: Image) -> list[np.ndarray]:
         mask = np.all(original_image_np == color, axis=-1)
         masks.append(mask)
 
-    logger.debug(f"{len(masks)=}")
     return masks
 
 
@@ -353,15 +354,12 @@ def remove_border_masks(masks: list[np.ndarray], threshold_percent: float = 5.0)
         # If "on" pixels are close to all borders, return True
         return top and bottom and left and right
 
-    logger.debug(f"{len(masks)=}")
-
     filtered_masks = []
     for mask in masks:
         # Only add mask if it is not close to all borders
         if not is_close_to_all_borders(mask, threshold_percent):
             filtered_masks.append(mask)
 
-    logger.debug(f"{len(filtered_masks)=}")
     return filtered_masks
 
 
@@ -377,7 +375,6 @@ def filter_thin_ragged_masks(masks: list[np.ndarray], kernel_size: int = 3, iter
     Returns:
     - A list of ndarrays with thin and ragged masks filtered out.
     """
-    logger.debug(f"{len(masks)=}")
     kernel = np.ones((kernel_size, kernel_size), np.uint8)
     filtered_masks = []
 
@@ -396,7 +393,6 @@ def filter_thin_ragged_masks(masks: list[np.ndarray], kernel_size: int = 3, iter
         # Convert back to boolean mask and add to the filtered list
         filtered_masks.append(dilated_mask > 0)
 
-    logger.debug(f"{len(filtered_masks)=}")
     return filtered_masks
 
 
@@ -412,7 +408,6 @@ def refine_masks(masks: list[np.ndarray]) -> list[np.ndarray]:
     Returns:
         A list of numpy.ndarrays, each representing a refined mask.
     """
-    logger.debug(f"{len(masks)=}")
 
     masks = remove_border_masks(masks)
     masks = filter_thin_ragged_masks(masks)
@@ -433,7 +428,6 @@ def refine_masks(masks: list[np.ndarray]) -> list[np.ndarray]:
         if not contained:
             refined_masks.append(mask_i)
 
-    logger.debug(f"{len(refined_masks)=}")
     return refined_masks
 
 
@@ -449,7 +443,6 @@ def extract_masked_images(original_image: Image, masks: list[np.ndarray]):
     Returns:
     A list of Image objects, each cropped to the mask's bounding box and containing the content of the original image within that mask.
     """
-    logger.debug(f"{len(masks)=}")
     original_image_np = np.array(original_image)
     masked_images = []
 
@@ -468,7 +461,6 @@ def extract_masked_images(original_image: Image, masks: list[np.ndarray]):
         masked_image = np.where(cropped_mask[:, :, None], cropped_image, 0).astype(np.uint8)
         masked_images.append(Image.fromarray(masked_image))
 
-    logger.debug(f"{len(masked_images)=}")
     return masked_images
 
 
@@ -510,14 +502,19 @@ def calculate_bounding_boxes(masks: list[np.ndarray]):
         })
         centroids.append((float(center_x), float(center_y)))
 
-    return bounding_boxes, centroids
+    # Sort centroids and corresponding bounding boxes from left to right, top to bottom
+    sorted_indices = sorted(range(len(centroids)), key=lambda i: (centroids[i][1], centroids[i][0]))  # Sort by y first, then x
+    sorted_centroids = [centroids[i] for i in sorted_indices]
+    sorted_bounding_boxes = [bounding_boxes[i] for i in sorted_indices]
+
+    return sorted_bounding_boxes, sorted_centroids
 
 
 def plot_som(screenshot_filename, bounding_boxes):
     org_img = Image.open(screenshot_filename)
     draw = ImageDraw.Draw(org_img)
     font_path = "arial.ttf"
-    font_size, padding = 16, 2
+    font_size, padding = 24, 2
     font = ImageFont.truetype(font_path, font_size)
 
     # Create a color cycle using one of the categorical color palettes in matplotlib
@@ -539,7 +536,7 @@ def plot_som(screenshot_filename, bounding_boxes):
         )
 
         bbox_padding = 0
-        bbox_border = 2
+        bbox_border = 5
         color = color_cycle[i % len(color_cycle)]
         draw.rectangle(
             [

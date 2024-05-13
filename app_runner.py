@@ -21,6 +21,7 @@ import cradle.environment.chrome
 import cradle.environment.capcut
 import cradle.environment.feishu
 from cradle.utils.dict_utils import kget
+from cradle.utils.image_utils import calculate_pixel_diff
 
 config = Config()
 logger = Logger()
@@ -200,6 +201,9 @@ class PipelineRunner():
         pre_decision_making_reasoning = params["pre_decision_making_reasoning"]
         exec_info = params["exec_info"]
 
+        image_same_flag = params[constants.IMAGE_SAME_FLAG]
+        mouse_position_same_flag = params[constants.MOUSE_POSITION_SAME_FLAG]
+
         image_memory = self.memory.get_recent_history("image", k=config.self_reflection_image_num)
 
         self_reflection_reasoning = ""
@@ -238,6 +242,8 @@ class PipelineRunner():
             input["task_description"] = task_description
             input['skill_library'] = self.skill_library
             input["previous_reasoning"] = pre_decision_making_reasoning
+            input[constants.IMAGE_SAME_FLAG] = str(image_same_flag)
+            input[constants.MOUSE_POSITION_SAME_FLAG] = str(mouse_position_same_flag)
 
             if pre_action:
 
@@ -279,7 +285,7 @@ class PipelineRunner():
         res_params = {
             "pre_self_reflection_reasoning": self_reflection_reasoning,
             f"{constants.CURRENT_AUGMENTATION_INFO}": current_augmentation,
-            f"{constants.PREVIOUS_AUGMENTATION_INFO}": previous_augmentation,
+            f"{constants.PREVIOUS_AUGMENTATION_INFO}": previous_augmentation
         }
 
         return res_params
@@ -330,9 +336,6 @@ class PipelineRunner():
         cur_screenshot_path: List[str] = params["cur_screenshot_path"]
         self.memory.add_recent_history(key=constants.IMAGES_MEM_BUCKET, info=cur_screenshot_path)
 
-        previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
-        current_augmentation = dict()
-
         # Gather information preparation
         logger.write(f'Gather Information Start Frame ID: {start_frame_id}, End Frame ID: {end_frame_id}')
         input = self.planner.gather_information_.input_map
@@ -346,37 +349,57 @@ class PipelineRunner():
         else:
             cur_screenshot_path = params['cur_screenshot_path']
 
-        current_augmentation[constants.AUG_BASE_IMAGE_PATH] = cur_screenshot_path
         input["image_introduction"][0]["path"] = cur_screenshot_path
 
-        if config.show_mouse_in_screenshot:
-            mouse_pos = kget(params, 'mouse_position')
-            if mouse_pos is not None:
-                mouse_x = mouse_pos[0]
-                mouse_y = mouse_pos[1]
-                current_augmentation[constants.AUG_MOUSE_IMG_PATH] = draw_mouse_pointer_file(cur_screenshot_path, mouse_x, mouse_y)
+        previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
+        current_augmentation = {}
+        current_augmentation[constants.AUG_BASE_IMAGE_PATH] = cur_screenshot_path
+        
+        # record the last collected mouse position
+        mouse_position = kget(params, 'mouse_position')
+        if mouse_position:
+            mouse_x, mouse_y = mouse_position
+            current_augmentation[constants.AUG_MOUSE_X] = mouse_x
+            current_augmentation[constants.AUG_MOUSE_Y] = mouse_y
+        else:
+            logger.warn("No mouse position to draw in info gathering augmentation!")
 
-                current_augmentation[constants.AUG_MOUSE_X] = mouse_x
-                current_augmentation[constants.AUG_MOUSE_Y] = mouse_y
+        # Compare current screenshot with the previous to determine changes
+        if previous_augmentation:
+            previous_screenshot_path = previous_augmentation[constants.AUG_BASE_IMAGE_PATH]
+            count_same_of_pic = calculate_pixel_diff(previous_screenshot_path, cur_screenshot_path)
+            image_same_flag = count_same_of_pic <= config.pixel_diff_threshold
+            mouse_position_same_flag = (
+                current_augmentation[constants.AUG_MOUSE_X] == previous_augmentation[constants.AUG_MOUSE_X] and
+                current_augmentation[constants.AUG_MOUSE_Y] == previous_augmentation[constants.AUG_MOUSE_Y]
+            )
+        else:
+            image_same_flag = mouse_position_same_flag = False # Assume false for the first run to generate augmentation image
+        
+        if config.show_mouse_in_screenshot and mouse_position:
+            if mouse_position_same_flag:
+                current_augmentation[constants.AUG_MOUSE_IMG_PATH] = previous_augmentation[constants.AUG_MOUSE_IMG_PATH]
             else:
-                logger.warn("No mouse position to draw in info gathering augmentation!")
-
+                current_augmentation[constants.AUG_MOUSE_IMG_PATH] = draw_mouse_pointer_file(cur_screenshot_path, mouse_x, mouse_y)
             input["image_introduction"][0]["path"] = current_augmentation[constants.AUG_MOUSE_IMG_PATH]
 
         if config.use_sam_flag:
-            som_img_path = cur_screenshot_path.replace(".jpg", f"_som.jpg")
-            som_img, som_map = self.sam_provider.get_som(cur_screenshot_path)
-            som_img.save(som_img_path)
-            logger.debug(f"Saved the SOM screenshot to {som_img_path}")
-            current_augmentation[constants.AUG_SOM_IMAGE_PATH] = som_img_path
-            current_augmentation[constants.AUG_SOM_MAP] = som_map
+            if image_same_flag:
+                current_augmentation[constants.AUG_SOM_IMAGE_PATH] = previous_augmentation[constants.AUG_SOM_IMAGE_PATH]
+                current_augmentation[constants.AUG_SOM_MAP] = previous_augmentation[constants.AUG_SOM_MAP]
+                current_augmentation[constants.LENGTH_OF_SOM_MAP] = previous_augmentation[constants.LENGTH_OF_SOM_MAP]
+            else:
+                som_img_path, som_map = self.sam_provider.load_som_results(cur_screenshot_path)
+                current_augmentation[constants.AUG_SOM_IMAGE_PATH] = som_img_path
+                current_augmentation[constants.AUG_SOM_MAP] = som_map
+                current_augmentation[constants.LENGTH_OF_SOM_MAP] = len(som_map.keys())
+                
+            input["image_introduction"][0]["path"] = current_augmentation[constants.AUG_SOM_IMAGE_PATH]
+            input[constants.LENGTH_OF_SOM_MAP] = current_augmentation[constants.LENGTH_OF_SOM_MAP]
 
-            if config.show_mouse_in_screenshot:
-                mouse_pos = kget(params, 'mouse_position')
-                if mouse_pos is not None:
-                    current_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH] = draw_mouse_pointer_file(som_img_path, mouse_x, mouse_y)
-                else:
-                    logger.warn("No mouse position to draw in info gathering augmentation!")
+            if config.show_mouse_in_screenshot and mouse_position:
+                current_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH] = draw_mouse_pointer_file(current_augmentation[constants.AUG_SOM_IMAGE_PATH], mouse_x, mouse_y)
+                input["image_introduction"][0]["path"] = current_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH]
 
         if previous_augmentation is None:
             previous_augmentation = current_augmentation
@@ -409,28 +432,37 @@ class PipelineRunner():
         response_keys = data['res_dict'].keys()
 
         if constants.IMAGE_DESCRIPTION in response_keys:
-            image_description = data['res_dict'][constants.IMAGE_DESCRIPTION]
+            current_augmentation[constants.IMAGE_DESCRIPTION] = data['res_dict'][constants.IMAGE_DESCRIPTION]
             if constants.SCREEN_CLASSIFICATION in response_keys:
-                screen_classification = data['res_dict'][constants.SCREEN_CLASSIFICATION]
+                current_augmentation[constants.SCREEN_CLASSIFICATION] = data['res_dict'][constants.SCREEN_CLASSIFICATION]
             else:
-                screen_classification = "None"
+                current_augmentation[constants.SCREEN_CLASSIFICATION] = "None"
         else:
             logger.warn(f"No {constants.IMAGE_DESCRIPTION} in response.")
-            image_description = "No description"
-            screen_classification = "None"
+            current_augmentation[constants.IMAGE_DESCRIPTION] = "No description"
+            current_augmentation[constants.SCREEN_CLASSIFICATION] = "None"
+        
+        if constants.IMAGE_DESCRIPTION_OF_BOUNDING_BOXES in response_keys and config.use_sam_flag:
+            image_description_of_bounding_boxes = data['res_dict'][constants.IMAGE_DESCRIPTION_OF_BOUNDING_BOXES]
+            current_augmentation[constants.IMAGE_DESCRIPTION_OF_BOUNDING_BOXES] = image_description_of_bounding_boxes.replace("\n", " ")
+        else:
+            logger.warn(f"No {constants.IMAGE_DESCRIPTION_OF_BOUNDING_BOXES} in response.")
+            current_augmentation[constants.IMAGE_DESCRIPTION_OF_BOUNDING_BOXES] = "No description"
 
-        self.memory.add_recent_history(constants.IMAGE_DESCRIPTION, image_description)
+        self.memory.add_recent_history(key=constants.IMAGES_MEM_BUCKET, info=cur_screenshot_path)
 
         logger.write('Gather Information response: ', data['res_dict'])
-        logger.write(f'Image Description: {image_description}')
-        logger.write(f'Screen Classification: {screen_classification}')
+        logger.write(f'Image Description: {current_augmentation[constants.IMAGE_DESCRIPTION]}')
+        logger.write(f'Image Description of Bounding Boxes: {current_augmentation[constants.IMAGE_DESCRIPTION_OF_BOUNDING_BOXES]}')
+        logger.write(f'Screen Classification: {current_augmentation[constants.SCREEN_CLASSIFICATION]}')
 
         res_params = {
-            "screen_classification": screen_classification,
             "response_keys": response_keys,
             "response": data['res_dict'],
             f"{constants.CURRENT_AUGMENTATION_INFO}": current_augmentation,
             f"{constants.PREVIOUS_AUGMENTATION_INFO}": previous_augmentation,
+            f"{constants.IMAGE_SAME_FLAG}": image_same_flag,
+            f"{constants.MOUSE_POSITION_SAME_FLAG}": mouse_position_same_flag
         }
 
         return res_params
@@ -445,7 +477,7 @@ class PipelineRunner():
         pre_action = params["pre_action"]
         pre_self_reflection_reasoning = params["pre_self_reflection_reasoning"]
         pre_screen_classification = params["pre_screen_classification"]
-        screen_classification = params["screen_classification"]
+        screen_classification = current_augmentation[constants.SCREEN_CLASSIFICATION]
 
         # Decision making preparation
         input = deepcopy(self.planner.decision_making_.input_map)
@@ -479,6 +511,7 @@ class PipelineRunner():
                     })
 
         input["image_introduction"] = image_introduction
+        input[constants.IMAGE_DESCRIPTION] = current_augmentation[constants.IMAGE_DESCRIPTION]
         input["task_description"] = self.task_description
 
         if config.show_mouse_in_screenshot:
@@ -487,6 +520,7 @@ class PipelineRunner():
         if config.use_sam_flag:
             input["image_introduction"][0]["path"] = previous_augmentation[constants.AUG_SOM_IMAGE_PATH]
             input["image_introduction"][-1]["path"] = current_augmentation[constants.AUG_SOM_IMAGE_PATH]
+            input[constants.IMAGE_DESCRIPTION_OF_BOUNDING_BOXES] = current_augmentation[constants.IMAGE_DESCRIPTION_OF_BOUNDING_BOXES]
             if config.show_mouse_in_screenshot:
                 input["image_introduction"][0]["path"] = previous_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH]
                 input["image_introduction"][-1]["path"] = current_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH]
@@ -677,26 +711,50 @@ def pre_process_skill_steps(skill_steps: List[str], som_map: Dict) -> List[str]:
     for i in range(len(processed_skill_steps)):
         step = processed_skill_steps[i]
 
-        if '_label(' in  step:
+        # Change label_id to x, y coordinates
+        if 'click_on_label(' in step or 'hover_on_label(' in step:
             skill = step
             tokens = skill.split('(')
             args_suffix_str = tokens[1]
             func_str = tokens[0]
-            label_id = str(args_suffix_str.split('label_id=')[1].split(',')[0].split(')')[0]).replace("'", "").replace('"', "").replace(" ", "")
-
+            label_key = 'label_id=' if 'label_id=' in args_suffix_str else 'label='
+            label_id = str(args_suffix_str.split(label_key)[1].split(',')[0].split(')')[0]).replace("'", "").replace('"', "").replace(" ", "")
+            
             if label_id in som_map:
                 x, y = normalize_coordinates(som_map[label_id])
-                args_suffix_str = args_suffix_str.replace(f'label_id={label_id}', f'x={x}, y={y}').replace(",)", ")")
+                args_suffix_str = args_suffix_str.replace(f'{label_key}{label_id}', f'x={x}, y={y}').replace(",)", ")")
                 if func_str.startswith('click_'):
-                    processed_skill_steps[i] = f'click_at_position({args_suffix_str}'
+                    processed_skill_steps[i] = f'click_at_position({args_suffix_str} # {label_key.strip("=")}: {label_id}'
                 else:
-                    processed_skill_steps[i] = f'move_mouse_to_position({args_suffix_str}'
+                    processed_skill_steps[i] = f'move_mouse_to_position({args_suffix_str} # {label_key.strip("=")}: {label_id}'
             else:
-                logger.debug(f"Label ID {label_id} not found in SOM map.")
-                processed_skill_steps[i] = processed_skill_steps[i] + f"# {constants.INVALID_BBOX} for label_id: {label_id}"
+                logger.debug(f"{label_key.strip('=')} {label_id} not found in SOM map.")
+                processed_skill_steps[i] = processed_skill_steps[i] + f"# {constants.INVALID_BBOX} for {label_key.strip('=')}: {label_id}"
+
+        elif 'mouse_drag_with_label(' in step:
+            skill = step
+            tokens = skill.split('(')
+            args_suffix_str = tokens[1]
+            func_str = tokens[0]
+
+            label_ids = args_suffix_str.split('label_id=')[1:]
+            source_label_id = str(label_ids[0].split(',')[0]).replace("'", "").replace('"', "").replace(" ", "")
+            target_label_id = str(label_ids[1].split(',')[0]).replace("'", "").replace('"', "").replace(" ", "")
+
+            if source_label_id in som_map and target_label_id in som_map:
+                source_x, source_y = normalize_coordinates(som_map[source_label_id])
+                target_x, target_y = normalize_coordinates(som_map[target_label_id])
+                args_suffix_str = args_suffix_str.replace(f'source_label_id={source_label_id}', f'source_x={source_x}, source_y={source_y}')
+                args_suffix_str = args_suffix_str.replace(f'target_label_id={target_label_id}', f'target_x={target_x}, target_y={target_y}').replace(",)", ")")
+                
+                processed_skill_steps.append(f'drag_mouse({args_suffix_str} # source_label_id={source_label_id}, target_label_id={target_label_id}')
+            else:
+                missing_ids = [label_id for label_id in [source_label_id, target_label_id] if label_id not in som_map]
+                logger.debug(f"Label IDs {missing_ids} not found in SOM map.")
+                processed_skill_steps.append(step + f"# {constants.INVALID_BBOX} for label_ids: {', '.join(missing_ids)}")
 
         # Change keyboard and mouse combination
-        if '+' in step and 'key' in step:
+        elif '+' in step and 'key' in step:
             skill = step.replace('+', ",")
             processed_skill_steps[i] = skill
 

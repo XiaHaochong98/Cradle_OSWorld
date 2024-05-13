@@ -25,6 +25,25 @@ def click_on_label(label_id, mouse_button):
     click_at_position(x, y, mouse_button)
 
 
+@register_skill("mouse_drag_with_label")
+def mouse_drag_with_label(source_label_id, target_label_id, mouse_button):
+    """
+    Drag from the source label id of bounding box to the target label id of bounding box.
+
+    Parameters:
+    - source_label_id: The numerical label id of the source bounding box to drag from.
+    - target_label_id: The numerical label id of the target bounding box to drag to.
+    - mouse_button: The mouse button to be clicked. It should be one of the following values: "left", "right", "middle".
+    """
+    source_label_id = str(source_label_id)
+    target_label_id = str(target_label_id)
+    source_x, source_y = 0.5, 0.5
+    target_x, target_y = 0.5, 0.5
+    click_at_position(source_x, source_y, "left")
+    click_at_position(target_x, target_y, "left")
+    
+
 __all__ = [
     "click_on_label",
+    "mouse_drag_with_label"
 ]

@@ -68,6 +68,9 @@ class Interface():
             "press_key",
             "press_keys_combined",
             "click_on_label",
+            "mouse_drag_with_label",
+            "move_timeline_forward",
+            "move_timeline_backward"
         ]
 
         # init task description

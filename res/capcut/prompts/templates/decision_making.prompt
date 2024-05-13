@@ -12,6 +12,12 @@ Memory examples:
 
 <$image_introduction$>
 
+Description of current screenshot:
+<$image_description$>
+
+Description of label IDs:
+<$image_description_of_bounding_boxes$>
+
 Last executed action:
 <$previous_action$>
 
@@ -21,41 +27,31 @@ Reasoning for the last action:
 Self-reflection for the last executed action:
 <$previous_self_reflection_reasoning$>
 
-Summarization of recent history:
-<$info_summary$>
-
 Valid action set in Python format to select the next action:
 <$skill_library$>
 
-Minimap information:
-<$minimap_information$>
-
 Based on the above information, you should first analyze the current situation and provide the reasoning for what you should do for the next step to complete the task. Then, you should output the exact action you want to execute in the application.
-Pay attention to all UI items and contents in the image. DO NOT make assumptions about the layout! If the image includes a mouse cursor, pay close attention to the coordinates of the pointer tip, not the centre of the mouse cursor. You should respond to me with:
+Pay attention to all UI items and contents in the screenshots. DO NOT make assumptions about the layout! If the image includes a mouse cursor, pay close attention to the coordinates of the pointer tip, not the centre of the mouse cursor. You should respond to me with:
 
 Reasoning: You should think step by step and provide detailed reasoning to determine the next action executed on the current state of the task. You need to answer the following questions step by step. 
-    0. Assess whether the entire task has been successfully completed based solely on self-reflection for the last executed action. If successful, ignore questions 1-9.
-    1. You should first describe each item in the screen line by line, from the top left and moving right. Is the target item in the current screen?
-    2. Only answer this question when a menu or inventory interface is open. Which item is selected currently?
-    3. Are any bounding boxes labeled with ID like "10" or "18" visible in the screenshot? Base your response solely on the current screenshot, disregarding any previous steps. If no such IDs are present, ignore questions 4 and 5.
-    4. If a mouse cursor is present in the image, describe near which ID-labeled bounding box the cursor's tip is located, not the center of the cursor.
-    5. In the current screenshot, identify the label ID of the bounding box most relevant to the current task. If there is text within this bounding box, please provide the text.
-    6. Summarize the contents of recent history, mainly focusing on historical tasks and behaviors.
-    7. Summarize the content of self-reflection for the last executed action, and do not be distracted by other information.
-    8. This is the most critical question. Based on the action rules and self-reflection, what should be the most suitable action in the valid action set for the next step? You should analyze the effects of the action step by step. 
-    9. Prioritize keyboard actions, such as using shortcut keys or pressing Enter, to replace mouse actions where possible. If mouse actions are necessary, prefer using those that specify bounding box label IDs as parameters instead of directly generating normalized x and y coordinates.
+    0. Assess whether the entire task has been successfully completed based solely on self-reflection for the last executed action. If successful, ignore questions 1-6.
+    1. Based on the description of label IDs in text, which label ID is most relevant to the current task? You should never answer this question based on the screenshot.
+    2. Summarize the contents of recent history, mainly focusing on historical tasks and behaviors.
+    3. Summarize the content of self-reflection for the last executed action, and do not be distracted by other information.
+    4. This is the most critical question. Based on the action rules and self-reflection, what should be the most suitable action in the valid action set for the next step? You should analyze the effects of the action step by step. 
+    5. Are there any keyboard actions, such as using shortcut keys or pressing Enter, to replace mouse actions where possible? If mouse actions are necessary, prefer using those that specify bounding box label IDs as parameters instead of directly generating normalized x and y coordinates.
+    6. When you decide to operate on a file, have you considered the subsequent actions that will be required? For example, after selecting a file to import, ensure that you press the Enter key to complete the addition process.
 
-Actions: The best action, or short sequence of actions without gaps, to execute next to progress in achieving the goal. Pay attention to the names of the available skills and the previous skills already executed, if any. Pay special attention to the coordinates of any action that needs them. Do not make assumptions about the location of UI elements or their coordinates, analyse in detail any provided images. You should also pay more attention to the following action rules:
+Actions: The best action, or short sequence of actions without gaps, to execute next to progress in achieving the goal. Pay attention to the names of the available skills and the previous skills already executed, if any. Pay special attention to the coordinates of any action that needs them. You should also pay more attention to the following action rules:
     1. If the entire task has been successfully completed based solely on self-reflection for the last executed action, then output action MUST be empty like ''.
-    2. You should output actions in Python code format and specify any necessary parameters to execute that action. If the function has parameters, you should also include their names and decide their values, like "press_shift(duration=1)". If it does not have a parameter, just output the action, like "release_mouse_buttons()".
-    3. Before typing text, ensure that the last executed action involved clicking on the relevant input box. If the last action was not a click on this input box, the required action MUST be to click on the corresponding input box before proceeding.
+    2. You should output actions in Python code format and specify any necessary parameters to execute that action. If the function has parameters, you should also include their names and decide their values, like "press_key(key='k')". If it does not have a parameter, just output the action, like "release_mouse_buttons()".
+    3. Before operating a certain multimedia material or  typing text , ensure that the last executed action involved clicking on the relevant ui element. If the last action was not a click on this ui element, the required action MUST be to click on the corresponding ui element before proceeding.
     4. Given the current situation and task, you should only choose the most suitable action from the valid action set. You cannot use actions that are not in the valid action set to control the application.
-    5. If the target is not on the open radial menu, list menu, or inventory interfaces, and the UI item can be scrolled, you MUST choose a skill to check the next menu items. 
-    6. When you decide to move mouse, if there is bounding box in the current screenshot, you MUST use label ID of bounding box for the movement. If there is no relevant bounding box, analyze the image carefully to identify the UI item location and calculate normalized x and y coordinates for it. 
-    7. When you perform a mouse action, always select the target UI element closest to the UI element of the previous action for operation.
-    8. When you decide to operate on a file, such as downloading it, please pay attention to the path and name of the current file.
-    9. When you are exploring or searching for a UI item, if you are leaving a screen or dialogue, you MUST take action to close the item.
-    10. If upon self-reflection you think the last action was unavailable at the current state, you SHOULD try to take an action to try to enable it.
+    5. When you decide to move mouse, if there is description of label IDs, you MUST use label ID of bounding box for the movement. If there is no relevant label ID, analyze the current screen shot carefully to identify the UI item location and calculate normalized x and y coordinates for it. 
+    6. When you perform a mouse action, always select the target UI element closest to the UI element of the previous action for operation.
+    7. When you decide to operate on a file, consider the subsequent actions that will be required. For example, after selecting a file to import, ensure that you press the Enter key to complete the addition process.
+    8. When you are exploring or searching for a UI item, if you are leaving a screen or dialogue, you MUST take action to close the item.
+    9. If upon self-reflection you think the last action was unavailable at the current state, you SHOULD try to take an action to try to enable it.
 
 You should only respond in the format described below. In your reasoning for the chosen actions, also describe which item you decided to interact with and why. You should not output other comments or information besides the format below:
 Reasoning:

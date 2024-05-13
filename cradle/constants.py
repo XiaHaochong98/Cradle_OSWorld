@@ -10,7 +10,6 @@ ITEM_STATUS = 'item_status'
 TASK_GUIDANCE = 'task_guidance'
 DIALOGUE = 'dialogue'
 GATHER_TEXT_REASONING = 'reasoning'
-IMAGE_DESCRIPTION = 'image_description'
 TARGET_OBJECT_NAME = 'target_object_name'
 GATHER_INFO_REASONING = 'reasoning_of_object'
 SCREEN_CLASSIFICATION = 'screen_classification'
@@ -36,6 +35,8 @@ SAM_CONTRAST_LEVEL = 'sam_contrast_level'
 SAM_MAX_AREA = 'sam_max_area'
 
 # Augmentation info dict attributes
+IMAGE_DESCRIPTION = 'image_description'
+IMAGE_DESCRIPTION_OF_BOUNDING_BOXES = 'image_description_of_bounding_boxes'
 AUG_MOUSE_X = 'mouse_x'
 AUG_MOUSE_Y = 'mouse_y'
 AUG_BASE_IMAGE_PATH='image_path'
@@ -43,6 +44,11 @@ AUG_SOM_MOUSE_IMG_PATH = 'som_mouse_img_path'
 AUG_MOUSE_IMG_PATH = 'mouse_img_path'
 AUG_SOM_IMAGE_PATH = 'som_image_path'
 AUG_SOM_MAP = 'som_map'
+LENGTH_OF_SOM_MAP = 'length_of_som_map'
+
+# SAME_FLAG between two image to check whether som_image should be generated agin or not 
+IMAGE_SAME_FLAG = "image_same_flag"
+MOUSE_POSITION_SAME_FLAG = "mouse_position_same_flag"
 
 # Tags used in prompt templates
 IMAGES_INPUT_TAG_NAME = 'image_introduction'

@@ -38,7 +38,7 @@ def mouse_drag(source_x, source_y, target_x, target_y, mouse_button):
     - mouse_button: The mouse button to be clicked. It should be one of the following values: "left", "right", "middle".
     """
     io_env.mouse_move_normalized(source_x, source_y)
-    io_env.mouse_click_button(mouse_button)
+    io_env.mouse_hold_button(mouse_button)
     io_env.mouse_move_normalized(target_x, target_y)
     io_env.mouse_release_button(mouse_button)
 
@@ -79,10 +79,31 @@ def type_text(text):
 
     post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
+@register_skill("move_timeline_forward")
+def move_timeline_forward():
+    """
+    Moves the timeline forward.
+    """
+    io_env.key_press("right")
+
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
+
+
+@register_skill("move_timeline_backward")
+def move_timeline_backward():
+    """
+    Moves the timeline backward.
+    """
+    io_env.key_press("left")
+
+    post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
+
 __all__ = [
     "click_at_position",
     "mouse_drag",
     "press_key",
     "press_keys_combined",
-    "type_text"
+    "type_text",
+    "move_timeline_forward",
+    "move_timeline_backward"
 ]

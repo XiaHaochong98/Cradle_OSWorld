@@ -92,3 +92,11 @@ class SamProvider(metaclass=Singleton):
         del resized_masks 
 
         return som_img, centroids_map
+    
+    
+    def load_som_results(self, screenshot_path):
+        som_img_path = screenshot_path.replace(".jpg", f"_som.jpg")
+        som_img, centroids_map = self.get_som(screenshot_path)
+        som_img.save(som_img_path)
+        logger.debug(f"Saved the SOM screenshot to {som_img_path}")
+        return som_img_path, centroids_map

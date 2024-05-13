@@ -21,6 +21,13 @@ Reasoning for the last action:
 Valid action set in Python format to select the next action:
 <$skill_library$>
 
+Current and previous screenshot are the same:
+<$image_same_flag$>
+
+Mouse position in the current screenshot is the same as in the previous screenshot:
+<$mouse_position_same_flag$>
+
+Image introduction:
 <$image_introduction$>
 
 Reasoning: You need to answer the following questions, step by step, to describe your reasoning based on the last action and sequential screenshots of the application during the execution of the last action. Any action involving x,y coordinates and bounding box label ID is an action involving movement.

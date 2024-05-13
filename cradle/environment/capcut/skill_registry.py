@@ -35,6 +35,9 @@ BASIC_SKILLS = [
     "press_key",
     "press_keys_combined",
     "click_on_label",
+    "mouse_drag_with_label",
+    "move_timeline_forward",
+    "move_timeline_backward"
 ]
 DENY_LIST_TERMS = []
 ALLOW_LIST_TERMS = []

@@ -3,10 +3,10 @@
     "sub_path": "capcut",
     "env_short_name": "CapCut",
     "sam2som_config": {
-        "sam_pred_iou_thresh": 0.4, 
-        "sam_resize_ratio": 0.4, 
+        "sam_pred_iou_thresh": 0.4,
+        "sam_resize_ratio": 0.4,
         "sam_contrast_level": 3.0,
-         "sam_max_area": 0.1
+        "sam_max_area": 0.1
     }
 }
 
