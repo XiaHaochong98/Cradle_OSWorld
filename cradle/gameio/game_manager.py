@@ -1,5 +1,5 @@
 import time
-from typing import Tuple
+from typing import Tuple, Dict, Any
 
 from cradle import constants
 from cradle.config import Config
@@ -98,7 +98,7 @@ class GameManager:
             self.interface.navigate_path(total_time_step)
 
 
-    def execute_actions(self, actions):
+    def execute_actions(self, actions) -> Dict[str, Any]:
 
         exec_info = {
             constants.EXECUTED_SKILLS: [],

@@ -446,5 +446,5 @@ def get_named_windows_fallback(win_name, win_name_pattern) -> List[TargetWindow]
     return named_windows
 
 
-def _get_active_window_name() -> str:
-    return pyautogui.getActiveWindowTitle()
+def _get_active_window():
+    return pyautogui.getActiveWindow()

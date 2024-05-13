@@ -535,7 +535,7 @@ class PipelineRunner():
 
         start_frame_id = self.videocapture.get_current_frame_id()
 
-        exec_info = self.gm.execute_actions(skill_steps)  # @HERE
+        exec_info = self.gm.execute_actions(skill_steps)
 
         # Sense here to avoid changes in state after action execution completes
 
@@ -671,7 +671,7 @@ class PipelineRunner():
     #     return res_params
 
 
-def pre_process_skill_steps(skill_steps: list, som_map) -> list:
+def pre_process_skill_steps(skill_steps: List[str], som_map: Dict) -> List[str]:
 
     processed_skill_steps = skill_steps
     for i in range(len(processed_skill_steps)):
@@ -706,7 +706,7 @@ def pre_process_skill_steps(skill_steps: list, som_map) -> list:
     return processed_skill_steps
 
 
-def exit_cleanup(runner):
+def exit_cleanup(runner: PipelineRunner):
     logger.write("Exiting pipeline.")
     runner.pipeline_shutdown()
 
