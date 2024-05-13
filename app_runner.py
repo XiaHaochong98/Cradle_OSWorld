@@ -418,7 +418,7 @@ class PipelineRunner():
             logger.warn(f"No {constants.IMAGE_DESCRIPTION} in response.")
             image_description = "No description"
             screen_classification = "None"
-            
+
         self.memory.add_recent_history(constants.IMAGE_DESCRIPTION, image_description)
 
         logger.write('Gather Information response: ', data['res_dict'])
@@ -683,7 +683,7 @@ def pre_process_skill_steps(skill_steps: list, som_map) -> list:
             args_suffix_str = tokens[1]
             func_str = tokens[0]
             label_id = str(args_suffix_str.split('label_id=')[1].split(',')[0].split(')')[0]).replace("'", "").replace('"', "").replace(" ", "")
-            
+
             if label_id in som_map:
                 x, y = normalize_coordinates(som_map[label_id])
                 args_suffix_str = args_suffix_str.replace(f'label_id={label_id}', f'x={x}, y={y}').replace(",)", ")")

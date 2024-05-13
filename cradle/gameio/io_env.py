@@ -268,7 +268,7 @@ class IOEnvironment(metaclass=Singleton):
 
     def mouse_move_normalized(self, x, y, relative = False, from_center = False):
 
-        logger.debug(f'noormalized game coord x {x} y {y} relative {relative} fc {from_center}')
+        logger.debug(f'Noormalized game coord x {x} y {y} relative {relative} fc {from_center}')
 
         w, h = config.env_resolution
 

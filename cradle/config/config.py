@@ -206,17 +206,12 @@ class Config(metaclass=Singleton):
 
         if len(named_windows) == 0 or len(named_windows) > 1:
             self._config_warn(f'-----------------------------------------------------------------')
-            self._config_warn(f'Cannot find unique env window nor pattern: {self.env_name}|{self.win_name_pattern}. Assuming this is an offline test run!')
+            self._config_warn(f'Cannot find unique env window nor pattern: {self.env_name}|{self.win_name_pattern}|{len(named_windows)}. Assuming this is an offline test run!')
             self._config_warn(f'-----------------------------------------------------------------')
         else:
             env_window = named_windows[0]
 
-            # Check if pre-resize is necessary
-            if not self._min_resolution_check(env_window) or not self._aspect_ration_check(env_window):
-                env_window.resizeTo(self.DEFAULT_ENV_RESOLUTION[0], self.DEFAULT_ENV_RESOLUTION[1])
-
-            assert self._min_resolution_check(env_window), 'The resolution of env window should at least be 1920 X 1080.'
-            assert self._aspect_ration_check(env_window), 'The screen ratio should be 16:9.'
+            cradle.gameio.gui_utils.check_window_conditions(env_window)
 
         self.env_window = env_window
         self.env_resolution = (env_window.width, env_window.height)
