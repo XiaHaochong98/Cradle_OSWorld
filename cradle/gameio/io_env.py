@@ -284,7 +284,7 @@ class IOEnvironment(metaclass=Singleton):
 
     # If either relative or not, always pass in-game coordinates
     # This implementation is not fully functional and was intended to address game-category specific issues first
-    def mouse_move(self, x, y, duration = -1, relative=False):
+    def mouse_move(self, x, y, duration = -1, relative = False):
         mouse_move_to(x, y, duration, relative, config.screen_resolution, config.env_region)
 
 

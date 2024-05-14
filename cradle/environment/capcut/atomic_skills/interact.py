@@ -35,10 +35,12 @@ def mouse_drag(source_x, source_y, target_x, target_y, mouse_button):
     - source_y: The normalized y-coordinate of the soruce position. The value should be between 0 and 1.
     - target_x: The normalized x-coordinate of the target position. The value should be between 0 and 1.
     - target_y: The normalized y-coordinate of the target position. The value should be between 0 and 1.
-    - mouse_button: The mouse button to be clicked. It should be one of the following values: "left", "right", "middle".
+    - mouse_button: The mouse button to be held during drag. It should be one of the following values: "left", "right", "middle".
     """
+    delta = 0.002
     io_env.mouse_move_normalized(source_x, source_y)
     io_env.mouse_hold_button(mouse_button)
+    io_env.mouse_move_normalized(target_x + delta, target_y + delta)  # Workaround for drag issue in some applications
     io_env.mouse_move_normalized(target_x, target_y)
     io_env.mouse_release_button(mouse_button)
 

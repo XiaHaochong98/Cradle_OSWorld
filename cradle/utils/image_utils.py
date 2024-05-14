@@ -514,7 +514,7 @@ def plot_som(screenshot_filename, bounding_boxes):
     org_img = Image.open(screenshot_filename)
     draw = ImageDraw.Draw(org_img)
     font_path = "arial.ttf"
-    font_size, padding = 24, 2
+    font_size, padding = 20, 2
     font = ImageFont.truetype(font_path, font_size)
 
     # Create a color cycle using one of the categorical color palettes in matplotlib
@@ -536,7 +536,7 @@ def plot_som(screenshot_filename, bounding_boxes):
         )
 
         bbox_padding = 0
-        bbox_border = 5
+        bbox_border = 3
         color = color_cycle[i % len(color_cycle)]
         draw.rectangle(
             [

@@ -21,15 +21,12 @@ def _isWin():
 
 
 if _isWin():
-    from ahk import AHK
     import pydirectinput
 
     # Windows API constants
     MOUSEEVENTF_MOVE = 0x0001
     MOUSEEVENTF_ABSOLUT = 0x8000
     WIN_NORM_MAX = 65536 # int max val
-
-    ahk = AHK()
 
     # PyDirectInput is only used for key pressing, so no need for mouse checks
     pydirectinput.FAILSAFE = False
@@ -311,31 +308,27 @@ class TargetWindow():
 
 
 def mouse_button_down(button):
-    if _isWin():
-        ahk.click(button=button, direction='D')
-    else:
-        pyautogui.mouseDown(button=button, duration=0.2)
+    pyautogui.mouseDown(button=button, duration=0.2)
 
 
 def mouse_button_up(button):
-    if _isWin():
-        ahk.click(button=button, direction='U')
-    else:
-        pyautogui.mouseUp(button=button, duration=0.2)
+    pyautogui.mouseUp(button=button, duration=0.2)
 
 
 def mouse_click(click_count, button, relative=False):
-    if _isWin():
-        ahk.click(click_count=click_count, button=button, relative=relative)
-    else:
-        for i in range(click_count):
-            mouse_button_down(button)
-            mouse_button_up(button)
+    for i in range(click_count):
+        mouse_button_down(button)
+        mouse_button_up(button)
 
 
 def mouse_move_to(x, y, duration = -1, relative = False, screen_resolution = None, env_region = None):
 
     if _isWin():
+
+        if duration > -1:
+            raise ValueError("Duration is not yet supported on Windows.")
+
+        timestamp = 0
         extra = ctypes.c_ulong(0)
         ii_ = Input_I()
 
@@ -355,10 +348,11 @@ def mouse_move_to(x, y, duration = -1, relative = False, screen_resolution = Non
 
             # logger.debug(f'windows x {x} y {y}')
 
-        ii_.mi = MouseInput(int(x), int(y), 0, event_flag, 0, ctypes.pointer(extra))
+        ii_.mi = MouseInput(int(x), int(y), 0, event_flag, timestamp, ctypes.pointer(extra))
 
         command = Input(ctypes.c_ulong(0), ii_)
         ctypes.windll.user32.SendInput(1, ctypes.pointer(command), ctypes.sizeof(command))
+
     else:
         if relative == True:
             pyautogui.move(x, y, duration=duration)
@@ -367,11 +361,8 @@ def mouse_move_to(x, y, duration = -1, relative = False, screen_resolution = Non
 
 
 def get_mouse_location():
-    if _isWin():
-        return ahk.get_mouse_position()
-    else:
-        p = pyautogui.position()
-        return (p.x, p.y)
+    p = pyautogui.position()
+    return (p.x, p.y)
 
 
 def key_down(key):
