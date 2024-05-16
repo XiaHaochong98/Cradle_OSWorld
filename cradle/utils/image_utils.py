@@ -259,7 +259,7 @@ def process_image_for_masks(original_image: Image) -> list[np.ndarray]:
     Returns:
     A list of numpy.ndarrays, each representing a unique mask.
     """
-    logger.debug("starting...")
+    # logger.debug("starting...")
     original_image_np = np.array(original_image)
 
     # Assume the last channel is the alpha channel if the image has 4 channels

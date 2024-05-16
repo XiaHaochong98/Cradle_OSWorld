@@ -1,7 +1,6 @@
 from cradle.config import Config
 from cradle.log import Logger
 from cradle.gameio import IOEnvironment
-
 from cradle.environment.rdr2.lifecycle.ui_control import (segment_minimap,
                                                           switch_to_game,
                                                           pause_game,

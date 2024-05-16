@@ -1,7 +1,9 @@
 import json
 import re
+from typing import Optional, Tuple
 
 from cradle import constants
+from cradle.utils.string_utils import contains_punctuation, is_numbered_bullet_list_item
 
 
 def load_json(file_path):
@@ -56,6 +58,27 @@ def parse_semi_formatted_json(json_string):
     return obj
 
 
+def _is_line_key_candidate(line: str) -> Tuple[bool, Optional[str]]:
+
+    result = False
+    likely_key = None
+
+    if line.endswith(':'):
+
+        # Cannot have other previous punctuation, except if it's a numbered bullet list item
+        num_idx = is_numbered_bullet_list_item(line)
+
+        post_num_idx = 0
+        if num_idx > -1:
+            post_num_idx = num_idx
+
+        likely_key = line[post_num_idx:-1].strip()
+        result = not contains_punctuation(likely_key)
+
+    return result, likely_key
+
+
+### Parses the semi-formatted text from model response
 def parse_semi_formatted_text(text):
 
     lines = text.split('\n')
@@ -69,10 +92,13 @@ def parse_semi_formatted_text(text):
 
     for line in lines:
 
-        line = line.replace("**", "") # Remove bold in Markdown formatting
+        line = line.replace("**", "") # Remove unnecessary in Markdown formatting
+
+        is_key, key_candidate = _is_line_key_candidate(line)
 
         # Check if the line indicates a new key
-        if line.endswith(":") and in_code_flag == False:
+        if  is_key and in_code_flag == False:
+
             # If there's a previous key, process its values
             if current_key and current_key == constants.ACTION_GUIDANCE:
                 result_dict[current_key] = parsed_data
@@ -80,7 +106,7 @@ def parse_semi_formatted_text(text):
                 result_dict[current_key] = '\n'.join(current_value).strip()
 
             try:
-                current_key = line.rstrip(':').lower()
+                current_key = key_candidate.replace(" ", "_").lower()
             except Exception as e:
                 # logger.error(f"Response is not in the correct format: {e}\nReceived text was: {text}")
                 raise
