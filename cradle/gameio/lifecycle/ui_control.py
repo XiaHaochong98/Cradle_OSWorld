@@ -53,8 +53,17 @@ def check_active_window():
     if result == False:
         named_windows = io_env.get_windows_by_config()
 
+        active_win = _get_active_window()
+
+        # Workaround for dialogs until we can map sub-window to window/process
+        dialog_names = ["Open", "Save", "Save As", "Select a media resource"]
+
+        if active_win.title in dialog_names:
+             logger.debug(f"Dialog {active_win} is open and active.")
+             result = True
+
         # Temporary hardcode due to CapCut behaviour of creating new windows under some actions
-        if "CapCut" in config.env_name:
+        if result == False and "CapCut" in config.env_name:
 
             x, y = config.env_window.left, config.env_window.top
 
@@ -65,16 +74,6 @@ def check_active_window():
             switch_to_game()
             result = True
             logger.debug(f"Active window check after app-specific re-acquiring: {result}")
-
-        active_win = _get_active_window()
-
-        # Workaround for dialogs until we can map sub-window to window/process
-        if result == False:
-            dialog_names = ["Open", "Save", "Save As", "Select a media resource"]
-
-            if active_win.title in dialog_names:
-                logger.debug(f"Dialog {active_win} is open and active.")
-                result = True
 
         # Check if it's a new window beloging to same original process
         if result == False:

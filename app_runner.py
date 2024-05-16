@@ -354,7 +354,7 @@ class PipelineRunner():
         previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
         current_augmentation = {}
         current_augmentation[constants.AUG_BASE_IMAGE_PATH] = cur_screenshot_path
-        
+
         # record the last collected mouse position
         mouse_position = kget(params, 'mouse_position')
         if mouse_position:
@@ -375,7 +375,7 @@ class PipelineRunner():
             )
         else:
             image_same_flag = mouse_position_same_flag = False # Assume false for the first run to generate augmentation image
-        
+
         if config.show_mouse_in_screenshot and mouse_position:
             if mouse_position_same_flag:
                 current_augmentation[constants.AUG_MOUSE_IMG_PATH] = previous_augmentation[constants.AUG_MOUSE_IMG_PATH]
@@ -393,7 +393,7 @@ class PipelineRunner():
                 current_augmentation[constants.AUG_SOM_IMAGE_PATH] = som_img_path
                 current_augmentation[constants.AUG_SOM_MAP] = som_map
                 current_augmentation[constants.LENGTH_OF_SOM_MAP] = len(som_map.keys())
-                
+
             input["image_introduction"][0]["path"] = current_augmentation[constants.AUG_SOM_IMAGE_PATH]
             input[constants.LENGTH_OF_SOM_MAP] = current_augmentation[constants.LENGTH_OF_SOM_MAP]
 
@@ -441,7 +441,7 @@ class PipelineRunner():
             logger.warn(f"No {constants.IMAGE_DESCRIPTION} in response.")
             current_augmentation[constants.IMAGE_DESCRIPTION] = "No description"
             current_augmentation[constants.SCREEN_CLASSIFICATION] = "None"
-        
+
         if constants.IMAGE_DESCRIPTION_OF_BOUNDING_BOXES in response_keys and config.use_sam_flag:
             image_description_of_bounding_boxes = data['res_dict'][constants.IMAGE_DESCRIPTION_OF_BOUNDING_BOXES]
             current_augmentation[constants.IMAGE_DESCRIPTION_OF_BOUNDING_BOXES] = image_description_of_bounding_boxes.replace("\n", " ")
@@ -719,7 +719,7 @@ def pre_process_skill_steps(skill_steps: List[str], som_map: Dict) -> List[str]:
             func_str = tokens[0]
             label_key = 'label_id=' if 'label_id=' in args_suffix_str else 'label='
             label_id = str(args_suffix_str.split(label_key)[1].split(',')[0].split(')')[0]).replace("'", "").replace('"', "").replace(" ", "")
-            
+
             if label_id in som_map:
                 x, y = normalize_coordinates(som_map[label_id])
                 args_suffix_str = args_suffix_str.replace(f'{label_key}{label_id}', f'x={x}, y={y}').replace(",)", ")")
@@ -746,7 +746,7 @@ def pre_process_skill_steps(skill_steps: List[str], som_map: Dict) -> List[str]:
                 target_x, target_y = normalize_coordinates(som_map[target_label_id])
                 args_suffix_str = args_suffix_str.replace(f'source_label_id={source_label_id}', f'source_x={source_x}, source_y={source_y}')
                 args_suffix_str = args_suffix_str.replace(f'target_label_id={target_label_id}', f'target_x={target_x}, target_y={target_y}').replace(",)", ")")
-                
+
                 processed_skill_steps.append(f'drag_mouse({args_suffix_str} # source_label_id={source_label_id}, target_label_id={target_label_id}')
             else:
                 missing_ids = [label_id for label_id in [source_label_id, target_label_id] if label_id not in som_map]
