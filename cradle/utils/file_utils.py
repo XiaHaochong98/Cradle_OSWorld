@@ -1,6 +1,6 @@
 import glob
 import os
-
+import shutil
 
 def assemble_project_path(path):
     """Assemble a path relative to the project root directory"""
@@ -50,3 +50,14 @@ def get_latest_directories_in_path(path, count = 1):
 
     else:
         return None
+
+
+def copy_file(source_file: str, destination_file: str):
+
+    if not os.path.exists(os.path.dirname(destination_file)):
+        raise FileNotFoundError(f"Destination directory does not exist: {os.path.dirname(destination_file)}")
+
+    if os.path.exists(destination_file):
+        raise FileExistsError(f"Destination file already exists: {destination_file}")
+
+    shutil.copy2(source_file, destination_file)

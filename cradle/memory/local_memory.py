@@ -46,8 +46,10 @@ class LocalMemory(BaseMemory):
                                "skill_library":[],
                                "summarization":"The user is using the target application on the PC.",
                                "long_horizon_task":"",
-                               "last_task_guidance":"",
-                               "last_task_duration": self.task_duration}
+                               constants.LAST_TASK_GUIDANCE:"",
+                               "last_task_duration": self.task_duration,
+                               constants.KEY_REASON_OF_LAST_ACTION:[],
+                               constants.SUCCESS_DETECTION:[],}
 
 
     def add_recent_history(
@@ -73,7 +75,7 @@ class LocalMemory(BaseMemory):
 
         if len(self.recent_history[key]) == 0:
             return [""]
-        
+
         if k is None:
             k = 1
 

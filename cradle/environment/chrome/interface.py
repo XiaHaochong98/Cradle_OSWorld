@@ -70,7 +70,9 @@ class Interface():
             "return_to_previous_page",
             "press_keys_combined",
             "click_on_label",
-            "go_back_to_target_application"
+            "go_back_to_target_application",
+            "zoom_in",
+            "zoom_out",
         ]
 
         # init task description

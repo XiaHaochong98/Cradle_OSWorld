@@ -94,9 +94,9 @@ def return_to_previous_page():
     """
     Return to the previous page.
     """
-    
+
     io_env.key_press("alt, left")
-    
+
 
 @register_skill("go_back_to_target_application")
 def go_back_to_target_application():
@@ -109,6 +109,22 @@ def go_back_to_target_application():
     post_skill_wait(config.DEFAULT_POST_ACTION_WAIT_TIME)
 
 
+@register_skill("zoom_in")
+def zoom_in():
+    """
+    zoom in the page.
+    """
+    io_env.key_press("ctrl, =")
+
+
+@register_skill("zoom_out")
+def zoom_out():
+    """
+    zoom out the page.
+    """
+    io_env.key_press("ctrl, -")
+
+
 __all__ = [
     "go_back_to_target_application",
     "click_at_position",
@@ -117,5 +133,7 @@ __all__ = [
     "press_keys_combined",
     "type_text",
     "save_page",
-    "return_to_previous_page"
+    "return_to_previous_page",
+    "zoom_in",
+    "zoom_out",
 ]

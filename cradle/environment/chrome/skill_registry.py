@@ -37,7 +37,9 @@ BASIC_SKILLS = [
     "press_key",
     "press_keys_combined",
     "click_on_label",
-    "go_back_to_target_application"
+    "go_back_to_target_application",
+    "zoom_in",
+    "zoom_out",
 ]
 DENY_LIST_TERMS = []
 ALLOW_LIST_TERMS = []

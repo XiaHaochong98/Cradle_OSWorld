@@ -23,9 +23,11 @@ LAST_TASK_GUIDANCE = 'last_task_guidance'
 LAST_TASK_HORIZON = 'task_horizon'
 TASK_DESCRIPTION = 'task_description'
 
-# Two instances of augmentation info dict
-PREVIOUS_AUGMENTATION_INFO = "previous_augmentation_info"
-CURRENT_AUGMENTATION_INFO = "current_augmentation_info"
+# Parameters for each app task_description
+TASK_DESCRIPTION_LIST = 'task_description_list'
+TASK_DESCRIPTION = 'task_description'
+SUB_TASK_DESCRIPTION_LIST = 'sub_task_description_list'
+
 
 # SAM2SOM parameters
 SAM2SOM_CONFIG = 'sam2som_config'
@@ -33,6 +35,10 @@ SAM_PRED_IOU_THRESH = 'sam_pred_iou_thresh'
 SAM_RESIZE_RATIO = 'sam_resize_ratio'
 SAM_CONTRAST_LEVEL = 'sam_contrast_level'
 SAM_MAX_AREA = 'sam_max_area'
+
+# Two instances of augmentation info dict
+PREVIOUS_AUGMENTATION_INFO = "previous_augmentation_info"
+CURRENT_AUGMENTATION_INFO = "current_augmentation_info"
 
 # Augmentation info dict attributes
 IMAGE_DESCRIPTION = 'image_description'
@@ -46,7 +52,7 @@ AUG_SOM_IMAGE_PATH = 'som_image_path'
 AUG_SOM_MAP = 'som_map'
 LENGTH_OF_SOM_MAP = 'length_of_som_map'
 
-# SAME_FLAG between two image to check whether som_image should be generated agin or not 
+# SAME_FLAG between two image to check whether som_image should be generated agin or not
 IMAGE_SAME_FLAG = "image_same_flag"
 MOUSE_POSITION_SAME_FLAG = "mouse_position_same_flag"
 
@@ -89,3 +95,12 @@ ERRORS_INFO = 'errors_info'
 
 # info in pre process action
 INVALID_BBOX = 'invalid_bbox'
+
+# response for the self reflection
+SELF_REFLECTION_REASONING = 'self_reflection_reasoning'
+SUCCESS_DETECTION = 'success_detection'
+
+# response for the decision making
+DECISION_MAKING_REASONING = 'decision_making_reasoning'
+ACTION = 'action'
+KEY_REASON_OF_LAST_ACTION = 'key_reason_of_last_action'

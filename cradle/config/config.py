@@ -130,12 +130,12 @@ class Config(metaclass=Singleton):
         """Load environment specific configuration."""
 
         path = assemble_project_path(env_config_path)
-        env_config = load_json(path)
+        self.env_config = load_json(path)
 
-        self.env_name = kget(env_config, constants.ENVIRONMENT_NAME, default='')
-        self.win_name_pattern = kget(env_config, constants.ENVIRONMENT_WINDOW_NAME_PATTERN, default='')
-        self.env_sub_path = kget(env_config, constants.ENVIRONMENT_SHORT_NAME, default='')
-        self.env_short_name = kget(env_config, constants.ENVIRONMENT_SUB_PATH, default='')
+        self.env_name = kget(self.env_config, constants.ENVIRONMENT_NAME, default='')
+        self.win_name_pattern = kget(self.env_config, constants.ENVIRONMENT_WINDOW_NAME_PATTERN, default='')
+        self.env_sub_path = kget(self.env_config, constants.ENVIRONMENT_SHORT_NAME, default='')
+        self.env_short_name = kget(self.env_config, constants.ENVIRONMENT_SUB_PATH, default='')
 
         # Base resolution and region for the game in 4k, used for angle scaling
         self.base_resolution = (3840, 2160)
@@ -155,7 +155,7 @@ class Config(metaclass=Singleton):
         self.skill_scope = 'Full' #'Full', 'Basic', and None
 
         # SAM2SOM parameters for specif app
-        sam2som_config = kget(env_config, constants.SAM2SOM_CONFIG,
+        sam2som_config = kget(self.env_config, constants.SAM2SOM_CONFIG,
                                  default={constants.SAM_PRED_IOU_THRESH: self.sam_pred_iou_thresh,
                                           constants.SAM_RESIZE_RATIO: self.sam_resize_ratio,
                                           constants.SAM_CONTRAST_LEVEL: self.sam_contrast_level,
