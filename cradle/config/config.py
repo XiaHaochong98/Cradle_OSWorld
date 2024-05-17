@@ -151,7 +151,7 @@ class Config(metaclass=Singleton):
         self.skill_from_local = True
         self.skill_local_path = './res/' + self.env_sub_path + '/skills/'
         self.skill_retrieval = False
-        self.skill_num = 10
+        self.skill_num = 20  # 10
         self.skill_scope = 'Full' #'Full', 'Basic', and None
 
         # SAM2SOM parameters for specif app
@@ -207,13 +207,15 @@ class Config(metaclass=Singleton):
         # Get window candidates by name alternatives
         named_windows = cradle.gameio.gui_utils.get_named_windows_fallback(self.env_name, self.win_name_pattern)
 
-        if len(named_windows) == 0 or len(named_windows) > 1:
+        if len(named_windows) == 0:
             self._config_warn(f'-----------------------------------------------------------------')
-            self._config_warn(f'Cannot find unique env window nor pattern: {self.env_name}|{self.win_name_pattern}|{len(named_windows)}. Assuming this is an offline test run!')
+            self._config_warn(f'Cannot find env window: {self.env_name}|{self.win_name_pattern}. Assuming this is an offline test run!')
             self._config_warn(f'-----------------------------------------------------------------')
         else:
-            env_window = named_windows[0]
+            if len(named_windows) > 1:
+                self._config_warn(f'Cannot find unique env window: {self.env_name}|{self.win_name_pattern}. Using index 0.')
 
+            env_window = named_windows[0]
             cradle.gameio.gui_utils.check_window_conditions(env_window)
 
         self.env_window = env_window

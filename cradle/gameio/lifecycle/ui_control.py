@@ -67,13 +67,14 @@ def check_active_window():
 
             x, y = config.env_window.left, config.env_window.top
 
-            config.env_window = named_windows[0]
-            check_window_conditions(config.env_window)
-            config.env_window = config.env_window.moveTo(x, y)
+            if len(named_windows) > 0:
+                config.env_window = named_windows[0]
+                check_window_conditions(config.env_window)
+                config.env_window = config.env_window.moveTo(x, y)
 
-            switch_to_game()
-            result = True
-            logger.debug(f"Active window check after app-specific re-acquiring: {result}")
+                switch_to_game()
+                result = True
+                logger.debug(f"Active window check after app-specific re-acquiring: {result}")
 
         # Check if it's a new window beloging to same original process
         if result == False:
