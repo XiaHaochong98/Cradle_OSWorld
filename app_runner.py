@@ -424,7 +424,7 @@ class PipelineRunner():
 
             if mouse_position and config.show_mouse_in_screenshot:
                 if mouse_position_same_flag and image_same_flag:
-                    current_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH] = current_augmentation[constants.AUG_SOM_IMAGE_PATH].replace(".jpg", f"_with_mouse.jpg")
+                    current_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH] = current_augmentation[constants.AUG_SOM_IMAGE_PATH].replace(".jpg", f"_som_with_mouse.jpg")
                     copy_file(previous_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH], current_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH])
                 else:
                     current_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH] = draw_mouse_pointer_file(current_augmentation[constants.AUG_SOM_IMAGE_PATH], mouse_x, mouse_y)
@@ -433,7 +433,7 @@ class PipelineRunner():
         if previous_augmentation is None:
             previous_augmentation = current_augmentation.copy()
 
-        self.memory.add_recent_history(constants.AUGMENTED_IMAGES_MEM_BUCKET, {cur_screenshot_path: current_augmentation})
+        self.memory.add_recent_history(constants.AUGMENTED_IMAGES_MEM_BUCKET, current_augmentation)
 
         # Configure the gather_information module
         gather_information_configurations = {

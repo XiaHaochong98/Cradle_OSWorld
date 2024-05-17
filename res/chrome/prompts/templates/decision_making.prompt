@@ -12,6 +12,12 @@ Memory examples:
 
 <$image_introduction$>
 
+Description of current screenshot:
+<$image_description$>
+
+Description of label IDs:
+<$image_description_of_bounding_boxes$>
+
 Last executed action:
 <$previous_action$>
 
@@ -36,7 +42,7 @@ Pay attention to all UI items and contents in the image. DO NOT make assumptions
 Decision_Making_Reasoning: You should think step by step and provide detailed reasoning to determine the next action executed on the current state of the task.
     1. You should first describe each item in the screen line by line, from the top left and moving right. Is the target item in the current screen?
     2. Check whether the UI element you want to operate exists in the current screenshot. If not, you can choose to return to the previous page or reopen a tab.
-    3. Prioritize keyboard actions, such as using shortcut keys or pressing Enter, instead of mouse actions whenever possible, please specify what they are.
+    3. Are there any keyboard actions, such as using shortcut keys or pressing Enter, to replace mouse actions where possible? Always try pressing Enter first instead of clicking it with the mouse, if the button you want to click is active.
     4. If a mouse cursor is present in the image, describe near which ID-labeled bounding box the cursor's tip is located, not the center of the cursor.
     5. In the current screenshot, identify the label ID of the bounding box most relevant to the current task. If there is text within this bounding box, please provide the text.
     6. If mouse actions are necessary, use that specify bounding box label ID (if shown in the current screenshot) as parameter, rather than directly generating normalized x and y coordinates. If there is any relevant label ID, please specify which it is.
@@ -50,11 +56,12 @@ Decision_Making_Reasoning: You should think step by step and provide detailed re
 Actions: The best action, or short sequence of actions without gaps, to execute next to progress in achieving the goal. Pay attention to the names of the available skills and the previous skills already executed, if any. Pay special attention to the coordinates of any action that needs them. Do not make assumptions about the location of UI elements or their coordinates, analyse in detail any provided images. You should also pay more attention to the following action rules:
     1. If "<$success_detection$>" means the entire task was successful or equal to "True", then output action MUST be empty like ''.
     2. You should output actions in Python code format and specify any necessary parameters to execute that action. If the function has parameters, you should also include their names and decide their values, like "press_shift(duration=1)". If it does not have a parameter, just output the action, like "release_mouse_buttons()".
-    3. Before typing text, ensure that the last executed action involved clicking on the relevant input box. If the last action was not a click on this input box, the required action MUST be to click on the corresponding input box before proceeding.
-    4. Given the current situation and task, you should only choose the most suitable action from the valid action set. You cannot use actions that are not in the valid action set to control the application.
-    5. When you decide to perform a mouse action, if there is bounding box in the current screenshot, you MUST choose skill click_on_label(label_id, mouse_button).
-    6. When you perform a mouse action, always select the target UI element closest to the UI element of the previous action for operation.
-    7. When you decide to operate on a file, such as downloading it, please pay attention to the path and name of the current file.
+    3. Prioritize keyboard actions, such as using shortcut keys or pressing Enter, instead of mouse actions whenever possible.
+    4. Before typing text, ensure that the last executed action involved clicking on the relevant input box. If the last action was not a click on this input box, the required action MUST be to click on the corresponding input box before proceeding.
+    5. Given the current situation and task, you should only choose the most suitable action from the valid action set. You cannot use actions that are not in the valid action set to control the application.
+    6. When you decide to perform a mouse action, if there is bounding box in the current screenshot, you MUST choose skill click_on_label(label_id, mouse_button).
+    7. When you perform a mouse action, always select the target UI element closest to the UI element of the previous action for operation.
+    8. When you decide to operate on a file, such as downloading it, please pay attention to the path and name of the current file.
 
 Key_reason_of_last_action: Summarize the key reasons why you output this action.
 
