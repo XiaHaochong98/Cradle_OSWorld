@@ -390,7 +390,7 @@ def get_screen_size():
 def check_window_conditions(env_window: TargetWindow):
             # Check if pre-resize is necessary
             if not config._min_resolution_check(env_window) or not config._aspect_ration_check(env_window):
-                env_window.resizeTo(config.DEFAULT_ENV_RESOLUTION[0], config.DEFAULT_ENV_RESOLUTION[1])
+                env_window = env_window.resizeTo(config.DEFAULT_ENV_RESOLUTION[0], config.DEFAULT_ENV_RESOLUTION[1])
 
             assert config._min_resolution_check(env_window), 'The resolution of env window should at least be 1920 X 1080.'
             assert config._aspect_ration_check(env_window), 'The screen ratio should be 16:9.'
