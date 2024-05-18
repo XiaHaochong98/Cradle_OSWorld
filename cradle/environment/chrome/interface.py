@@ -61,6 +61,7 @@ class Interface():
         }
 
         # init skill library
+        # @ Pengjie register skills here
         self.skill_library = [
             "click_at_position",
             "mouse_drag",

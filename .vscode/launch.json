@@ -15,7 +15,7 @@
             },
             "args": [
                      "--providerConfig", "./conf/openai_config.json",
-                     "--envConfig", "./conf/env_config_outlook.json",
+                     "--envConfig", "./conf/env_config_chrome.json",
                      // "--providerConfig", "./conf/azure_vis_config.json",
                     ],
             // "justMyCode": true

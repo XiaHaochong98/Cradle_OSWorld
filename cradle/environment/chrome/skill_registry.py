@@ -28,6 +28,7 @@ SKILL_CODE_KEY = 'skill_code'
 SKILL_CODE_HASH_KEY = 'skill_code_base64'
 EXPL_SKILL_LIB_FILE='skill_lib.json'
 BASIC_SKILL_LIB_FILE='skill_lib_basic.json'
+# @ Pengjie register skills here
 BASIC_SKILLS = [
     "click_at_position",
     "mouse_drag",

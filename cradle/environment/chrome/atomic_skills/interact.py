@@ -8,6 +8,7 @@ config = Config()
 logger = Logger()
 io_env = IOEnvironment()
 
+# @ Pengjie Add skills Here
 
 @register_skill("click_at_position")
 def click_at_position(x, y, mouse_button):
@@ -124,6 +125,7 @@ def zoom_out():
     """
     io_env.key_press("ctrl, -")
 
+# @ Pengjie register skills here
 
 __all__ = [
     "go_back_to_target_application",
