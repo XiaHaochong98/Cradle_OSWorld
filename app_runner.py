@@ -25,7 +25,6 @@ from cradle.utils.dict_utils import kget
 from cradle.utils.image_utils import calculate_pixel_diff
 from cradle.utils.file_utils import copy_file
 # osworld
-import lib_run_single
 from cradle.environment.osworld.desktop_env.envs.desktop_env import DesktopEnv
 
 config = Config()
@@ -236,13 +235,17 @@ class PipelineRunner():
         # switch_to_game()
 
         # First sense
-        cur_screenshot_path, _ = self.gm.capture_screen() # @Pengjie: This is the first sense, we need to capture the screen here
-        mouse_x, mouse_y = io_env.get_mouse_position()
+        # cur_screenshot_path, _ = self.gm.capture_screen() # @Pengjie: This is the first sense, we need to capture the screen here
+        # mouse_x, mouse_y = io_env.get_mouse_position()
+        obs, reward, done, info = env.step([], args.sleep_after_execution)
+        # get screenshot from obs
+        cur_screenshot_path = obs['screenshot']
+
         time.sleep(2)
 
         params.update({
             "cur_screenshot_path": cur_screenshot_path,
-            "mouse_position" : (mouse_x, mouse_y),
+            # "mouse_position" : (mouse_x, mouse_y),
             "exec_info": {
                 "errors": False,
                 "errors_info": ""
@@ -253,6 +256,7 @@ class PipelineRunner():
             "task_description": self.task_description,
             "summarization": "",
             f"{constants.PREVIOUS_AUGMENTATION_INFO}": None,
+            "osworld_env": env
         })
 
         while not self.stop_flag and step_idx < max_steps :
@@ -292,7 +296,15 @@ class PipelineRunner():
                 self.pipeline_shutdown()
                 break
 
-        self.pipeline_shutdown()
+            step_idx += 1
+
+        result = env.evaluate()
+        logger.info("Result: %.2f", result)
+        scores.append(result)
+        with open(os.path.join(example_result_dir, "result.txt"), "w", encoding="utf-8") as f:
+            f.write(f"{result}\n")
+        env.controller.end_recording(os.path.join(example_result_dir, "recording.mp4"))
+        # self.pipeline_shutdown()
 
     def osworld_config(self) -> argparse.Namespace:
         parser = argparse.ArgumentParser(
@@ -500,9 +512,11 @@ class PipelineRunner():
         previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
         current_augmentation = {}
         current_augmentation[constants.AUG_BASE_IMAGE_PATH] = cur_screenshot_path
+        # For osworld, we don't need to draw mouse pointer
+        # # record the last collected mouse position
+        # mouse_position = kget(params, 'mouse_position')
+        mouse_position= None
 
-        # record the last collected mouse position
-        mouse_position = kget(params, 'mouse_position')
         if mouse_position:
             mouse_x, mouse_y = mouse_position
             current_augmentation[constants.AUG_MOUSE_X] = mouse_x
@@ -621,6 +635,7 @@ class PipelineRunner():
         pre_action = params["pre_action"]
         pre_self_reflection_reasoning = params["pre_self_reflection_reasoning"]
         success_detection = params[constants.SUCCESS_DETECTION]
+        env=params['osworld_env']
 
         # Decision making preparation
         input = deepcopy(self.planner.decision_making_.input_map)
@@ -720,18 +735,29 @@ class PipelineRunner():
             self.stop_flag = True
             logger.write(f'Empty action count reached {self.count_empty_action_threshold} times. Task is considered successful.')
 
-        exec_info = self.gm.execute_actions(skill_steps)
+        # osworld execute actions
+        # exec_info = self.gm.execute_actions(skill_steps)
+        for skill in skill_steps:
+            logger.info("Step %d: %s", step_idx + 1, action)
+            obs, reward, self.stop_flag, info = env.step(skill, 0.0)
 
+            logger.info("Reward: %.2f", reward)
+            logger.info("Done: %s", done)
+            # Save screenshot and trajectory information
+            with open(os.path.join(example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png"),
+                      "wb") as _f:
+                _f.write(obs['screenshot'])
+        cur_screenshot_path = obs['screenshot']
         # Sense here to avoid changes in state after action execution completes
 
         # First, check if interaction left the target environment
-        if not self.gm.check_active_window():
-            logger.warn(f"Target environment window is no longer active!")
-            cur_screenshot_path = self.gm.get_out_screen() # @Pengjie: This is screen capture when the target window is no longer active
-        else:
-            cur_screenshot_path, _ = self.gm.capture_screen() # @Pengjie: This is screen capture after action execution
-
-        mouse_x, mouse_y = io_env.get_mouse_position()
+        # if not self.gm.check_active_window():
+        #     logger.warn(f"Target environment window is no longer active!")
+        #     cur_screenshot_path = self.gm.get_out_screen() # @Pengjie: This is screen capture when the target window is no longer active
+        # else:
+        #     cur_screenshot_path, _ = self.gm.capture_screen() # @Pengjie: This is screen capture after action execution
+        # get screenshot from obs
+        # mouse_x, mouse_y = io_env.get_mouse_position()
 
         # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
         pre_action = exec_info[constants.EXECUTED_SKILLS]
@@ -746,7 +772,8 @@ class PipelineRunner():
             "pre_decision_making_reasoning": pre_decision_making_reasoning,
             "exec_info": exec_info,
             "cur_screenshot_path": cur_screenshot_path,
-            "mouse_position" : (mouse_x, mouse_y),
+            # "mouse_position" : (mouse_x, mouse_y),
+            "mouse_position": None,
             f"{constants.PREVIOUS_AUGMENTATION_INFO}" : previous_augmentation,
         }
 
