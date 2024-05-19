@@ -87,6 +87,8 @@ class GameManager:
     def get_skill_library_in_code(self, skill) -> Tuple[str, str]:
         return self.skill_registry.get_skill_library_in_code(skill)
 
+    def get_skill_source_code(self, skill) -> str:
+        return self.skill_registry.get_skill_source_code(skill)
 
     def execute_navigation(self, action):
 

@@ -741,8 +741,10 @@ class PipelineRunner():
 
             # assamble the skill to a script for osworld
             import_source="import pyautogui"
-            skill_scource =
-
+            skill_source_code = self.gm.get_skill_source_code(skill)
+            skill_execution= skill
+            skill_script = f"{import_source}\n{skill_source_code}\n{skill_execution}"
+            logger.write(f"Skill script: {skill_script}")
             obs, reward, self.stop_flag, info = env.step(skill_script, 0.0)
 
             logger.info("Reward: %.2f", reward)
