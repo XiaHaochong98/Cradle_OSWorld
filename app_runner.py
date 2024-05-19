@@ -237,7 +237,6 @@ class PipelineRunner():
         # First sense
         # cur_screenshot_path, _ = self.gm.capture_screen() # @Pengjie: This is the first sense, we need to capture the screen here
         # mouse_x, mouse_y = io_env.get_mouse_position()
-        obs, reward, done, info = env.step([], args.sleep_after_execution)
         # get screenshot from obs
         cur_screenshot_path = obs['screenshot']
 
