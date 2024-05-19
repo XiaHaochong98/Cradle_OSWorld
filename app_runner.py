@@ -24,6 +24,9 @@ import cradle.environment.feishu
 from cradle.utils.dict_utils import kget
 from cradle.utils.image_utils import calculate_pixel_diff
 from cradle.utils.file_utils import copy_file
+# osworld
+import lib_run_single
+from cradle.environment.osworld.desktop_env.envs.desktop_env import DesktopEnv
 
 config = Config()
 logger = Logger()
@@ -44,6 +47,19 @@ class PipelineRunner():
         self.use_self_reflection = use_self_reflection
         self.use_information_summary = use_information_summary
 
+        # Success flag
+        self.stop_flag = False
+
+        # Count the number of turns
+        self.count_turns = 0
+        # Count the consecutive times the action is empty
+        self.count_empty_action = 0
+        self.count_empty_action_threshold = 2
+
+        # Init internal params
+        self.set_internal_params()
+
+    def reset(self):
         # Success flag
         self.stop_flag = False
 
@@ -108,14 +124,105 @@ class PipelineRunner():
         self.processed_skill_library = pre_process_skill_library(self.skill_library)
 
 
-    def run(self):
+    def run(self, *args, **kwargs):
+        # osworld pipeline
 
-        self.task_description = "Open my calendar and create a meeting at 2pm" # "Select Menu Icon"  # "Open File menu"
+        os.environ["TOKENIZERS_PARALLELISM"] = "false"
+        osworld_args = self.osworld_config()
+        # TODO: adapt the config to osworld
+
+        with open(osworld_args.test_all_meta_path, "r", encoding="utf-8") as f:
+            test_all_meta = json.load(f)
+
+        if osworld_args.domain != "all":
+            test_all_meta = {osworld_args.domain: test_all_meta[osworld_args.domain]}
+
+        test_file_list = get_unfinished(
+            osworld_args.action_space,
+            osworld_args.model,
+            osworld_args.observation_type,
+            osworld_args.result_dir,
+            test_all_meta
+        )
+        left_info = ""
+        for domain in test_file_list:
+            left_info += f"{domain}: {len(test_file_list[domain])}\n"
+        logger.info(f"Left tasks:\n{left_info}")
+
+        self.get_result(osworld_args.action_space,
+                   osworld_args.model,
+                   osworld_args.observation_type,
+                   osworld_args.result_dir,
+                   test_all_meta
+                   )
+
+        # Start the osworld environment
+        env = DesktopEnv(
+            path_to_vm=osworld_args.path_to_vm,
+            action_space=agent.action_space,
+            screen_size=(osworld_args.screen_width, osworld_args.screen_height),
+            headless=osworld_args.headless,
+            require_a11y_tree=osworld_args.observation_type in ["a11y_tree", "screenshot_a11y_tree", "som"],
+        )
+
+        for domain in tqdm(test_file_list, desc="Domain"):
+            for example_id in tqdm(test_file_list[domain], desc="Example", leave=False):
+                config_file = os.path.join(osworld_args.test_config_base_dir, f"examples/{domain}/{example_id}.json")
+                with open(config_file, "r", encoding="utf-8") as f:
+                    example = json.load(f)
+
+                logger.info(f"[Domain]: {domain}")
+                logger.info(f"[Example ID]: {example_id}")
+
+                instruction = example["instruction"]
+
+                logger.info(f"[Instruction]: {instruction}")
+                # wandb each example config settings
+                cfg_args["instruction"] = instruction
+                cfg_args["start_time"] = datetime.datetime.now().strftime("%Y:%m:%d-%H:%M:%S")
+                # run.config.update(cfg_args)
+
+                example_result_dir = os.path.join(
+                    osworld_args.result_dir,
+                    osworld_args.action_space,
+                    osworld_args.observation_type,
+                    osworld_args.model,
+                    domain,
+                    example_id
+                )
+                os.makedirs(example_result_dir, exist_ok=True)
+                # example start running
+                try:
+                    lib_run_single.run_single_example_cradle(agent, env, example, max_steps, instruction, osworld_args,
+                                                      example_result_dir,
+                                                      scores)
+                except Exception as e:
+                    logger.error(f"Exception in {domain}/{example_id}: {e}")
+                    env.controller.end_recording(os.path.join(example_result_dir, "recording.mp4"))
+                    with open(os.path.join(example_result_dir, "traj.jsonl"), "a") as f:
+                        f.write(json.dumps({
+                            "Error": f"Time limit exceeded in {domain}/{example_id}"
+                        }))
+                        f.write("\n")
+
+        env.close()
+        logger.info(f"Average score: {sum(scores) / len(scores)}")
+
+    def run_single_example_cradle(self,agent, env, example, max_steps, instruction, args, example_result_dir, scores):
+        # osworld init
+        self.reset()
+        obs = env.reset(task_config=example)
+        step_idx = 0
+        env.controller.start_recording()
+
+        # cradle pipeline
+        self.task_description = "Open my calendar and create a meeting at 2pm"  # "Select Menu Icon"  # "Open File menu"
 
         task_id, subtask_id = 1, 1
         # @ Pengjie Task is in conf\env_config_chrome.json
         # if you want end2end task description, you can use the following code
-        self.task_description = kget(config.env_config, constants.TASK_DESCRIPTION_LIST, default='')[task_id-1][constants.TASK_DESCRIPTION]
+        self.task_description = kget(config.env_config, constants.TASK_DESCRIPTION_LIST, default='')[task_id - 1][
+            constants.TASK_DESCRIPTION]
         # if you want to use the subtask description, you can use the following code
         # self.task_description = kget(config.env_config, constants.TASK_DESCRIPTION_LIST, default='')[task_id-1][constants.SUB_TASK_DESCRIPTION_LIST][subtask_id-1]
         if self.task_description is None:
@@ -125,8 +232,8 @@ class PipelineRunner():
 
         params = {}
 
-        # Switch to target environment
-        switch_to_game()
+        # # Switch to target environment
+        # switch_to_game()
 
         # First sense
         cur_screenshot_path, _ = self.gm.capture_screen() # @Pengjie: This is the first sense, we need to capture the screen here
@@ -148,7 +255,7 @@ class PipelineRunner():
             f"{constants.PREVIOUS_AUGMENTATION_INFO}": None,
         })
 
-        while not self.stop_flag:
+        while not self.stop_flag and step_idx < max_steps :
 
             try:
                 # Gather information
@@ -186,6 +293,82 @@ class PipelineRunner():
                 break
 
         self.pipeline_shutdown()
+
+    def osworld_config(self) -> argparse.Namespace:
+        parser = argparse.ArgumentParser(
+            description="Run end-to-end evaluation on the benchmark"
+        )
+
+        # environment config
+        parser.add_argument("--path_to_vm", type=str,
+                            default=r"C:\Users\tianbaox\Documents\Virtual Machines\Ubuntu\Ubuntu.vmx")
+        parser.add_argument(
+            "--headless", action="store_true", help="Run in headless machine"
+        )
+        parser.add_argument("--action_space", type=str, default="pyautogui", help="Action type")
+        parser.add_argument(
+            "--observation_type",
+            choices=[
+                "screenshot",
+                "a11y_tree",
+                "screenshot_a11y_tree",
+                "som"
+            ],
+            default="a11y_tree",
+            help="Observation type",
+        )
+        parser.add_argument("--screen_width", type=int, default=1920)
+        parser.add_argument("--screen_height", type=int, default=1080)
+        parser.add_argument("--sleep_after_execution", type=float, default=0.0)
+        parser.add_argument("--max_steps", type=int, default=15)
+
+        # agent config
+        parser.add_argument("--max_trajectory_length", type=int, default=3)
+        parser.add_argument("--test_config_base_dir", type=str, default="evaluation_examples")
+
+        # lm config
+        parser.add_argument("--model", type=str, default="gpt-4-0125-preview")
+        parser.add_argument("--temperature", type=float, default=1.0)
+        parser.add_argument("--top_p", type=float, default=0.9)
+        parser.add_argument("--max_tokens", type=int, default=1500)
+        parser.add_argument("--stop_token", type=str, default=None)
+
+        # example config
+        parser.add_argument("--domain", type=str, default="all")
+        parser.add_argument("--test_all_meta_path", type=str, default="evaluation_examples/test_all.json")
+
+        # logging related
+        parser.add_argument("--result_dir", type=str, default="./results")
+        args = parser.parse_args()
+
+        return args
+    def get_result(self,action_space, use_model, observation_type, result_dir, total_file_json):
+        target_dir = os.path.join(result_dir, action_space, observation_type, use_model)
+        if not os.path.exists(target_dir):
+            print("New experiment, no result yet.")
+            return None
+
+        all_result = []
+
+        for domain in os.listdir(target_dir):
+            domain_path = os.path.join(target_dir, domain)
+            if os.path.isdir(domain_path):
+                for example_id in os.listdir(domain_path):
+                    example_path = os.path.join(domain_path, example_id)
+                    if os.path.isdir(example_path):
+                        if "result.txt" in os.listdir(example_path):
+                            # empty all files under example_id
+                            try:
+                                all_result.append(float(open(os.path.join(example_path, "result.txt"), "r").read()))
+                            except:
+                                all_result.append(0.0)
+
+        if not all_result:
+            print("New experiment, no result yet.")
+            return None
+        else:
+            print("Current Success Rate:", sum(all_result) / len(all_result) * 100, "%")
+            return all_result
 
 
     def self_reflection(self, params: Dict[str, Any]):
