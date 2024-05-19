@@ -215,7 +215,7 @@ class PipelineRunner():
         env.controller.start_recording()
 
         # cradle pipeline
-        self.task_description = "Open my calendar and create a meeting at 2pm"  # "Select Menu Icon"  # "Open File menu"
+        self.task_description = instruction
 
         task_id, subtask_id = 1, 1
         # @ Pengjie Task is in conf\env_config_chrome.json
