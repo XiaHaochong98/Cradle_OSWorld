@@ -738,7 +738,12 @@ class PipelineRunner():
         # exec_info = self.gm.execute_actions(skill_steps)
         for skill in skill_steps:
             logger.info("Step %d: %s", step_idx + 1, action)
-            obs, reward, self.stop_flag, info = env.step(skill, 0.0)
+
+            # assamble the skill to a script for osworld
+            import_source="import pyautogui"
+            skill_scource =
+
+            obs, reward, self.stop_flag, info = env.step(skill_script, 0.0)
 
             logger.info("Reward: %.2f", reward)
             logger.info("Done: %s", done)

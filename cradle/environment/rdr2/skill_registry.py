@@ -150,11 +150,6 @@ class SkillRegistry:
         skill_name, skill_params = self.extract_function_info(expression)
         return skill_name, skill_params
 
-    def get_skill_code_as_string(self, skill_name: str) -> str:
-        skill = self.skill_registry[skill_name]
-        source_code = inspect.getsource(ExampleClass)
-        return source_code
-
     def get_from_skill_library(self, skill_name: str) -> Dict:
         skill = self.skill_registry[skill_name]
         docstring = inspect.getdoc(skill)
