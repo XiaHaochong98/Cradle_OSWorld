@@ -125,6 +125,9 @@ class PipelineRunner():
         self.skill_library = self.gm.get_skill_information(self.skill_library)
         self.processed_skill_library = pre_process_skill_library(self.skill_library)
 
+        # Init video recorder
+        self.videocapture = VideoRecorder(os.path.join(config.work_dir, 'video.mp4'))
+
     def get_unfinished(self, action_space, use_model, observation_type, result_dir, total_file_json):
         target_dir = os.path.join(result_dir, action_space, observation_type, use_model)
 
