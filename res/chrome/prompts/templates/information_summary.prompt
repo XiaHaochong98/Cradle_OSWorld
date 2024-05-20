@@ -1,33 +1,55 @@
-Assume you are a helpful AI assistant integrated with 'Google Chrome' on the the PC, equipped to handle a wide range of tasks in the game. You will be sequentially given <$event_count$> screenshots and corresponding descriptions of recent events. You will also be given a summary of the history that happened before the last screenshot. You should assist in summarizing the events for future decision-making.
+Assume you are a helpful AI assistant integrated with 'Google Chrome' on the the PC, equipped to handle a wide range of tasks in the game. You will be sequentially given <$event_count$> screenshots and corresponding descriptions of recent events. You will also be given a summary of the history that happened before the last screenshot. You should assist in summarizing the events for future decision-making and also in proposing the most suitable subtask to execute next, given the target task.
 
-
-The following are <$event_count$> successive screenshots and corresponding descriptions:
-
-
-<$image_introduction$>
-
-
-The following is the summary of history that happened before the last screenshot:
-<$previous_summarization$>
-
+Here is some helpful information to help you do the summarization and propose the subtask.
 
 Current task:
 <$task_description$>
 
+Previous proposed subtask for the task:
+<$subtask_description$>
 
-Info_summary: Based on the above input, please make a summary from the screenshots with descriptions and the history in no less than 10 sentences, following the rules below.
-1. Summarize the tasks from the history and the current task, with a special note on the method of crucial press operations.
-2. Summarize the entities and behaviors mentioned in the successive descriptions.
-3. If entities and behaviors in the history and screenshots are missed in the descriptions, please add them to the summarization.  
-4. Organize the summarization as a story in order of time, including the past entities and behaviors.
-5. Only give descriptions; do not provide suggestions.
+Previous reasoning for proposing the subtask:
+<$subtask_reasoning$>
 
+<$image_introduction$>
 
-Entities_and_behaviors: Entities and behaviors which are summarized, e.g., The entities include the player's character, the target character, and horses for both the player and the target. The behaviors consist of the player character riding horseback, following the target on horseback, and moving forward to maintain a distance behind the target.
+Current toolbar information:
+<$toolbar_information$>
 
+Last executed action:
+<$previous_action$>
 
-The output should be in the following format:
-Info_summary:
+Decision-making reasoning for the last executed action:
+<$previous_reasoning$>
+
+Self-reflection for the last executed action:
+<$self_reflection_reasoning$>
+
+The following is the summary of history that happened before the last screenshot:
+<$previous_summarization$>
+
+History_summary: Summarize what happened in the past experience, especially the last step according to the decision-making reasoning and self-reflection reasoning for the last executed action. The summarization needs to be precise, concrete, highly related to the task, and follow the rules below.
+1. Summarize the tasks from the history and the current task. What is the current progress of the task? For example, to open a file, you first need to select the file, then open it by clicking somewhere or using the keyboard. Subtasks may have other pre-requisites.
+2. Record the successful actions and organize them into events, step by step.
+3. Which subtask has been completed? Which subtasks have not?
+4. Do not forget the information and key events in the previous steps of the overall task.
+
+Subtask_reasoning: Decide whether the previous subtask is finished and whether it is necessary to propose a new subtask. The subtask should be straightforward, contribute to the target task, and be most suitable for the current situation; which should be completed within a few actions. You should respond with:
+1. How to finish the target task? You should analyze it step by step.
+2. What is the current progress of the target task according to the analysis in step 1? Please do not make any assumptions if they are not mentioned in the above information. You should assume that you are doing the task from scratch. Please strictly follow the description and requirements in the current task.
+3. What is the previous subtask? Has the previous subtask finished? Or is it improper for the current situation? If finished or improper, please select a new one, otherwise you should reuse the last subtask.
+4. If you want to propose a new subtask, give reasons why it is more feasible for the current situation. Please strictly follow the description and requirements in the current task.
+5. The proposed subtask needs to be precise and concrete within one sentence. It should not be directly related to any skills.
+
+You should only respond in the format described below, and you should not output comments or other information.
+
+History_summary:
 The summary is...
-Entities_and_behaviors:
-The summary is...
+
+Subtask_reasoning:
+1. ...
+2. ...
+...
+
+Subtask:
+The current subtask is

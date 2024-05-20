@@ -229,7 +229,7 @@ class Config(metaclass=Singleton):
 
 
     def _min_resolution_check(self, env_window):
-        return env_window.width >= self.DEFAULT_ENV_RESOLUTION[0] and env_window.height >= self.DEFAULT_ENV_RESOLUTION[1]
+        return env_window.width == self.DEFAULT_ENV_RESOLUTION[0] and env_window.height == self.DEFAULT_ENV_RESOLUTION[1]
 
 
     def _aspect_ration_check(self, env_window):

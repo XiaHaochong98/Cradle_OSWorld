@@ -227,7 +227,7 @@ class PipelineRunner():
         if self.task_description is None:
             logger.error(f"Task description is not found for task_id: {task_id} and subtask_id: {subtask_id}")
 
-        self.memory.add_recent_history("task_description", self.task_description)
+        self.memory.add_recent_history(constants.TASK_DESCRIPTION, self.task_description)
 
         params = {}
 
@@ -254,6 +254,8 @@ class PipelineRunner():
             "pre_self_reflection_reasoning": "",
             "task_description": self.task_description,
             "summarization": "",
+            "subtask_description": "",
+            "subtask_reasoning": "",
             f"{constants.PREVIOUS_AUGMENTATION_INFO}": None,
             "osworld_env": env
         })
@@ -277,9 +279,9 @@ class PipelineRunner():
                 decision_making_params = self.decision_making(params)
                 params.update(decision_making_params)
 
-                # # Information summary
-                # information_summary_params = self.information_summary(params)
-                # params.update(information_summary_params)
+                # Information summary
+                information_summary_params = self.information_summary(params)
+                params.update(information_summary_params)
 
                 # # Success detection
                 # success_detection_params = self.success_detection(params)
@@ -400,10 +402,22 @@ class PipelineRunner():
 
         self_reflection_reasoning = ""
         success_detection = False
-        if self.use_self_reflection and self.count_turns > 0:
+        if self.use_self_reflection and start_frame_id > -1:
             input = self.planner.self_reflection_.input_map
             action_frames = []
+            video_frames = self.videocapture.get_frames(start_frame_id, end_frame_id)
 
+            # if len(video_frames) <= config.max_images_in_self_reflection * config.duplicate_frames + 1:
+            #     action_frames = [frame[1] for frame in video_frames[1::config.duplicate_frames]]
+            # else:
+            #     for i in range(config.max_images_in_self_reflection):
+            #         step = len(video_frames) // config.max_images_in_self_reflection * i + 1
+            #         action_frames.append(video_frames[step][1])
+
+            # only use the first and last frame for self-reflection
+            # add grid and color band to the frames
+            # action_frames.append(self.gm.interface.augment_image(video_frames[0][1], x = response[constants.MOUSE_X_POSITION], y = response[constants.MOUSE_Y_POSITION], encoding = cv2.COLOR_BGRA2RGB))
+            # action_frames.append(self.gm.interface.augment_image(video_frames[-1][1], x = response[constants.MOUSE_X_POSITION], y = response[constants.MOUSE_Y_POSITION], encoding = cv2.COLOR_BGRA2RGB))
             if config.show_mouse_in_screenshot:
                 action_frames.append(previous_augmentation[constants.AUG_MOUSE_IMG_PATH])
                 action_frames.append(current_augmentation[constants.AUG_MOUSE_IMG_PATH])
@@ -423,6 +437,9 @@ class PipelineRunner():
             input["task_description"] = task_description
             input['skill_library'] = self.processed_skill_library
             input["previous_reasoning"] = pre_decision_making_reasoning
+            input["history_summary"] = params["summarization"]
+            input["subtask_description"] = params["subtask_description"]
+
             input[constants.IMAGE_SAME_FLAG] = str(image_same_flag)
             input[constants.MOUSE_POSITION_SAME_FLAG] = str(mouse_position_same_flag)
 
@@ -484,17 +501,51 @@ class PipelineRunner():
 
     def pipeline_shutdown(self):
         self.gm.cleanup_io()
+        self.videocapture.finish_capture()
         logger.write('>>> Bye.')
+
+
+    # def skill_retrieval(self, params: Dict[str, Any]):
+
+    #     last_task_guidance = params["last_task_guidance"]
+    #     long_horizon = params["long_horizon"]
+    #     all_generated_actions = params["all_generated_actions"]
+    #     screen_classification = params["screen_classification"]
+    #     task_description = params["task_description"]
+
+    #     if last_task_guidance:
+    #         task_description = last_task_guidance
+    #         self.memory.add_task_guidance(last_task_guidance, long_horizon)
+
+    #     logger.write(f'Current Task Guidance: {task_description}')
+
+    #     if config.skill_retrieval:
+    #         for extracted_skills in all_generated_actions:
+    #             extracted_skills = extracted_skills['values']
+    #             for extracted_skill in extracted_skills:
+    #                 self.gm.add_new_skill(skill_code=extracted_skill['code'])
+
+    #         skill_library = self.gm.retrieve_skills(query_task=task_description, skill_num=config.skill_num,
+    #                                                 screen_type=screen_classification.lower())
+    #         logger.write(f'skill_library: {skill_library}')
+    #         skill_library = self.gm.get_skill_information(skill_library)
+
+    #     self.videocapture.clear_frame_buffer()
+
+    #     res_params = {}
+    #     return res_params
 
 
     def gather_information(self, params: Dict[str, Any], debug=False):
 
         # Get params
+        start_frame_id = params["start_frame_id"]
+        end_frame_id = params["end_frame_id"]
         cur_screenshot_path: List[str] = params["cur_screenshot_path"]
         self.memory.add_recent_history(key=constants.IMAGES_MEM_BUCKET, info=cur_screenshot_path)
 
         # Gather information preparation
-        logger.write(f'Gather Information Start:')
+        logger.write(f'Gather Information Start Frame ID: {start_frame_id}, End Frame ID: {end_frame_id}')
         input = self.planner.gather_information_.input_map
         input["task_description"] = self.task_description
 
@@ -679,10 +730,12 @@ class PipelineRunner():
         if config.show_mouse_in_screenshot:
             input["image_introduction"][0]["path"] = previous_augmentation[constants.AUG_MOUSE_IMG_PATH]
             input["image_introduction"][-1]["path"] = current_augmentation[constants.AUG_MOUSE_IMG_PATH]
+
         if config.use_sam_flag:
             input["image_introduction"][0]["path"] = previous_augmentation[constants.AUG_SOM_IMAGE_PATH]
             input["image_introduction"][-1]["path"] = current_augmentation[constants.AUG_SOM_IMAGE_PATH]
             input[constants.IMAGE_DESCRIPTION_OF_BOUNDING_BOXES] = current_augmentation[constants.IMAGE_DESCRIPTION_OF_BOUNDING_BOXES]
+
             if config.show_mouse_in_screenshot:
                 input["image_introduction"][0]["path"] = previous_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH]
                 input["image_introduction"][-1]["path"] = current_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH]
@@ -777,6 +830,8 @@ class PipelineRunner():
             "pre_action": pre_action,
             "pre_decision_making_reasoning": pre_decision_making_reasoning,
             "exec_info": exec_info,
+            "start_frame_id": start_frame_id,
+            "end_frame_id": end_frame_id,
             "cur_screenshot_path": cur_screenshot_path,
             # "mouse_position" : (mouse_x, mouse_y),
             "mouse_position": None,
@@ -787,6 +842,129 @@ class PipelineRunner():
         logger.write(f'-----------------------------Count turns: {self.count_turns} ----------------------------------')
 
         return res_params
+
+
+    def information_summary(self, params: Dict[str, Any]):
+
+        task_description = params["task_description"]
+
+        # Information summary preparation
+        input = self.planner.information_summary_.input_map
+        logger.write(f'> Information summary call...')
+
+        mem_entries = self.memory.get_recent_history(constants.AUGMENTED_IMAGES_MEM_BUCKET, 1)
+        image = mem_entries[0][constants.AUG_MOUSE_IMG_PATH]
+
+        decision_making_reasoning = self.memory.get_recent_history('decision_making_reasoning', 1)
+        self_reflection_reasoning = self.memory.get_recent_history('self_reflection_reasoning', 1)
+
+        # image_introduction = [
+        #     {
+        #         "path": images[event_i], "assistant": "",
+        #         "introduction": 'This is the {} screenshot of recent events. The description of this image: {}'.format(
+        #             ['first', 'second', 'third', 'fourth', 'fifth'][event_i], reasonings[event_i])
+        #     } for event_i in range(config.event_count)
+        # ]
+        image_introduction = []
+        image_introduction.append(
+        {
+            "introduction": "This screenshot is the current step if the application.",
+            "path":image,
+            "assistant": ""
+        })
+
+        input["image_introduction"] = image_introduction
+        input["previous_summarization"] = self.memory.get_summarization()
+        input["task_description"] = task_description
+        # input["event_count"] = str(config.event_count)
+
+        input["subtask_description"] = params["subtask_description"]
+        input["subtask_reasoning"] = params["subtask_reasoning"]
+        input["previous_reasoning"] = decision_making_reasoning
+        input["self_reflection_reasoning"] = self_reflection_reasoning
+        input["previous_summarization"] = params["summarization"]
+
+        # input["error_message"] = params["error_message"]
+
+        # >> Calling INFORMATION SUMMARY
+        logger.write(f'>> Calling INFORMATION SUMMARY')
+
+        data = self.planner.information_summary(input=input)
+        history_summary = data['res_dict']['history_summary']
+        # entities_and_behaviors = data['res_dict']['entities_and_behaviors']
+        logger.write(f'R: Summary: {history_summary}')
+        # logger.write(f'R: entities_and_behaviors: {entities_and_behaviors}')
+        # self.memory.add_summarization(history_summary)
+
+        # self.memory.add_recent_history("image", cur_screen_shot_path)
+
+        subtask_description = data['res_dict']['subtask']
+        subtask_reasoning = data['res_dict']['subtask_reasoning']
+        logger.write(f'R: Subtask: {subtask_description}')
+        logger.write(f'R: Subtask reasoning: {subtask_reasoning}')
+
+        if 'task_decomposition' in data['res_dict'].keys():
+            task_decomposition = data['res_dict']['task_decomposition']
+            logger.write(f'R: Task Decomposition: {task_decomposition}')
+
+        res_params = {
+            'summarization': history_summary,
+            'subtask_description': subtask_description,
+            'subtask_reasoning': subtask_reasoning
+        }
+
+        return res_params
+
+
+    # def success_detection(self, params: Dict[str, Any]):
+
+    #     task_description = params["task_description"]
+
+    #     success = False
+    #     success_reasoning = ""
+    #     success_criteria = ""
+
+    #     # Success detection preparation
+    #     if self.use_success_detection:
+    #         input = self.planner.success_detection_.input_map
+    #         image_introduction = [
+    #             {
+    #                 "introduction": input["image_introduction"][-2]["introduction"],
+    #                 "path": self.memory.get_recent_history("image", k=2)[0],
+    #                 "assistant": input["image_introduction"][-2]["assistant"]
+    #             },
+    #             {
+    #                 "introduction": input["image_introduction"][-1]["introduction"],
+    #                 "path": self.memory.get_recent_history("image", k=1)[0],
+    #                 "assistant": input["image_introduction"][-1]["assistant"]
+    #             }
+    #         ]
+    #         input["image_introduction"] = image_introduction
+
+    #         input["task_description"] = task_description
+    #         input["previous_action"] = self.memory.get_recent_history("action", k=1)[-1]
+    #         input["previous_reasoning"] = self.memory.get_recent_history("decision_making_reasoning", k=1)[-1]
+
+    #         # >> Calling SUCCESS DETECTION
+    #         logger.write(f'>> Calling SUCCESS DETECTION')
+    #         data = self.planner.success_detection(input=input)
+
+    #         success = data['res_dict']['success']
+    #         success_reasoning = data['res_dict']['reasoning']
+    #         success_criteria = data['res_dict']['criteria']
+
+    #         self.memory.add_recent_history("success_detection_reasoning", success_reasoning)
+
+    #         logger.write(f'Success: {success}')
+    #         logger.write(f'Success criteria: {success_criteria}')
+    #         logger.write(f'Success reason: {success_reasoning}')
+
+    #     res_params = {
+    #         "success": success,
+    #         "success_reasoning": success_reasoning,
+    #         "success_criteria": success_criteria
+    #     }
+    #     return res_params
 
 
 def pre_process_skill_steps(skill_steps: List[str], som_map: Dict) -> List[str]:
@@ -905,7 +1083,7 @@ def get_args_parser():
 
     parser = argparse.ArgumentParser("Cradle Prototype Runner")
     parser.add_argument("--providerConfig", type=str, default="./conf/openai_config.json", help="The path to the provider config file")
-    parser.add_argument("--envConfig", type=str, default="./conf/env_config_chrome.json", help="The path to the environment config file")
+    parser.add_argument("--envConfig", type=str, default="./conf/env_config_outlook.json", help="The path to the environment config file")
     return parser
 
 
@@ -927,7 +1105,7 @@ def main(args):
     pipelineRunner = PipelineRunner(args.providerConfig,
                                     use_success_detection = False,
                                     use_self_reflection = True,
-                                    use_information_summary = False)
+                                    use_information_summary = True)
 
     atexit.register(exit_cleanup, pipelineRunner)
 

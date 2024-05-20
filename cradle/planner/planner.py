@@ -757,7 +757,10 @@ class Planner(BasePlanner):
             if path.endswith(PROMPT_EXT):
                 input_examples[key] = read_resource_file(path)
             else:
-                input_examples[key] = load_json(path)
+                if path is not None and path.endswith(JSON_EXT):
+                    input_examples[key] = load_json(path)
+                else:
+                    input_examples[key] = dict()
 
         return input_examples
 
@@ -773,7 +776,10 @@ class Planner(BasePlanner):
             if path.endswith(PROMPT_EXT):
                 templates[key] = read_resource_file(path)
             else:
-                templates[key] = load_json(path)
+                if path is not None and path.endswith(JSON_EXT):
+                    templates[key] = load_json(path)
+                else:
+                    templates[key] = dict()
 
         return templates
 

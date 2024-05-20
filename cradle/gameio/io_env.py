@@ -276,8 +276,8 @@ class IOEnvironment(metaclass=Singleton):
         if from_center is True:
             offset = .5 # Center of the game screen in normalized coordinates
 
-        gx = int((x-offset) * w)
-        gy = int((y-offset) * h)
+        gx = int((x - offset) * w)
+        gy = int((y - offset) * h)
 
         self.mouse_move(x = gx, y = gy, relative = relative)
 

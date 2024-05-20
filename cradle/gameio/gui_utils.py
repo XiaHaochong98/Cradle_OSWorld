@@ -96,6 +96,7 @@ class TargetWindow():
 
 
     def _set_sizes(self, window):
+
         if _isWin():
             self.left = window.left
             self.top = window.top
@@ -282,6 +283,8 @@ class TargetWindow():
         """
 
         if _isWin():
+            if self.window.isMaximized:
+                self.window.restore()
             self.window.resizeTo(set_width, set_height)
 
         elif _isMac():
@@ -360,9 +363,16 @@ def mouse_move_to(x, y, duration = -1, relative = False, screen_resolution = Non
             pyautogui.moveTo(x, y, duration=duration)
 
 
-def get_mouse_location():
+def get_mouse_location(absolute = False):
     p = pyautogui.position()
-    return (p.x, p.y)
+
+    if absolute is True:
+        return (p.x, p.y)
+
+    x = p.x - config.env_window.left
+    y = p.y - config.env_window.top
+
+    return (x, y)
 
 
 def key_down(key):
@@ -388,12 +398,12 @@ def get_screen_size():
 
 
 def check_window_conditions(env_window: TargetWindow):
-            # Check if pre-resize is necessary
-            if not config._min_resolution_check(env_window) or not config._aspect_ration_check(env_window):
-                env_window = env_window.resizeTo(config.DEFAULT_ENV_RESOLUTION[0], config.DEFAULT_ENV_RESOLUTION[1])
+    # Check if pre-resize is necessary
+    if not config._min_resolution_check(env_window) or not config._aspect_ration_check(env_window):
+        env_window = env_window.resizeTo(config.DEFAULT_ENV_RESOLUTION[0], config.DEFAULT_ENV_RESOLUTION[1])
 
-            assert config._min_resolution_check(env_window), 'The resolution of env window should at least be 1920 X 1080.'
-            assert config._aspect_ration_check(env_window), 'The screen ratio should be 16:9.'
+    assert config._min_resolution_check(env_window), 'The resolution of env window should at least be 1920 X 1080.'
+    assert config._aspect_ration_check(env_window), 'The screen ratio should be 16:9.'
 
 
 def get_named_windows(env_name) -> List[TargetWindow]:

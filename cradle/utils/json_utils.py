@@ -92,7 +92,7 @@ def parse_semi_formatted_text(text):
 
     for line in lines:
 
-        line = line.replace("**", "") # Remove unnecessary in Markdown formatting
+        line = line.replace("**", "").replace("###", "").replace("##", "") # Remove unnecessary in Markdown formatting
 
         is_key, key_candidate = _is_line_key_candidate(line)
 

@@ -35,27 +35,25 @@ class Interface():
             "__check_list__": [
                 "decision_making",
                 "gather_information",
-                "success_detection",
                 "self_reflection",
                 "information_summary",
-                "gather_text_information"
             ],
             "prompt_paths": {
                 "inputs": {
                     "decision_making": "./res/chrome/prompts/inputs/decision_making.json",
                     "gather_information": "./res/chrome/prompts/inputs/gather_information.json",
-                    "success_detection": "./res/chrome/prompts/inputs/success_detection.json",
+                    "success_detection": "",
                     "self_reflection": "./res/chrome/prompts/inputs/self_reflection.json",
                     "information_summary": "./res/chrome/prompts/inputs/information_summary.json",
-                    "gather_text_information": "./res/chrome/prompts/inputs/gather_text_information.json"
+                    "gather_text_information": ""
                 },
                 "templates": {
                     "decision_making": "./res/chrome/prompts/templates/decision_making.prompt",
                     "gather_information": "./res/chrome/prompts/templates/gather_information.prompt",
-                    "success_detection": "./res/chrome/prompts/templates/success_detection.prompt",
+                    "success_detection": "",
                     "self_reflection": "./res/chrome/prompts/templates/self_reflection.prompt",
                     "information_summary": "./res/chrome/prompts/templates/information_summary.prompt",
-                    "gather_text_information": "./res/chrome/prompts/templates/gather_text_information.prompt"
+                    "gather_text_information": ""
                 },
             }
         }
