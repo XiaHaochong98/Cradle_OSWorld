@@ -191,7 +191,7 @@ class PipelineRunner():
         # Start the osworld environment
         env = DesktopEnv(
             path_to_vm=osworld_args.path_to_vm,
-            action_space=agent.action_space,
+            action_space="pyautogui",
             screen_size=(osworld_args.screen_width, osworld_args.screen_height),
             headless=osworld_args.headless,
             require_a11y_tree=osworld_args.observation_type in ["a11y_tree", "screenshot_a11y_tree", "som"],
