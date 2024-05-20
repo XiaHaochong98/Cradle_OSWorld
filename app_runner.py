@@ -197,6 +197,9 @@ class PipelineRunner():
             require_a11y_tree=osworld_args.observation_type in ["a11y_tree", "screenshot_a11y_tree", "som"],
         )
 
+        max_steps = osworld_args.max_steps
+        scores = []
+
         for domain in tqdm(test_file_list, desc="Domain"):
             for example_id in tqdm(test_file_list[domain], desc="Example", leave=False):
                 config_file = os.path.join(osworld_args.test_config_base_dir, f"examples/{domain}/{example_id}.json")
@@ -209,10 +212,6 @@ class PipelineRunner():
                 instruction = example["instruction"]
 
                 logger.write(f"[Instruction]: {instruction}")
-                # wandb each example config settings
-                cfg_args["instruction"] = instruction
-                cfg_args["start_time"] = datetime.datetime.now().strftime("%Y:%m:%d-%H:%M:%S")
-                # run.config.update(cfg_args)
 
                 example_result_dir = os.path.join(
                     osworld_args.result_dir,
@@ -225,7 +224,7 @@ class PipelineRunner():
                 os.makedirs(example_result_dir, exist_ok=True)
                 # example start running
                 try:
-                    lib_run_single.run_single_example_cradle(agent, env, example, max_steps, instruction, osworld_args,
+                    self.run_single_example_cradle(None, env, example, max_steps, instruction, osworld_args,
                                                       example_result_dir,
                                                       scores)
                 except Exception as e:
