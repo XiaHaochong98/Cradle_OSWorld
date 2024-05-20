@@ -3,7 +3,7 @@ from cradle.gameio.lifecycle.ui_control import switch_to_game
 from cradle.log import Logger
 from cradle.gameio import IOEnvironment
 from cradle.environment.feishu.skill_registry import register_skill, post_skill_wait
-
+import pyautogui
 config = Config()
 logger = Logger()
 io_env = IOEnvironment()

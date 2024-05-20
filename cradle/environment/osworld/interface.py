@@ -63,17 +63,19 @@ class Interface():
         # init skill library
         # @ Pengjie register skills here
         self.skill_library = [
-            "click_at_position",
-            "mouse_drag",
+            "move_to_position",
+            "click",
+            "mouse_down",
+            "mouse_up",
+            "right_click",
+            "double_click",
+            "drag_to_position",
+            "scroll",
             "type_text",
             "press_key",
-            "save_page",
-            "return_to_previous_page",
-            "press_keys_combined",
-            "click_on_label",
-            "go_back_to_target_application",
-            "zoom_in",
-            "zoom_out",
+            "key_down",
+            "key_up",
+            "press_hotkey",
         ]
 
         # init task description

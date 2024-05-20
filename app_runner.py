@@ -24,6 +24,8 @@ import cradle.environment.feishu
 from cradle.utils.dict_utils import kget
 from cradle.utils.image_utils import calculate_pixel_diff
 from cradle.utils.file_utils import copy_file
+import json
+from tqdm import tqdm
 # osworld
 from cradle.environment.osworld.desktop_env.envs.desktop_env import DesktopEnv
 
@@ -122,6 +124,37 @@ class PipelineRunner():
         self.skill_library = self.gm.get_skill_information(self.skill_library)
         self.processed_skill_library = pre_process_skill_library(self.skill_library)
 
+    def get_unfinished(self, action_space, use_model, observation_type, result_dir, total_file_json):
+        target_dir = os.path.join(result_dir, action_space, observation_type, use_model)
+
+        if not os.path.exists(target_dir):
+            return total_file_json
+
+        finished = {}
+        for domain in os.listdir(target_dir):
+            finished[domain] = []
+            domain_path = os.path.join(target_dir, domain)
+            if os.path.isdir(domain_path):
+                for example_id in os.listdir(domain_path):
+                    if example_id == "onboard":
+                        continue
+                    example_path = os.path.join(domain_path, example_id)
+                    if os.path.isdir(example_path):
+                        if "result.txt" not in os.listdir(example_path):
+                            # empty all files under example_id
+                            for file in os.listdir(example_path):
+                                os.remove(os.path.join(example_path, file))
+                        else:
+                            finished[domain].append(example_id)
+
+        if not finished:
+            return total_file_json
+
+        for domain, examples in finished.items():
+            if domain in total_file_json:
+                total_file_json[domain] = [x for x in total_file_json[domain] if x not in examples]
+
+        return total_file_json
 
     def run(self, *args, **kwargs):
         # osworld pipeline
@@ -136,7 +169,7 @@ class PipelineRunner():
         if osworld_args.domain != "all":
             test_all_meta = {osworld_args.domain: test_all_meta[osworld_args.domain]}
 
-        test_file_list = get_unfinished(
+        test_file_list = self.get_unfinished(
             osworld_args.action_space,
             osworld_args.model,
             osworld_args.observation_type,
