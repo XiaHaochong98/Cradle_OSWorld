@@ -1,6 +1,14 @@
-import pyautogui
+from cradle.config import Config
+from cradle.gameio.lifecycle.ui_control import switch_to_game
+from cradle.log import Logger
+from cradle.gameio import IOEnvironment
+from cradle.environment.feishu.skill_registry import register_skill, post_skill_wait
 
+config = Config()
+logger = Logger()
+io_env = IOEnvironment()
 
+@register_skill("move_to_position")
 def move_to_position(x, y):
     """
     Move the cursor to the specified position (x, y).
@@ -24,7 +32,7 @@ def move_to_position(x, y):
     # Move the cursor to the specified position
     pyautogui.moveTo(x, y)
 
-
+@register_skill("click")
 def click(button='left', x=None, y=None, num_clicks=1):
     """
     Click the specified mouse button at the given position.
@@ -62,7 +70,7 @@ def click(button='left', x=None, y=None, num_clicks=1):
         # Click at the current position
         pyautogui.click(button=button, clicks=num_clicks)
 
-
+@register_skill("mouse_down")
 def mouse_down(button='left'):
     """
     Press the specified mouse button.
@@ -80,7 +88,7 @@ def mouse_down(button='left'):
     # Press the specified mouse button
     pyautogui.mouseDown(button=button)
 
-
+@register_skill("mouse_up")
 def mouse_up(button='left'):
     """
     Release the specified mouse button.
@@ -98,7 +106,7 @@ def mouse_up(button='left'):
     # Release the specified mouse button
     pyautogui.mouseUp(button=button)
 
-
+@register_skill("right_click")
 def right_click(x=None, y=None):
     """
     Right-click at the specified position, or at the current position if no coordinates are provided.
@@ -126,7 +134,7 @@ def right_click(x=None, y=None):
         # Right-click at the current position
         pyautogui.rightClick()
 
-
+@register_skill("double_click")
 def double_click(x=None, y=None):
     """
     Double-click at the specified position, or at the current position if no coordinates are provided.
@@ -154,7 +162,7 @@ def double_click(x=None, y=None):
         # Double-click at the current position
         pyautogui.doubleClick()
 
-
+@register_skill("drag_to_position")
 def drag_to_position(x, y):
     """
     Drag the cursor to the specified position (x, y) with the left button pressed.
@@ -178,7 +186,7 @@ def drag_to_position(x, y):
     # Drag the cursor to the specified position with the left button pressed
     pyautogui.dragTo(x, y, button='left')
 
-
+@register_skill("scroll")
 def scroll(dx, dy):
     """
     Scroll the mouse wheel up or down.
@@ -198,7 +206,7 @@ def scroll(dx, dy):
     if dy != 0:
         pyautogui.scroll(dy)
 
-
+@register_skill("type_text")
 def type_text(text):
     """
     Type the specified text.
@@ -215,7 +223,7 @@ def type_text(text):
     # Type the specified text
     pyautogui.typewrite(text)
 
-
+@register_skill("press_key")
 def press_key(key):
     """
     Press the specified key and release it.
@@ -237,7 +245,7 @@ def press_key(key):
     # Press and release the specified key
     pyautogui.press(key)
 
-
+@register_skill("key_down")
 def key_down(key):
     """
     Press (hold down) the specified key.
@@ -259,7 +267,7 @@ def key_down(key):
     # Press the specified key
     pyautogui.keyDown(key)
 
-
+@register_skill("key_up")
 def key_up(key):
     """
     Release the specified key.
@@ -281,7 +289,7 @@ def key_up(key):
     # Release the specified key
     pyautogui.keyUp(key)
 
-
+@register_skill("press_hotkey")
 def press_hotkey(keys):
     """
     Press the specified key combination.
