@@ -254,8 +254,8 @@ class PipelineRunner():
         task_id, subtask_id = 1, 1
         # @ Pengjie Task is in conf\env_config_chrome.json
         # if you want end2end task description, you can use the following code
-        self.task_description = kget(config.env_config, constants.TASK_DESCRIPTION_LIST, default='')[task_id - 1][
-            constants.TASK_DESCRIPTION]
+        # self.task_description = kget(config.env_config, constants.TASK_DESCRIPTION_LIST, default='')[task_id - 1][
+        #     constants.TASK_DESCRIPTION]
         # if you want to use the subtask description, you can use the following code
         # self.task_description = kget(config.env_config, constants.TASK_DESCRIPTION_LIST, default='')[task_id-1][constants.SUB_TASK_DESCRIPTION_LIST][subtask_id-1]
         if self.task_description is None:
@@ -293,8 +293,8 @@ class PipelineRunner():
             f"{constants.PREVIOUS_AUGMENTATION_INFO}": None,
             "osworld_env": env
         })
-        logger.write("stop_flag: %s", self.stop_flag,"step_idx: %s", step_idx, "max_steps: %s", max_steps)
         while not self.stop_flag and step_idx < max_steps :
+            logger.write(f"self.stop_flag: {self.stop_flag}, step_idx: {step_idx}, max_steps: {max_steps}")
             try:
                 # update step idx
                 params["step_idx"] = step_idx
