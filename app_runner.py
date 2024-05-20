@@ -25,6 +25,7 @@ from cradle.utils.dict_utils import kget
 from cradle.utils.image_utils import calculate_pixel_diff
 from cradle.utils.file_utils import copy_file
 import json
+import datetime
 from tqdm import tqdm
 # osworld
 from cradle.environment.osworld.desktop_env.envs.desktop_env import DesktopEnv
@@ -295,6 +296,9 @@ class PipelineRunner():
         while not self.stop_flag and step_idx < max_steps :
 
             try:
+                # update step idx
+                params["step_idx"] = step_idx
+                params["example_result_dir"]=example_result_dir
                 # Gather information
                 gather_information_params = self.gather_information(params, debug=False)
                 params.update(gather_information_params)
@@ -418,6 +422,9 @@ class PipelineRunner():
 
     def self_reflection(self, params: Dict[str, Any]):
 
+        start_frame_id = params["start_frame_id"]
+        end_frame_id = params["end_frame_id"]
+
         task_description = params["task_description"]
         pre_action = params["pre_action"]
 
@@ -434,6 +441,7 @@ class PipelineRunner():
 
         self_reflection_reasoning = ""
         success_detection = False
+
         if self.use_self_reflection and start_frame_id > -1:
             input = self.planner.self_reflection_.input_map
             action_frames = []
@@ -712,6 +720,8 @@ class PipelineRunner():
 
         response_keys = params["response_keys"]
         response = params["response"]
+        step_idx = params["step_idx"]
+        example_result_dir = params["example_result_dir"]
         current_augmentation = params[constants.CURRENT_AUGMENTATION_INFO]
         previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
         pre_action = params["pre_action"]
@@ -822,8 +832,8 @@ class PipelineRunner():
         # osworld execute actions
         # exec_info = self.gm.execute_actions(skill_steps)
         for skill in skill_steps:
-            logger.write("Step %d: %s", step_idx + 1, action)
-
+            # logger.write("Step %d: %s", step_idx + 1, action)
+            action_timestamp = datetime.datetime.now().strftime("%Y%m%d@%H%M%S")
             # assamble the skill to a script for osworld
             import_source="import pyautogui"
             skill_source_code = self.gm.get_skill_source_code(skill)
@@ -833,7 +843,7 @@ class PipelineRunner():
             obs, reward, self.stop_flag, info = env.step(skill_script, 0.0)
 
             logger.write("Reward: %.2f", reward)
-            logger.write("Done: %s", done)
+            logger.write("Done: %s", self.stop_flag)
             # Save screenshot and trajectory information
             with open(os.path.join(example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png"),
                       "wb") as _f:
