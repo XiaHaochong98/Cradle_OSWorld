@@ -242,6 +242,7 @@ class PipelineRunner():
 
     def run_single_example_cradle(self,agent, env, example, max_steps, instruction, args, example_result_dir, scores):
         # osworld init
+        logger.write("Running single example with instruction: %s", instruction)
         self.reset()
         obs = env.reset(task_config=example)
         step_idx = 0
@@ -292,9 +293,8 @@ class PipelineRunner():
             f"{constants.PREVIOUS_AUGMENTATION_INFO}": None,
             "osworld_env": env
         })
-
+        logger.write("stop_flag: %s", self.stop_flag,"step_idx: %s", step_idx, "max_steps: %s", max_steps)
         while not self.stop_flag and step_idx < max_steps :
-
             try:
                 # update step idx
                 params["step_idx"] = step_idx
