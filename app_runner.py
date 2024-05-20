@@ -268,6 +268,12 @@ class PipelineRunner():
         # # Switch to target environment
         # switch_to_game()
 
+        # Prepare
+        self.videocapture.start_capture()
+        start_frame_id = self.videocapture.get_current_frame_id()
+        time.sleep(2)
+        end_frame_id = self.videocapture.get_current_frame_id()
+
         # First sense
         # cur_screenshot_path, _ = self.gm.capture_screen() # @Pengjie: This is the first sense, we need to capture the screen here
         # mouse_x, mouse_y = io_env.get_mouse_position()
@@ -277,8 +283,10 @@ class PipelineRunner():
         time.sleep(2)
 
         params.update({
+            "start_frame_id": start_frame_id,
+            "end_frame_id": end_frame_id,
             "cur_screenshot_path": cur_screenshot_path,
-            # "mouse_position" : (mouse_x, mouse_y),
+            "mouse_position" : None,
             "exec_info": {
                 "errors": False,
                 "errors_info": ""
