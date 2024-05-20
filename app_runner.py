@@ -350,7 +350,7 @@ class PipelineRunner():
 
         # environment config
         parser.add_argument("--path_to_vm", type=str,
-                            default=r"C:\Users\tianbaox\Documents\Virtual Machines\Ubuntu\Ubuntu.vmx")
+                            default=r"E:\OSWorld\vm_data\Ubuntu0\Ubuntu0\Ubuntu0.vmx")
         parser.add_argument(
             "--headless", action="store_true", help="Run in headless machine"
         )
