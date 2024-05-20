@@ -179,7 +179,7 @@ class PipelineRunner():
         left_info = ""
         for domain in test_file_list:
             left_info += f"{domain}: {len(test_file_list[domain])}\n"
-        logger.info(f"Left tasks:\n{left_info}")
+        logger.write(f"Left tasks:\n{left_info}")
 
         self.get_result(osworld_args.action_space,
                    osworld_args.model,
@@ -203,12 +203,12 @@ class PipelineRunner():
                 with open(config_file, "r", encoding="utf-8") as f:
                     example = json.load(f)
 
-                logger.info(f"[Domain]: {domain}")
-                logger.info(f"[Example ID]: {example_id}")
+                logger.write(f"[Domain]: {domain}")
+                logger.write(f"[Example ID]: {example_id}")
 
                 instruction = example["instruction"]
 
-                logger.info(f"[Instruction]: {instruction}")
+                logger.write(f"[Instruction]: {instruction}")
                 # wandb each example config settings
                 cfg_args["instruction"] = instruction
                 cfg_args["start_time"] = datetime.datetime.now().strftime("%Y:%m:%d-%H:%M:%S")
@@ -238,7 +238,7 @@ class PipelineRunner():
                         f.write("\n")
 
         env.close()
-        logger.info(f"Average score: {sum(scores) / len(scores)}")
+        logger.write(f"Average score: {sum(scores) / len(scores)}")
 
     def run_single_example_cradle(self,agent, env, example, max_steps, instruction, args, example_result_dir, scores):
         # osworld init
@@ -333,7 +333,7 @@ class PipelineRunner():
             step_idx += 1
 
         result = env.evaluate()
-        logger.info("Result: %.2f", result)
+        logger.write("Result: %.2f", result)
         scores.append(result)
         with open(os.path.join(example_result_dir, "result.txt"), "w", encoding="utf-8") as f:
             f.write(f"{result}\n")
@@ -823,7 +823,7 @@ class PipelineRunner():
         # osworld execute actions
         # exec_info = self.gm.execute_actions(skill_steps)
         for skill in skill_steps:
-            logger.info("Step %d: %s", step_idx + 1, action)
+            logger.write("Step %d: %s", step_idx + 1, action)
 
             # assamble the skill to a script for osworld
             import_source="import pyautogui"
@@ -833,8 +833,8 @@ class PipelineRunner():
             logger.write(f"Skill script: {skill_script}")
             obs, reward, self.stop_flag, info = env.step(skill_script, 0.0)
 
-            logger.info("Reward: %.2f", reward)
-            logger.info("Done: %s", done)
+            logger.write("Reward: %.2f", reward)
+            logger.write("Done: %s", done)
             # Save screenshot and trajectory information
             with open(os.path.join(example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png"),
                       "wb") as _f:
