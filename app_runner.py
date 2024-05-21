@@ -282,7 +282,8 @@ class PipelineRunner():
         # mouse_x, mouse_y = io_env.get_mouse_position()
         # get screenshot from obs
         cur_screenshot_path = obs['screenshot']
-
+        logger.write(f"obs: {obs}")
+        logger.write(f"cur_screenshot_path: {cur_screenshot_path}")
         time.sleep(2)
 
         params.update({
@@ -620,8 +621,8 @@ class PipelineRunner():
         # For osworld, we don't need to draw mouse pointer
         # # record the last collected mouse position
         # mouse_position = kget(params, 'mouse_position')
-        mouse_position= None
-
+        mouse_position= False
+        config.use_sam_flag = False
         if mouse_position:
             mouse_x, mouse_y = mouse_position
             current_augmentation[constants.AUG_MOUSE_X] = mouse_x
@@ -649,7 +650,7 @@ class PipelineRunner():
             else:
                 current_augmentation[constants.AUG_MOUSE_IMG_PATH] = draw_mouse_pointer_file(cur_screenshot_path, mouse_x, mouse_y)
             input["image_introduction"][0]["path"] = current_augmentation[constants.AUG_MOUSE_IMG_PATH]
-
+        logger.write("0")
         if config.use_sam_flag:
             if image_same_flag:
                 current_augmentation[constants.AUG_SOM_IMAGE_PATH] = current_augmentation[constants.AUG_BASE_IMAGE_PATH].replace(".jpg", f"_som.jpg")
@@ -672,12 +673,12 @@ class PipelineRunner():
                 else:
                     current_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH] = draw_mouse_pointer_file(current_augmentation[constants.AUG_SOM_IMAGE_PATH], mouse_x, mouse_y)
                 input["image_introduction"][0]["path"] = current_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH]
-
+        logger.write("1")
         if previous_augmentation is None:
             previous_augmentation = current_augmentation.copy()
-
+        logger.write("2")
         self.memory.add_recent_history(constants.AUGMENTED_IMAGES_MEM_BUCKET, current_augmentation)
-
+        logger.write("3")
         # Configure the gather_information module
         gather_information_configurations = {
             "frame_extractor": False,  # extract text from the video clip
@@ -876,8 +877,10 @@ class PipelineRunner():
         # mouse_x, mouse_y = io_env.get_mouse_position()
 
         # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
-        pre_action = exec_info[constants.EXECUTED_SKILLS]
-
+        # pre_action = exec_info[constants.EXECUTED_SKILLS]
+        # TODO: not fully adapted
+        pre_action=skill_steps
+        exec_info = info
         self.memory.add_recent_history("action", pre_action)
         self.memory.add_recent_history("decision_making_reasoning", pre_decision_making_reasoning)
         self.memory.add_recent_history(constants.KEY_REASON_OF_LAST_ACTION, key_reason_of_last_action)
@@ -887,8 +890,8 @@ class PipelineRunner():
             "pre_action": pre_action,
             "pre_decision_making_reasoning": pre_decision_making_reasoning,
             "exec_info": exec_info,
-            "start_frame_id": start_frame_id,
-            "end_frame_id": end_frame_id,
+            # "start_frame_id": start_frame_id,
+            # "end_frame_id": end_frame_id,
             "cur_screenshot_path": cur_screenshot_path,
             # "mouse_position" : (mouse_x, mouse_y),
             "mouse_position": None,
