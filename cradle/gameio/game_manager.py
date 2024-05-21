@@ -1,5 +1,6 @@
 import time
 from typing import Tuple, Dict, Any
+import inspect
 
 from cradle import constants
 from cradle.config import Config
@@ -88,7 +89,9 @@ class GameManager:
         return self.skill_registry.get_skill_library_in_code(skill)
 
     def get_skill_source_code(self, skill) -> str:
-        return self.skill_registry.get_skill_source_code(skill)
+        skill = self.skill_registry[skill]
+        source_code = inspect.getsource(skill)
+        return source_code
 
     def execute_navigation(self, action):
 

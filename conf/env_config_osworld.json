@@ -1,5 +1,5 @@
 {
-    "env_name": "Osworld",
+    "env_name": "osworld",
     "win_name_pattern": "osworld$",
     "sub_path": "osworld",
     "env_short_name": "osworld"

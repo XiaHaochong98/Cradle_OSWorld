@@ -21,6 +21,7 @@ import cradle.environment.outlook
 import cradle.environment.chrome
 import cradle.environment.capcut
 import cradle.environment.feishu
+import cradle.environment.osworld
 from cradle.utils.dict_utils import kget
 from cradle.utils.image_utils import calculate_pixel_diff
 from cradle.utils.file_utils import copy_file
