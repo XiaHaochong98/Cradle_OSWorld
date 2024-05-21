@@ -89,10 +89,7 @@ class GameManager:
         return self.skill_registry.get_skill_library_in_code(skill)
 
     def get_skill_source_code(self, skill) -> str:
-        skill = self.skill_registry[skill]
-        source_code = inspect.getsource(skill)
-        return source_code
-
+        return self.skill_registry.get_skill_source_code(skill)
     def execute_navigation(self, action):
 
         # Execute action

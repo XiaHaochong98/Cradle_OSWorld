@@ -154,7 +154,6 @@ class SkillRegistry:
         skill_name, skill_params = self.extract_function_info(expression)
         return skill_name, skill_params
 
-
     def get_from_skill_library(self, skill_name: str) -> Dict:
         skill = self.skill_registry[skill_name]
         docstring = inspect.getdoc(skill)
@@ -182,6 +181,12 @@ class SkillRegistry:
                 }
         else:
             return None
+
+    def get_skill_source_code(self, skill_name: str) -> Dict:
+        skill = self.skill_registry[skill_name]
+        source_code = inspect.getsource(skill)
+        return source_code
+
 
 
     def get_skill_library_in_code(self, skill: Any) -> Tuple[str, str]:
