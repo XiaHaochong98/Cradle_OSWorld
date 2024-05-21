@@ -287,7 +287,6 @@ class PipelineRunner():
             _f.write(obs['screenshot'])
         cur_screenshot_path = screenshot_path
         logger.write(f"obs: {obs}")
-        logger.write(f"cur_screenshot_path: {cur_screenshot_path}")
         time.sleep(2)
 
         params.update({
@@ -654,7 +653,7 @@ class PipelineRunner():
             else:
                 current_augmentation[constants.AUG_MOUSE_IMG_PATH] = draw_mouse_pointer_file(cur_screenshot_path, mouse_x, mouse_y)
             input["image_introduction"][0]["path"] = current_augmentation[constants.AUG_MOUSE_IMG_PATH]
-        logger.write("0")
+
         if config.use_sam_flag:
             if image_same_flag:
                 current_augmentation[constants.AUG_SOM_IMAGE_PATH] = current_augmentation[constants.AUG_BASE_IMAGE_PATH].replace(".jpg", f"_som.jpg")
@@ -677,12 +676,12 @@ class PipelineRunner():
                 else:
                     current_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH] = draw_mouse_pointer_file(current_augmentation[constants.AUG_SOM_IMAGE_PATH], mouse_x, mouse_y)
                 input["image_introduction"][0]["path"] = current_augmentation[constants.AUG_SOM_MOUSE_IMG_PATH]
-        logger.write("1")
+
         if previous_augmentation is None:
             previous_augmentation = current_augmentation.copy()
-        logger.write("2")
+
         self.memory.add_recent_history(constants.AUGMENTED_IMAGES_MEM_BUCKET, current_augmentation)
-        logger.write("3")
+
         # Configure the gather_information module
         gather_information_configurations = {
             "frame_extractor": False,  # extract text from the video clip
