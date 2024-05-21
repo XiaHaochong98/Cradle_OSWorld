@@ -281,7 +281,11 @@ class PipelineRunner():
         # cur_screenshot_path, _ = self.gm.capture_screen() # @Pengjie: This is the first sense, we need to capture the screen here
         # mouse_x, mouse_y = io_env.get_mouse_position()
         # get screenshot from obs
-        cur_screenshot_path = obs['screenshot']
+        action_timestamp = datetime.datetime.now().strftime("%Y%m%d@%H%M%S")
+        screenshot_path=os.path.join(example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
+        with open(screenshot_path,"wb") as _f:
+            _f.write(obs['screenshot'])
+        cur_screenshot_path = screenshot_path
         logger.write(f"obs: {obs}")
         logger.write(f"cur_screenshot_path: {cur_screenshot_path}")
         time.sleep(2)
@@ -860,11 +864,11 @@ class PipelineRunner():
 
             logger.write("Reward: %.2f", reward)
             logger.write("Done: %s", self.stop_flag)
-            # Save screenshot and trajectory information
-            with open(os.path.join(example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png"),
-                      "wb") as _f:
+            # Save screenshot and trajectory information'
+            screenshot_path=os.path.join(example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
+            with open(screenshot_path,"wb") as _f:
                 _f.write(obs['screenshot'])
-        cur_screenshot_path = obs['screenshot']
+        cur_screenshot_path = screenshot_path
         # Sense here to avoid changes in state after action execution completes
 
         # First, check if interaction left the target environment
