@@ -311,10 +311,12 @@ class PipelineRunner():
                 params["step_idx"] = step_idx
                 params["example_result_dir"]=example_result_dir
                 # Gather information
+                logger.write('Gather information')
                 gather_information_params = self.gather_information(params, debug=False)
                 params.update(gather_information_params)
 
                 # Self reflection
+                logger.write('Self reflection')
                 self_reflection_params = self.self_reflection(params)
                 params.update(self_reflection_params)
 
@@ -323,10 +325,12 @@ class PipelineRunner():
                 # params.update(skill_retrieval_params)
 
                 # Decision making
+                logger.write('Decision making')
                 decision_making_params = self.decision_making(params)
                 params.update(decision_making_params)
 
                 # Information summary
+                logger.write('Information summary')
                 information_summary_params = self.information_summary(params)
                 params.update(information_summary_params)
 
