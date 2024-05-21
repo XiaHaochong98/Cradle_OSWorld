@@ -621,11 +621,11 @@ class PipelineRunner():
         previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
         current_augmentation = {}
         current_augmentation[constants.AUG_BASE_IMAGE_PATH] = cur_screenshot_path
+        current_augmentation[constants.AUG_MOUSE_IMG_PATH] = cur_screenshot_path
         # For osworld, we don't need to draw mouse pointer
         # # record the last collected mouse position
         # mouse_position = kget(params, 'mouse_position')
         mouse_position= False
-        config.use_sam_flag = False
         if mouse_position:
             mouse_x, mouse_y = mouse_position
             current_augmentation[constants.AUG_MOUSE_X] = mouse_x
@@ -1160,7 +1160,7 @@ def main(args):
     config.skill_retrieval = True
     config.skill_from_local = True
 
-    config.show_mouse_in_screenshot = True
+    config.show_mouse_in_screenshot = False
 
     # Set the number of images to be used in self-reflection
     config.self_reflection_image_num = 2

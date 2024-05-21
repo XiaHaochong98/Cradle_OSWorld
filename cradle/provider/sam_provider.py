@@ -30,12 +30,12 @@ class SamProvider(metaclass=Singleton):
         self.sam_predictor = None
         self.sam_mask_generator = None
 
-        try:
-            self.sam_model = sam_model_registry[config.sam_model_name](checkpoint="./cache/sam_vit_h_4b8939.pth").to("cuda")
-            self.sam_predictor = SamPredictor(self.sam_model)
-            self.sam_mask_generator = SamAutomaticMaskGenerator(self.sam_model, pred_iou_thresh=config.sam_pred_iou_thresh)
-        except Exception as e:
-            logger.error(f"Failed to load the SAM model. Make sure you follow the instructions on README to download the necessary files.\n{e}")
+        # try:
+        self.sam_model = sam_model_registry[config.sam_model_name](checkpoint="./cache/sam_vit_h_4b8939.pth").to("cuda")
+        self.sam_predictor = SamPredictor(self.sam_model)
+        self.sam_mask_generator = SamAutomaticMaskGenerator(self.sam_model, pred_iou_thresh=config.sam_pred_iou_thresh)
+    # except Exception as e:
+        #     logger.error(f"Failed to load the SAM model. Make sure you follow the instructions on README to download the necessary files.\n{e}")
 
 
     def get_som(self, screenshot_path):
