@@ -113,12 +113,12 @@
 from cradle.config import Config
 from cradle.log import Logger
 from cradle.gameio import IOEnvironment
-from cradle.environment.outlook.lifecycle.ui_control import pause_game, unpause_game
-from cradle.environment.outlook.skill_registry import SkillRegistry
+from cradle.environment.osworld.lifecycle.ui_control import pause_game, unpause_game
+from cradle.environment.osworld.skill_registry import SkillRegistry
 from cradle.environment import register_environment
 from cradle.utils.image_utils import draw_mouse_pointer
-import cradle.environment.outlook.atomic_skills
-import cradle.environment.outlook.composite_skills
+import cradle.environment.osworld.atomic_skills
+import cradle.environment.osworld.composite_skills
 
 config = Config()
 logger = Logger()
@@ -174,14 +174,27 @@ class Interface():
 
         # init skill library
         self.skill_library = [
-            "click_at_position",
-            "move_mouse_to_position",
-            "mouse_drag",
+            "move_to_position",
+            "click",
+            "mouse_down",
+            "mouse_up",
+            "right_click",
+            "double_click",
+            "drag_to_position",
+            "scroll",
             "type_text",
             "press_key",
-            "press_keys_combined",
-            "click_on_label",
-            "hover_over_label",
+            "key_down",
+            "key_up",
+            "press_hotkey",
+            # "click_at_position",
+            # "move_mouse_to_position",
+            # "mouse_drag",
+            # "type_text",
+            # "press_key",
+            # "press_keys_combined",
+            # "click_on_label",
+            # "hover_over_label",
         ]
 
         # init task description

@@ -862,6 +862,8 @@ class PipelineRunner():
             logger.write(f"Skill: {skill}")
             skill_name = skill.split('def ')[-1].split('(')[0]
             skill_source_code = self.gm.get_skill_source_code(skill_name)
+            # filter out the first line of skill_source_code which is the register
+            skill_source_code = skill_source_code.split('\n', 1)[1]
             logger.write(f"Skill source code: {skill_source_code}")
             skill_execution= skill
             skill_script = f"{import_source}\n{skill_source_code}\n{skill_execution}"
