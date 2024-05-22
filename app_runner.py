@@ -962,9 +962,11 @@ class PipelineRunner():
         logger.write(f'>> Calling INFORMATION SUMMARY')
 
         data = self.planner.information_summary(input=input)
-        history_summary = data['res_dict']['history_summary']
-        # entities_and_behaviors = data['res_dict']['entities_and_behaviors']
-        logger.write(f'R: Summary: {history_summary}')
+        history_summary= None
+        if 'history_summary' in data['res_dict']:
+            history_summary = data['res_dict']['history_summary']
+            # entities_and_behaviors = data['res_dict']['entities_and_behaviors']
+            logger.write(f'R: Summary: {history_summary}')
         # logger.write(f'R: entities_and_behaviors: {entities_and_behaviors}')
         # self.memory.add_summarization(history_summary)
 
