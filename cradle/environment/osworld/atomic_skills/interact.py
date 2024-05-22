@@ -314,3 +314,20 @@ def press_hotkey(keys):
 
     # Press the specified key combination
     pyautogui.hotkey(*keys)
+
+
+__all__ = [
+    "move_to_position",
+    "click",
+    "mouse_down",
+    "mouse_up",
+    "right_click",
+    "double_click",
+    "drag_to_position",
+    "scroll",
+    "type_text",
+    "press_key",
+    "key_down",
+    "key_up",
+    "press_hotkey",
+]

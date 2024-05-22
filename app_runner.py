@@ -100,10 +100,12 @@ class PipelineRunner():
         self.memory.load(config.memory_load_path)
 
         # Init game manager
+
         self.gm = GameManager(env_name=config.env_name,
                               embedding_provider=self.llm_provider)
 
         self.interface = self.gm.get_interface()
+
         self.planner_params = self.interface.planner_params
         self.skill_library = self.interface.skill_library
         self.task_description = self.interface.task_description
@@ -118,6 +120,7 @@ class PipelineRunner():
                                use_information_summary=self.use_information_summary)
 
         # Init skill library
+        logger.write(self.skill_library)
         if config.skill_retrieval:
             self.gm.register_available_skills(self.skill_library)
             self.skill_library = self.gm.retrieve_skills(query_task=self.task_description,
