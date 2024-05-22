@@ -125,7 +125,7 @@ logger = Logger()
 io_env = IOEnvironment()
 
 
-@register_environment("outlook")
+@register_environment("osworld")
 class Interface():
 
     def draw_mouse_pointer(self, frame, x, y):
