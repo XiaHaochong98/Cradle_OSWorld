@@ -168,7 +168,6 @@ class SkillRegistry:
     def get_from_skill_library(self, skill_name: str) -> Dict:
         skill = self.skill_registry[skill_name]
         docstring = inspect.getdoc(skill)
-        logger.write(f"skill_name:{skill_name}")
         if docstring:
 
             params = inspect.signature(skill).parameters
