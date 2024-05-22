@@ -30,17 +30,19 @@ EXPL_SKILL_LIB_FILE='skill_lib.json'
 BASIC_SKILL_LIB_FILE='skill_lib_basic.json'
 # @ Pengjie register skills here
 BASIC_SKILLS = [
-    "click_at_position",
-    "mouse_drag",
+    "move_to_position",
+    "click",
+    "mouse_down",
+    "mouse_up",
+    "right_click",
+    "double_click",
+    "drag_to_position",
+    "scroll",
     "type_text",
-    "save_page",
-    "return_to_previous_page",
     "press_key",
-    "press_keys_combined",
-    "click_on_label",
-    "go_back_to_target_application",
-    "zoom_in",
-    "zoom_out",
+    "key_down",
+    "key_up",
+    "press_hotkey",
 ]
 DENY_LIST_TERMS = []
 ALLOW_LIST_TERMS = []

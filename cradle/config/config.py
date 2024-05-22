@@ -206,6 +206,8 @@ class Config(metaclass=Singleton):
 
         # Get window candidates by name alternatives
         named_windows = cradle.gameio.gui_utils.get_named_windows_fallback(self.env_name, self.win_name_pattern)
+        if self.env_short_name=="osworld":
+            named_windows=[]
 
         if len(named_windows) == 0:
             self._config_warn(f'-----------------------------------------------------------------')

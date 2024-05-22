@@ -287,7 +287,7 @@ class PipelineRunner():
         with open(screenshot_path,"wb") as _f:
             _f.write(obs['screenshot'])
         cur_screenshot_path = screenshot_path
-        logger.write(f"obs: {obs}")
+        # logger.write(f"obs: {obs}")
         time.sleep(2)
 
         params.update({
@@ -1147,7 +1147,7 @@ def get_args_parser():
 
     parser = argparse.ArgumentParser("Cradle Prototype Runner")
     parser.add_argument("--providerConfig", type=str, default="./conf/openai_config.json", help="The path to the provider config file")
-    parser.add_argument("--envConfig", type=str, default="./conf/env_config_outlook.json", help="The path to the environment config file")
+    parser.add_argument("--envConfig", type=str, default="./conf/env_config_osworld.json", help="The path to the environment config file")
     return parser
 
 
