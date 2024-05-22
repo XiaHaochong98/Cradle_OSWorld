@@ -120,7 +120,7 @@ class PipelineRunner():
                                use_information_summary=self.use_information_summary)
 
         # Init skill library
-        logger.write(self.skill_library)
+        logger.write(f"Skill Library: {self.skill_library}")
         if config.skill_retrieval:
             self.gm.register_available_skills(self.skill_library)
             self.skill_library = self.gm.retrieve_skills(query_task=self.task_description,

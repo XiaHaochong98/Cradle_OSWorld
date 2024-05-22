@@ -477,6 +477,6 @@ class SkillRegistry:
                 if skill[SKILL_NAME_KEY] in self.necessary_skills:
                     self.skill_registry[skill[SKILL_NAME_KEY]] = SKILL_REGISTRY[skill[SKILL_NAME_KEY]]
                     self.skill_index.append(skill)
-
+        logger.write(f"self.skill_index, {self.skill_index}")
         for skill in self.skill_index:
             skill[SKILL_EMBEDDING_KEY] = self.get_embedding(skill[SKILL_NAME_KEY], inspect.getdoc(SKILL_REGISTRY[skill[SKILL_NAME_KEY]]))

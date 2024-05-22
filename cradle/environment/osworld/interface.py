@@ -7,6 +7,21 @@ from cradle.environment import register_environment
 from cradle.utils.image_utils import draw_mouse_pointer
 import cradle.environment.osworld.atomic_skills
 import cradle.environment.osworld.composite_skills
+from cradle.environment.osworld.atomic_skills import (
+move_to_position,
+click,
+mouse_down,
+mouse_up,
+right_click,
+double_click,
+drag_to_position,
+scroll,
+type_text,
+press_key,
+key_down,
+key_up,
+press_hotkey,
+)
 
 config = Config()
 logger = Logger()
@@ -26,6 +41,19 @@ class Interface():
         self.pause_game = pause_game
         self.unpause_game = unpause_game
         self.augment_image = self.draw_mouse_pointer
+        self.move_to_position = move_to_position
+        self.click = click
+        self.mouse_down = mouse_down
+        self.mouse_up = mouse_up
+        self.right_click = right_click
+        self.double_click = double_click
+        self.drag_to_position = drag_to_position
+        self.scroll = scroll
+        self.type_text = type_text
+        self.press_key = press_key
+        self.key_down = key_down
+        self.key_up = key_up
+        self.press_hotkey = press_hotkey
 
         # load skill registry
         self.SkillRegistry = SkillRegistry
