@@ -7,21 +7,21 @@ from cradle.environment import register_environment
 from cradle.utils.image_utils import draw_mouse_pointer
 import cradle.environment.osworld.atomic_skills
 import cradle.environment.osworld.composite_skills
-from cradle.environment.osworld.atomic_skills import (
-move_to_position,
-click,
-mouse_down,
-mouse_up,
-right_click,
-double_click,
-drag_to_position,
-scroll,
-type_text,
-press_key,
-key_down,
-key_up,
-press_hotkey,
-)
+# from cradle.environment.osworld.atomic_skills import (
+# move_to_position,
+# click,
+# mouse_down,
+# mouse_up,
+# right_click,
+# double_click,
+# drag_to_position,
+# scroll,
+# type_text,
+# press_key,
+# key_down,
+# key_up,
+# press_hotkey,
+# )
 
 config = Config()
 logger = Logger()
@@ -91,19 +91,28 @@ class Interface():
         # init skill library
         # @ Pengjie register skills here
         self.skill_library = [
-            "move_to_position",
-            "click",
-            "mouse_down",
-            "mouse_up",
-            "right_click",
-            "double_click",
-            "drag_to_position",
-            "scroll",
+            # "move_to_position",
+            # "click",
+            # "mouse_down",
+            # "mouse_up",
+            # "right_click",
+            # "double_click",
+            # "drag_to_position",
+            # "scroll",
+            # "type_text",
+            # "press_key",
+            # "key_down",
+            # "key_up",
+            # "press_hotkey",
+
+            "click_at_position",
+            "move_mouse_to_position",
+            "mouse_drag",
             "type_text",
             "press_key",
-            "key_down",
-            "key_up",
-            "press_hotkey",
+            "press_keys_combined",
+            "click_on_label",
+            "hover_over_label",
         ]
 
         # init task description
