@@ -513,6 +513,19 @@ SKILL_CODE_HASH_KEY = 'skill_code_base64'
 EXPL_SKILL_LIB_FILE='skill_lib.json'
 BASIC_SKILL_LIB_FILE='skill_lib_basic.json'
 BASIC_SKILLS = [
+    # "move_to_position",
+    # "click",
+    # "mouse_down",
+    # "mouse_up",
+    # "right_click",
+    # "double_click",
+    # "drag_to_position",
+    # "scroll",
+    # "type_text",
+    # "press_key",
+    # "key_down",
+    # "key_up",
+    # "press_hotkey",
     "click_at_position",
     "move_mouse_to_position",
     "mouse_drag",

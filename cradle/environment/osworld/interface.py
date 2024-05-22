@@ -154,20 +154,20 @@ class Interface():
             ],
             "prompt_paths": {
                 "inputs": {
-                    "decision_making": "./res/outlook/prompts/inputs/decision_making.json",
-                    "gather_information": "./res/outlook/prompts/inputs/gather_information.json",
-                    "success_detection": "./res/outlook/prompts/inputs/success_detection.json",
-                    "self_reflection": "./res/outlook/prompts/inputs/self_reflection.json",
-                    "information_summary": "./res/outlook/prompts/inputs/information_summary.json",
-                    "gather_text_information": "./res/outlook/prompts/inputs/gather_text_information.json"
+                    "decision_making": "./res/osworld/prompts/inputs/decision_making.json",
+                    "gather_information": "./res/osworld/prompts/inputs/gather_information.json",
+                    "success_detection": "./res/osworld/prompts/inputs/success_detection.json",
+                    "self_reflection": "./res/osworld/prompts/inputs/self_reflection.json",
+                    "information_summary": "./res/osworld/prompts/inputs/information_summary.json",
+                    "gather_text_information": "./res/osworld/prompts/inputs/gather_text_information.json"
                 },
                 "templates": {
-                    "decision_making": "./res/outlook/prompts/templates/decision_making.prompt",
-                    "gather_information": "./res/outlook/prompts/templates/gather_information.prompt",
-                    "success_detection": "./res/outlook/prompts/templates/success_detection.prompt",
-                    "self_reflection": "./res/outlook/prompts/templates/self_reflection.prompt",
-                    "information_summary": "./res/outlook/prompts/templates/information_summary.prompt",
-                    "gather_text_information": "./res/outlook/prompts/templates/gather_text_information.prompt"
+                    "decision_making": "./res/osworld/prompts/templates/decision_making.prompt",
+                    "gather_information": "./res/osworld/prompts/templates/gather_information.prompt",
+                    "success_detection": "./res/osworld/prompts/templates/success_detection.prompt",
+                    "self_reflection": "./res/osworld/prompts/templates/self_reflection.prompt",
+                    "information_summary": "./res/osworld/prompts/templates/information_summary.prompt",
+                    "gather_text_information": "./res/osworld/prompts/templates/gather_text_information.prompt"
                 },
             }
         }
