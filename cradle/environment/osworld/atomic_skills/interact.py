@@ -29,18 +29,18 @@ def move_mouse_to_position(x, y):
     pyautogui.moveTo(x, y)
 
 @register_skill("click_at_position")
-def click_at_position(button='left', x=None, y=None, num_clicks=1):
+def click_at_position(mouse_button='left', x=None, y=None, num_clicks=1):
     """
     Click the specified mouse button at the given position.
 
     Parameters:
-    - button: The button to click ('left', 'right', 'middle'). Defaults to 'left'.
+    - mouse_button: The button to click ('left', 'right', 'middle'). Defaults to 'left'.
     - x: The x-coordinate to click at. Must be within the screen width range.
     - y: The y-coordinate to click at. Must be within the screen height range.
     - num_clicks: The number of times to click. Defaults to 1. Must be 1, 2, or 3.
     """
-    if button not in ['left', 'right', 'middle']:
-        raise ValueError(f"Invalid button '{button}'. Must be 'left', 'right', or 'middle'.")
+    if mouse_button not in ['left', 'right', 'middle']:
+        raise ValueError(f"Invalid button '{mouse_button}'. Must be 'left', 'right', or 'middle'.")
 
     if num_clicks not in [1, 2, 3]:
         raise ValueError(f"Invalid num_clicks '{num_clicks}'. Must be 1, 2, or 3.")
@@ -54,9 +54,9 @@ def click_at_position(button='left', x=None, y=None, num_clicks=1):
         if not (0 <= y <= screen_height):
             raise ValueError(f"y-coordinate {y} is out of range. It should be between 0 and {screen_height}.")
 
-        pyautogui.click(x=x, y=y, button=button, clicks=num_clicks)
+        pyautogui.click(x=x, y=y, button=mouse_button, clicks=num_clicks)
     else:
-        pyautogui.click(button=button, clicks=num_clicks)
+        pyautogui.click(button=mouse_button, clicks=num_clicks)
 
 @register_skill("mouse_down")
 def mouse_down(button='left'):
