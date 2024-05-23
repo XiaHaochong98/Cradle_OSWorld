@@ -286,7 +286,7 @@ class PipelineRunner():
         # mouse_x, mouse_y = io_env.get_mouse_position()
         # get screenshot from obs
         action_timestamp = datetime.datetime.now().strftime("%Y%m%d@%H%M%S")
-        screenshot_path=os.path.join(example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
+        screenshot_path=os.path.join(config.work_dir,example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
         with open(screenshot_path,"wb") as _f:
             _f.write(obs['screenshot'])
         cur_screenshot_path = screenshot_path
@@ -873,7 +873,7 @@ class PipelineRunner():
             logger.write(f"Reward: {reward}")
             logger.write(f"Done: {self.stop_flag}")
             # Save screenshot and trajectory information'
-            screenshot_path=os.path.join(example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
+            screenshot_path=os.path.join(config.work_dir,example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
             with open(screenshot_path,"wb") as _f:
                 _f.write(obs['screenshot'])
         cur_screenshot_path = screenshot_path
