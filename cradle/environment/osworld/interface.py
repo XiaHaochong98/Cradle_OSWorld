@@ -8,8 +8,8 @@ from cradle.utils.image_utils import draw_mouse_pointer
 import cradle.environment.osworld.atomic_skills
 # import cradle.environment.osworld.composite_skills
 from cradle.environment.osworld.atomic_skills import (
-move_to_position,
-click,
+move_mouse_to_position,
+click_at_position,
 mouse_down,
 mouse_up,
 right_click,
@@ -41,8 +41,8 @@ class Interface():
         self.pause_game = pause_game
         self.unpause_game = unpause_game
         self.augment_image = self.draw_mouse_pointer
-        self.move_to_position = move_to_position
-        self.click = click
+        self.move_mouse_to_position = move_mouse_to_position
+        self.click_at_position = click_at_position
         self.mouse_down = mouse_down
         self.mouse_up = mouse_up
         self.right_click = right_click
@@ -91,8 +91,8 @@ class Interface():
         # init skill library
         # @ Pengjie register skills here
         self.skill_library = [
-            "move_to_position",
-            "click",
+            "move_mouse_to_position",
+            "click_at_position",
             "mouse_down",
             "mouse_up",
             "right_click",

@@ -30,8 +30,8 @@ EXPL_SKILL_LIB_FILE='skill_lib.json'
 BASIC_SKILL_LIB_FILE='skill_lib_basic.json'
 # @ Pengjie register skills here
 BASIC_SKILLS = [
-    "move_to_position",
-    "click",
+    "move_mouse_to_position",
+    "click_at_position",
     "mouse_down",
     "mouse_up",
     "right_click",

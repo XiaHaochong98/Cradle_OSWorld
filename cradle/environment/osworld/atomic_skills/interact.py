@@ -9,8 +9,8 @@ config = Config()
 logger = Logger()
 io_env = IOEnvironment()
 
-@register_skill("move_to_position")
-def move_to_position(x, y):
+@register_skill("move_mouse_to_position")
+def move_mouse_to_position(x, y):
     """
     Move the cursor to the specified position (x, y).
 
@@ -28,8 +28,8 @@ def move_to_position(x, y):
 
     pyautogui.moveTo(x, y)
 
-@register_skill("click")
-def click(button='left', x=None, y=None, num_clicks=1):
+@register_skill("click_at_position")
+def click_at_position(button='left', x=None, y=None, num_clicks=1):
     """
     Click the specified mouse button at the given position.
 
@@ -249,8 +249,8 @@ def press_hotkey(keys):
 
 
 __all__ = [
-    "move_to_position",
-    "click",
+    "move_mouse_to_position",
+    "click_at_position",
     "mouse_down",
     "mouse_up",
     "right_click",
