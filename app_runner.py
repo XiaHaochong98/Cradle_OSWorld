@@ -249,7 +249,7 @@ class PipelineRunner():
 
     def run_single_example_cradle(self,agent, env, example, max_steps, instruction, args, example_result_dir, scores):
         # osworld init
-        logger.write(f"Running single example with instruction: {instruction}", )
+        logger.write(f"Running single example with instruction: {instruction}")
         self.reset()
         obs = env.reset(task_config=example)
         step_idx = 0
