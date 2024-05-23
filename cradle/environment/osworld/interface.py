@@ -23,6 +23,13 @@ key_up,
 press_hotkey,
 )
 
+from cradle.environment.osworld.composite_skills import (
+click_on_label,
+double_click_on_label,
+hover_over_label,
+mouse_drag_to_label,
+)
+
 config = Config()
 logger = Logger()
 io_env = IOEnvironment()
@@ -54,6 +61,11 @@ class Interface():
         self.key_down = key_down
         self.key_up = key_up
         self.press_hotkey = press_hotkey
+
+        self.click_on_label = click_on_label
+        self.double_click_on_label = double_click_on_label
+        self.hover_over_label = hover_over_label
+        self.mouse_drag_to_label = mouse_drag_to_label
 
         # load skill registry
         self.SkillRegistry = SkillRegistry
