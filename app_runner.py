@@ -870,8 +870,8 @@ class PipelineRunner():
             logger.write(f"Skill script: {skill_script}")
             obs, reward, self.stop_flag, info = env.step(skill_script, 0.0)
 
-            logger.write("Reward: %.2f", reward)
-            logger.write("Done: %s", self.stop_flag)
+            logger.write(f"Reward: {reward}")
+            logger.write(f"Done: {self.stop_flag}")
             # Save screenshot and trajectory information'
             screenshot_path=os.path.join(example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
             with open(screenshot_path,"wb") as _f:
@@ -963,6 +963,8 @@ class PipelineRunner():
 
         data = self.planner.information_summary(input=input)
         history_summary= None
+        subtask_description= None
+        subtask_reasoning= None
         if 'history_summary' in data['res_dict']:
             history_summary = data['res_dict']['history_summary']
             # entities_and_behaviors = data['res_dict']['entities_and_behaviors']
@@ -971,11 +973,12 @@ class PipelineRunner():
         # self.memory.add_summarization(history_summary)
 
         # self.memory.add_recent_history("image", cur_screen_shot_path)
-
-        subtask_description = data['res_dict']['subtask']
-        subtask_reasoning = data['res_dict']['subtask_reasoning']
-        logger.write(f'R: Subtask: {subtask_description}')
-        logger.write(f'R: Subtask reasoning: {subtask_reasoning}')
+        if 'subtask' in data['res_dict'].keys():
+            subtask_description = data['res_dict']['subtask']
+            logger.write(f'R: Subtask: {subtask_description}')
+        if 'subtask_reasoning' in data['res_dict'].keys():
+            subtask_reasoning = data['res_dict']['subtask_reasoning']
+            logger.write(f'R: Subtask reasoning: {subtask_reasoning}')
 
         if 'task_decomposition' in data['res_dict'].keys():
             task_decomposition = data['res_dict']['task_decomposition']
