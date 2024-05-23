@@ -6,15 +6,15 @@ from cradle.environment.osworld.skill_registry import SkillRegistry
 from cradle.environment import register_environment
 from cradle.utils.image_utils import draw_mouse_pointer
 import cradle.environment.osworld.atomic_skills
-# import cradle.environment.osworld.composite_skills
+import cradle.environment.osworld.composite_skills
 from cradle.environment.osworld.atomic_skills import (
-move_mouse_to_position,
-click_at_position,
+# move_mouse_to_position,
+# click_at_position,
 mouse_down,
 mouse_up,
 # right_click,
-double_click_at_position,
-mouse_drag,
+# double_click_at_position,
+# mouse_drag,
 scroll,
 type_text,
 press_key,
@@ -41,13 +41,13 @@ class Interface():
         self.pause_game = pause_game
         self.unpause_game = unpause_game
         self.augment_image = self.draw_mouse_pointer
-        self.move_mouse_to_position = move_mouse_to_position
-        self.click_at_position = click_at_position
+        # self.move_mouse_to_position = move_mouse_to_position
+        # self.click_at_position = click_at_position
         self.mouse_down = mouse_down
         self.mouse_up = mouse_up
         # self.right_click = right_click
-        self.double_click_at_position = double_click_at_position
-        self.mouse_drag = mouse_drag
+        # self.double_click_at_position = double_click_at_position
+        # self.mouse_drag = mouse_drag
         self.scroll = scroll
         self.type_text = type_text
         self.press_key = press_key
@@ -91,13 +91,13 @@ class Interface():
         # init skill library
         # @ Pengjie register skills here
         self.skill_library = [
-            "move_mouse_to_position",
-            "click_at_position",
+            # "move_mouse_to_position",
+            # "click_at_position",
             "mouse_down",
             "mouse_up",
-            "right_click",
-            "double_click_at_position",
-            "drag_to_position",
+            # "right_click",
+            # "double_click_at_position",
+            # "drag_to_position",
             "scroll",
             "type_text",
             "press_key",
@@ -107,7 +107,7 @@ class Interface():
             "click_on_label",
             "double_click_on_label",
             "hover_over_label",
-            "mouse_drag_with_label"
+            "mouse_drag_to_label"
         ]
 
         # init task description
