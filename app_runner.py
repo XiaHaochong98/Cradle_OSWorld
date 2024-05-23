@@ -1060,7 +1060,7 @@ def pre_process_skill_steps(skill_steps: List[str], som_map: Dict) -> List[str]:
             processed_skill_steps[i] = step
 
         # Change label_id to x, y coordinates for click_on_label and hover_on_label
-        if 'click_on_label(' in step or 'hover_on_label(' in step:
+        if 'click_on_label(' in step or 'hover_on_label(' in step or 'double_click_on_label(' in step or "mouse_drag_to_label(" in step:
             skill = step
             tokens = skill.split('(')
             args_suffix_str = tokens[1]
@@ -1077,6 +1077,8 @@ def pre_process_skill_steps(skill_steps: List[str], som_map: Dict) -> List[str]:
                         processed_skill_steps[i] = f'click_at_position({args_suffix_str} # Click on {label_key.strip("=")}: {label_id}'
                     elif func_str.startswith('double_'):
                         processed_skill_steps[i] = f'double_click_at_position({args_suffix_str} # Double click on {label_key.strip("=")}: {label_id}'
+                    elif func_str.startswith('mouse_drag_to_label'):
+                        processed_skill_steps[i] = f'mouse_drag({args_suffix_str} # Drag things to {label_key.strip("=")}: {label_id}'
                     else:
                         processed_skill_steps[i] = f'move_mouse_to_position({args_suffix_str} # Move to {label_key.strip("=")}: {label_id}'
                 else:
@@ -1091,6 +1093,10 @@ def pre_process_skill_steps(skill_steps: List[str], som_map: Dict) -> List[str]:
                     args_suffix_str = args_suffix_str.replace(coords_str, f'x={x}, y={y}')
                     if func_str.startswith('click_'):
                         processed_skill_steps[i] = f'click_at_position({args_suffix_str}'
+                    elif func_str.startswith('double_'):
+                        processed_skill_steps[i] = f'double_click_at_position({args_suffix_str}'
+                    elif func_str.startswith('mouse_drag_to_label'):
+                        processed_skill_steps[i] = f'mouse_drag({args_suffix_str}'
                     else:
                         processed_skill_steps[i] = f'move_mouse_to_position({args_suffix_str}'
                 else:
