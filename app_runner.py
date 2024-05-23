@@ -286,6 +286,10 @@ class PipelineRunner():
         # mouse_x, mouse_y = io_env.get_mouse_position()
         # get screenshot from obs
         action_timestamp = datetime.datetime.now().strftime("%Y%m%d@%H%M%S")
+        # create folder if not exist
+        screenshot_folder=os.path.join(config.work_dir,example_result_dir)
+        if not os.path.exists(screenshot_folder):
+            os.makedirs(screenshot_folder)
         screenshot_path=os.path.join(config.work_dir,example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
         with open(screenshot_path,"wb") as _f:
             _f.write(obs['screenshot'])
