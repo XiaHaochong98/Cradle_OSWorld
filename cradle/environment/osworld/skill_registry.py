@@ -34,15 +34,19 @@ BASIC_SKILLS = [
     "click_at_position",
     "mouse_down",
     "mouse_up",
-    "right_click",
-    "double_click",
-    "drag_to_position",
+    # "right_click",
+    "double_click_at_position",
+    "mouse_drag",
     "scroll",
     "type_text",
     "press_key",
     "key_down",
     "key_up",
     "press_hotkey",
+    "click_on_label",
+    "double_click_on_label",
+    "hover_over_label",
+    "mouse_drag_with_label"
 ]
 DENY_LIST_TERMS = []
 ALLOW_LIST_TERMS = []

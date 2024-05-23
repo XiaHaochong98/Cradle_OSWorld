@@ -85,30 +85,30 @@ def mouse_up(button='left'):
 
     pyautogui.mouseUp(button=button)
 
-@register_skill("right_click")
-def right_click(x=None, y=None):
-    """
-    Right-click at the specified position, or at the current position if no coordinates are provided.
+# @register_skill("right_click")
+# def right_click(x=None, y=None):
+#     """
+#     Right-click at the specified position, or at the current position if no coordinates are provided.
+#
+#     Parameters:
+#     - x: The x-coordinate to right-click at. Must be within the screen width range.
+#     - y: The y-coordinate to right-click at. Must be within the screen height range.
+#     """
+#     if x is not None and y is not None:
+#         screen_width, screen_height = pyautogui.size()
+#
+#         if not (0 <= x <= screen_width):
+#             raise ValueError(f"x-coordinate {x} is out of range. It should be between 0 and {screen_width}.")
+#
+#         if not (0 <= y <= screen_height):
+#             raise ValueError(f"y-coordinate {y} is out of range. It should be between 0 and {screen_height}.")
+#
+#         pyautogui.rightClick(x=x, y=y)
+#     else:
+#         pyautogui.rightClick()
 
-    Parameters:
-    - x: The x-coordinate to right-click at. Must be within the screen width range.
-    - y: The y-coordinate to right-click at. Must be within the screen height range.
-    """
-    if x is not None and y is not None:
-        screen_width, screen_height = pyautogui.size()
-
-        if not (0 <= x <= screen_width):
-            raise ValueError(f"x-coordinate {x} is out of range. It should be between 0 and {screen_width}.")
-
-        if not (0 <= y <= screen_height):
-            raise ValueError(f"y-coordinate {y} is out of range. It should be between 0 and {screen_height}.")
-
-        pyautogui.rightClick(x=x, y=y)
-    else:
-        pyautogui.rightClick()
-
-@register_skill("double_click")
-def double_click(x=None, y=None):
+@register_skill("double_click_at_position")
+def double_click_at_position(x=None, y=None):
     """
     Double-click at the specified position, or at the current position if no coordinates are provided.
 
@@ -128,8 +128,8 @@ def double_click(x=None, y=None):
     else:
         pyautogui.doubleClick()
 
-@register_skill("drag_to_position")
-def drag_to_position(x, y):
+@register_skill("mouse_drag")
+def mouse_drag(x, y):
     """
     Drag the cursor to the specified position (x, y) with the left button pressed.
 
@@ -253,13 +253,14 @@ __all__ = [
     "click_at_position",
     "mouse_down",
     "mouse_up",
-    "right_click",
-    "double_click",
-    "drag_to_position",
+    # "right_click",
+    "double_click_at_position",
+    "mouse_drag",
     "scroll",
     "type_text",
     "press_key",
     "key_down",
     "key_up",
     "press_hotkey",
+
 ]

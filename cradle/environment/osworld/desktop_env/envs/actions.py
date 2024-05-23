@@ -85,7 +85,7 @@ ACTION_SPACE = [
         }
     },
     {
-        "action_type": "DOUBLE_CLICK",
+        "action_type": "double_click_at_position",
         "note": "double click at the current position if x and y are not specified, otherwise double click at the specified position",
         "parameters": {
             "x": {

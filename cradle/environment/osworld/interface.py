@@ -12,9 +12,9 @@ move_mouse_to_position,
 click_at_position,
 mouse_down,
 mouse_up,
-right_click,
-double_click,
-drag_to_position,
+# right_click,
+double_click_at_position,
+mouse_drag,
 scroll,
 type_text,
 press_key,
@@ -45,9 +45,9 @@ class Interface():
         self.click_at_position = click_at_position
         self.mouse_down = mouse_down
         self.mouse_up = mouse_up
-        self.right_click = right_click
-        self.double_click = double_click
-        self.drag_to_position = drag_to_position
+        # self.right_click = right_click
+        self.double_click_at_position = double_click_at_position
+        self.mouse_drag = mouse_drag
         self.scroll = scroll
         self.type_text = type_text
         self.press_key = press_key
@@ -96,7 +96,7 @@ class Interface():
             "mouse_down",
             "mouse_up",
             "right_click",
-            "double_click",
+            "double_click_at_position",
             "drag_to_position",
             "scroll",
             "type_text",
@@ -104,6 +104,10 @@ class Interface():
             "key_down",
             "key_up",
             "press_hotkey",
+            "click_on_label",
+            "double_click_on_label",
+            "hover_over_label",
+            "mouse_drag_with_label"
         ]
 
         # init task description

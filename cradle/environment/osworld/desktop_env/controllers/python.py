@@ -163,7 +163,7 @@ class PythonController:
             else:
                 raise Exception(f"Unknown parameters: {parameters}")
 
-        elif action_type == "DOUBLE_CLICK":
+        elif action_type == "double_click_at_position":
             if parameters == {} or None:
                 self.execute_python_command("pyautogui.doubleClick()")
             elif "x" in parameters and "y" in parameters:
