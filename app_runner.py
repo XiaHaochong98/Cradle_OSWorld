@@ -249,7 +249,7 @@ class PipelineRunner():
 
     def run_single_example_cradle(self,agent, env, example, max_steps, instruction, args, example_result_dir, scores):
         # osworld init
-        logger.write("Running single example with instruction: %s", instruction)
+        logger.write(f"Running single example with instruction: {instruction}", )
         self.reset()
         obs = env.reset(task_config=example)
         step_idx = 0
@@ -673,7 +673,7 @@ class PipelineRunner():
                 current_augmentation[constants.AUG_SOM_IMAGE_PATH] = som_img_path
                 current_augmentation[constants.AUG_SOM_MAP] = som_map.copy()
                 current_augmentation[constants.LENGTH_OF_SOM_MAP] = len(som_map.keys())
-
+            logger.write("som_map: ", current_augmentation[constants.AUG_SOM_MAP])
             input["image_introduction"][0]["path"] = current_augmentation[constants.AUG_SOM_IMAGE_PATH]
             input[constants.LENGTH_OF_SOM_MAP] = current_augmentation[constants.LENGTH_OF_SOM_MAP]
 
