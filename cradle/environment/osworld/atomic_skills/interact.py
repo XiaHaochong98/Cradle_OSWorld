@@ -249,13 +249,13 @@ def press_hotkey(keys):
 
 
 __all__ = [
-    # "move_mouse_to_position",
-    # "click_at_position",
+    "move_mouse_to_position",
+    "click_at_position",
     "mouse_down",
     "mouse_up",
     # "right_click",
-    # "double_click_at_position",
-    # "mouse_drag",
+    "double_click_at_position",
+    "mouse_drag",
     "scroll",
     "type_text",
     "press_key",
