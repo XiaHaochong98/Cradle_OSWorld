@@ -109,7 +109,7 @@ class Interface():
             "mouse_up",
             # "right_click",
             "double_click_at_position",
-            "drag_to_position",
+            "mouse_drag",
             "scroll",
             "type_text",
             "press_key",
