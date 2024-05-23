@@ -365,7 +365,6 @@ class SkillRegistry:
 
 
     def register_available_skills(self, candidates:List[str]) -> None:
-        logger.write(f"self.skill_registry {self.skill_registry}")
         for skill_key in candidates:
             if skill_key not in self.skill_registry:
                 logger.error(f"Skill '{skill_key}' does not exist.")
