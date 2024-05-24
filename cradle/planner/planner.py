@@ -39,7 +39,7 @@ async def gather_information_get_completion_parallel(llm_provider, text_input_ma
     text_input["image_introduction"] = image_introduction
     message_prompts = llm_provider.assemble_prompt(template_str=get_text_template, params=text_input)
 
-    logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
+    # logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
 
     success_flag = False
     while not success_flag:
@@ -88,7 +88,7 @@ def gather_information_get_completion_sequence(llm_provider, text_input_map, cur
 
     message_prompts = llm_provider.assemble_prompt(template_str=get_text_template, params=text_input)
 
-    logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
+    # logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
 
     response, info = llm_provider.create_completion(message_prompts)
 
@@ -295,7 +295,7 @@ class GatherInformation():
                 # Call the LLM provider for gather information json
                 message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
 
-                logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
+                # logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
 
                 gather_information_success_flag = False
                 while gather_information_success_flag is False:
@@ -437,7 +437,7 @@ class DecisionMaking():
         try:
             message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
 
-            logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
+            # logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
 
             # Call the LLM provider for decision making
             response, info = self.llm_provider.create_completion(message_prompts)
@@ -499,7 +499,7 @@ class SuccessDetection():
             # Call the LLM provider for success detection
             message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
 
-            logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
+            # logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
 
             response, info = self.llm_provider.create_completion(message_prompts)
 
@@ -555,7 +555,7 @@ class SelfReflection():
             # Call the LLM provider for self reflection
             message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
 
-            logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
+            # logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
 
             response, info = self.llm_provider.create_completion(message_prompts)
 
@@ -613,7 +613,7 @@ class InformationSummary():
             # Call the LLM provider for information summary
             message_prompts = self.llm_provider.assemble_prompt(template_str=self.template, params=input)
 
-            logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
+            # logger.debug(f'{logger.UPSTREAM_MASK}{json.dumps(message_prompts, ensure_ascii=False)}\n')
 
             response, info = self.llm_provider.create_completion(message_prompts)
 
