@@ -198,10 +198,10 @@ class PipelineRunner():
 
         # Start the osworld environment
         env = DesktopEnv(
-            path_to_vm=osworld_args.path_to_vm,
+            path_to_vm=None,
             action_space="pyautogui",
             screen_size=(osworld_args.screen_width, osworld_args.screen_height),
-            headless=osworld_args.headless,
+            headless=True,
             require_a11y_tree=osworld_args.observation_type in ["a11y_tree", "screenshot_a11y_tree", "som"],
         )
 
@@ -240,7 +240,7 @@ class PipelineRunner():
                     env.controller.end_recording(os.path.join(example_result_dir, "recording.mp4"))
                     with open(os.path.join(example_result_dir, "traj.jsonl"), "a") as f:
                         f.write(json.dumps({
-                            "Error": f"Time limit exceeded in {domain}/{example_id}"
+                            "Error": f"Error in {domain}/{example_id}"
                         }))
                         f.write("\n")
 
@@ -390,27 +390,27 @@ class PipelineRunner():
                 "screenshot_a11y_tree",
                 "som"
             ],
-            default="a11y_tree",
+            default="screenshot",
             help="Observation type",
         )
         parser.add_argument("--screen_width", type=int, default=1920)
         parser.add_argument("--screen_height", type=int, default=1080)
         parser.add_argument("--sleep_after_execution", type=float, default=0.0)
-        parser.add_argument("--max_steps", type=int, default=15)
+        parser.add_argument("--max_steps", type=int, default=20)
 
         # agent config
         parser.add_argument("--max_trajectory_length", type=int, default=3)
         parser.add_argument("--test_config_base_dir", type=str, default="evaluation_examples")
 
         # lm config
-        parser.add_argument("--model", type=str, default="gpt-4-0125-preview")
+        parser.add_argument("--model", type=str, default="gpt-4-vision-preview")
         parser.add_argument("--temperature", type=float, default=1.0)
         parser.add_argument("--top_p", type=float, default=0.9)
         parser.add_argument("--max_tokens", type=int, default=1500)
         parser.add_argument("--stop_token", type=str, default=None)
 
         # example config
-        parser.add_argument("--domain", type=str, default="all")
+        parser.add_argument("--domain", type=str, default="os")
         parser.add_argument("--test_all_meta_path", type=str, default="evaluation_examples/test_all.json")
 
         # logging related
