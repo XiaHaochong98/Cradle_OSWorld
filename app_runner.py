@@ -872,27 +872,30 @@ class PipelineRunner():
         # exec_info = self.gm.execute_actions(skill_steps)
         if skill_steps != ['']:
             for skill in skill_steps:
-                # logger.write("Step %d: %s", step_idx + 1, action)
-                action_timestamp = datetime.datetime.now().strftime("%Y%m%d@%H%M%S")
-                # assamble the skill to a script for osworld
-                import_source="import pyautogui"
-                # logger.write(f"Skill: {skill}")
-                skill_name = skill.split('def ')[-1].split('(')[0]
-                skill_source_code = self.gm.get_skill_source_code(skill_name)
-                # filter out the first line of skill_source_code which is the register
-                skill_source_code = skill_source_code.split('\n', 1)[1]
-                # logger.write(f"Skill source code: {skill_source_code}")
-                skill_execution= skill
-                skill_script = f"{import_source}\n{skill_source_code}\n{skill_execution}"
-                logger.write(f"Skill script: {skill_script}")
-                obs, reward, self.stop_flag, info = env.step(skill_script, 0.0)
+                try:
+                    # logger.write("Step %d: %s", step_idx + 1, action)
+                    action_timestamp = datetime.datetime.now().strftime("%Y%m%d@%H%M%S")
+                    # assamble the skill to a script for osworld
+                    import_source="import pyautogui"
+                    # logger.write(f"Skill: {skill}")
+                    skill_name = skill.split('def ')[-1].split('(')[0]
+                    skill_source_code = self.gm.get_skill_source_code(skill_name)
+                    # filter out the first line of skill_source_code which is the register
+                    skill_source_code = skill_source_code.split('\n', 1)[1]
+                    # logger.write(f"Skill source code: {skill_source_code}")
+                    skill_execution= skill
+                    skill_script = f"{import_source}\n{skill_source_code}\n{skill_execution}"
+                    logger.write(f"Skill script: {skill_script}")
+                    obs, reward, self.stop_flag, info = env.step(skill_script, 0.0)
 
-                logger.write(f"Reward: {reward}")
-                logger.write(f"Done: {self.stop_flag}")
-                # Save screenshot and trajectory information'
-                screenshot_path=os.path.join(config.work_dir,example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
-                with open(screenshot_path,"wb") as _f:
-                    _f.write(obs['screenshot'])
+                    logger.write(f"Reward: {reward}")
+                    logger.write(f"Done: {self.stop_flag}")
+                    # Save screenshot and trajectory information'
+                    screenshot_path=os.path.join(config.work_dir,example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
+                    with open(screenshot_path,"wb") as _f:
+                        _f.write(obs['screenshot'])
+                except:
+                    logger.error(f"Error executing action: {skill}")
             cur_screenshot_path = screenshot_path
         # Sense here to avoid changes in state after action execution completes
 
