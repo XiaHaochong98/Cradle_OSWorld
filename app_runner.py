@@ -870,7 +870,8 @@ class PipelineRunner():
 
         # osworld execute actions
         # exec_info = self.gm.execute_actions(skill_steps)
-        info="No skill have been executed because of wrong skill output."
+        info="No skill have been executed because of wrong skill output. All the info are kept as the same with last round."
+        cur_screenshot_path=input["image_introduction"][-1]["path"]
         if skill_steps != ['']:
             for skill in skill_steps:
                 try:
@@ -912,13 +913,17 @@ class PipelineRunner():
 
         # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
         # pre_action = exec_info[constants.EXECUTED_SKILLS]
-        # TODO: not fully adapted
-        pre_action=skill_steps
-        exec_info = info
-        self.memory.add_recent_history("action", pre_action)
-        self.memory.add_recent_history("decision_making_reasoning", pre_decision_making_reasoning)
-        self.memory.add_recent_history(constants.KEY_REASON_OF_LAST_ACTION, key_reason_of_last_action)
-        previous_augmentation = current_augmentation.copy()
+            pre_action=skill_steps
+            exec_info = info
+            self.memory.add_recent_history("action", pre_action)
+            self.memory.add_recent_history("decision_making_reasoning", pre_decision_making_reasoning)
+            self.memory.add_recent_history(constants.KEY_REASON_OF_LAST_ACTION, key_reason_of_last_action)
+            previous_augmentation = current_augmentation.copy()
+        else:
+            # If no skill was executed, keep the previous augmentation
+            pre_action=skill_steps
+            exec_info = info
+            previous_augmentation = current_augmentation.copy()
 
         res_params = {
             "pre_action": pre_action,
