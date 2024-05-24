@@ -774,7 +774,17 @@ class PipelineRunner():
         if success_detection:
             input[constants.SUCCESS_DETECTION] = success_detection
 
-        input['skill_library'] = self.skill_library
+        skill_to_be_filtered= [
+            "move_mouse_to_position",
+            "click_at_position",
+            "double_click_at_position"
+        ]
+        # filter the skill library with the skill_to_be_filtered
+        filtered_skill_library= [skill for skill in self.skill_library if skill not in skill_to_be_filtered]
+        input['skill_library'] = filtered_skill_library
+        logger.write(f'Skill space: {input["skill_library"]}')
+
+
         input['info_summary'] = self.memory.get_summarization()
 
         # @TODO: few shots should be REMOVED in prompt decision making if not used
