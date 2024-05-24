@@ -870,6 +870,7 @@ class PipelineRunner():
 
         # osworld execute actions
         # exec_info = self.gm.execute_actions(skill_steps)
+        info="No skill have been executed because of wrong skill output."
         if skill_steps != ['']:
             for skill in skill_steps:
                 try:
