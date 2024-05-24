@@ -9,6 +9,7 @@ config = Config()
 logger = Logger()
 io_env = IOEnvironment()
 
+
 @register_skill("move_mouse_to_position")
 def move_mouse_to_position(x, y):
     """
@@ -19,12 +20,16 @@ def move_mouse_to_position(x, y):
     - y: The y-coordinate of the position to move the cursor to. Must be within the screen height range.
     """
     screen_width, screen_height = pyautogui.size()
+    offset = 0
+    x = int((x - offset) * screen_width)
+    y = int((y - offset) * screen_height)
 
     if not (0 <= x <= screen_width):
         raise ValueError(f"x-coordinate {x} is out of range. It should be between 0 and {screen_width}.")
 
     if not (0 <= y <= screen_height):
         raise ValueError(f"y-coordinate {y} is out of range. It should be between 0 and {screen_height}.")
+
 
     pyautogui.moveTo(x, y)
 
@@ -47,6 +52,9 @@ def click_at_position(mouse_button='left', x=None, y=None, num_clicks=1):
 
     if x is not None and y is not None:
         screen_width, screen_height = pyautogui.size()
+        offset = 0
+        x = int((x - offset) * screen_width)
+        y = int((y - offset) * screen_height)
 
         if not (0 <= x <= screen_width):
             raise ValueError(f"x-coordinate {x} is out of range. It should be between 0 and {screen_width}.")
@@ -118,6 +126,9 @@ def double_click_at_position(x=None, y=None):
     """
     if x is not None and y is not None:
         screen_width, screen_height = pyautogui.size()
+        offset = 0
+        x = int((x - offset) * screen_width)
+        y = int((y - offset) * screen_height)
 
         if not (0 <= x <= screen_width):
             raise ValueError(f"x-coordinate {x} is out of range. It should be between 0 and {screen_width}.")
@@ -138,6 +149,9 @@ def mouse_drag(x, y):
     - y: The y-coordinate of the position to drag the cursor to. Must be within the screen height range.
     """
     screen_width, screen_height = pyautogui.size()
+    offset = 0
+    x = int((x - offset) * screen_width)
+    y = int((y - offset) * screen_height)
 
     if not (0 <= x <= screen_width):
         raise ValueError(f"x-coordinate {x} is out of range. It should be between 0 and {screen_width}.")
