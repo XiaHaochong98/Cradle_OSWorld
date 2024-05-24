@@ -896,6 +896,7 @@ class PipelineRunner():
                         _f.write(obs['screenshot'])
                 except:
                     logger.error(f"Error executing action: {skill}")
+                    continue
             cur_screenshot_path = screenshot_path
         # Sense here to avoid changes in state after action execution completes
 
