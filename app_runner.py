@@ -780,9 +780,11 @@ class PipelineRunner():
             "double_click_at_position"
         ]
         # filter the skill library with the skill_to_be_filtered
-        filtered_skill_library= [skill for skill in self.skill_library if skill not in skill_to_be_filtered]
+        # filtered_out_skill= [skill for skill in self.skill_library if skill['function_expression'].split("(")[0] in skill_to_be_filtered]
+        filtered_skill_library= [skill for skill in self.skill_library if skill['function_expression'].split("(")[0] not in skill_to_be_filtered]
         input['skill_library'] = filtered_skill_library
-        logger.write(f'Skill space: {input["skill_library"]}')
+        # logger.write(f"filtered_out_skill, {filtered_out_skill}")
+        # logger.write(f'Filtered Skill space: {input["skill_library"]}')
 
 
         input['info_summary'] = self.memory.get_summarization()
