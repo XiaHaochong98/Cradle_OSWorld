@@ -410,7 +410,7 @@ class PipelineRunner():
         parser.add_argument("--stop_token", type=str, default=None)
 
         # example config
-        parser.add_argument("--domain", type=str, default="os")
+        parser.add_argument("--domain", type=str, default="all")
         parser.add_argument("--test_all_meta_path", type=str, default="evaluation_examples/test_all.json")
 
         # logging related
