@@ -886,7 +886,11 @@ class PipelineRunner():
                     skill_source_code = skill_source_code.split('\n', 1)[1]
                     # logger.write(f"Skill source code: {skill_source_code}")
                     skill_execution= skill
-                    skill_script = f"{import_source}\n{skill_source_code}\n{skill_execution}"
+                    # if the skill is "task_is_not_able_to_be_completed", the skill script should be "FAIL"
+                    if skill_name == "task_is_not_able_to_be_completed":
+                        skill_script='FAIL'
+                    else:
+                        skill_script = f"{import_source}\n{skill_source_code}\n{skill_execution}"
                     logger.write(f"Skill script: {skill_script}")
                     obs, reward, self.stop_flag, info = env.step(skill_script, 0.0)
 

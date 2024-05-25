@@ -62,6 +62,7 @@ Actions: The best action, or short sequence of actions without gaps, to execute 
     6. When you decide to perform a mouse action, if there is bounding box in the current screenshot, you MUST choose skill click_on_label(label_id, mouse_button).
     7. When you perform a mouse action, always select the target UI element closest to the UI element of the previous action for operation.
     8. When you decide to operate on a file, such as downloading it, please pay attention to the path and name of the current file.
+    9. If you feel the current task is not able to be completed, you choose action "task_is_not_able_to_be_completed()".
 
 Key_reason_of_last_action: Summarize the key reasons why you output this action.
 

@@ -261,6 +261,13 @@ def press_hotkey(keys):
 
     pyautogui.hotkey(*keys)
 
+@register_skill("task_is_not_able_to_be_completed")
+def task_is_not_able_to_be_completed():
+    """
+    Raise an exception to indicate that the task is not able to be completed.
+    """
+    raise Exception("The task is not able to be completed.")
+
 
 __all__ = [
     "move_mouse_to_position",
@@ -276,4 +283,5 @@ __all__ = [
     "key_down",
     "key_up",
     "press_hotkey",
+    "task_is_not_able_to_be_completed"
 ]
