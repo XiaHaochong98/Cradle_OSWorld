@@ -13,26 +13,26 @@ sam_provider = SamProvider()
 
 
 @register_skill("click_on_label")
-def click_on_label(label_id, mouse_button):
+def click_on_label(label_id, button):
     """
     Moves the mouse to the position of the specified box id inside the application window and clicks.
 
     Parameters:
     - label_id: The numerical label id of the bounding box to click at.
-    - mouse_button: The mouse button to be clicked. It should be one of the following values: "left", "right", "middle".
+    - button: The button to be clicked.
     """
-    def click_at_position(mouse_button='left', x=None, y=None, num_clicks=1):
+    def click_at_position(button='left', x=None, y=None, num_clicks=1):
         """
         Click the specified mouse button at the given position.
 
         Parameters:
-        - mouse_button: The button to click ('left', 'right', 'middle'). Defaults to 'left'.
+        - button: The button to click ('left', 'right', 'middle'). Defaults to 'left'.
         - x: The x-coordinate to click at. Must be within the screen width range.
         - y: The y-coordinate to click at. Must be within the screen height range.
         - num_clicks: The number of times to click. Defaults to 1. Must be 1, 2, or 3.
         """
-        if mouse_button not in ['left', 'right', 'middle']:
-            raise ValueError(f"Invalid button '{mouse_button}'. Must be 'left', 'right', or 'middle'.")
+        if button not in ['left', 'right', 'middle']:
+            raise ValueError(f"Invalid button '{button}'. Must be 'left', 'right', or 'middle'.")
 
         if num_clicks not in [1, 2, 3]:
             raise ValueError(f"Invalid num_clicks '{num_clicks}'. Must be 1, 2, or 3.")
@@ -46,22 +46,22 @@ def click_on_label(label_id, mouse_button):
             if not (0 <= y <= screen_height):
                 raise ValueError(f"y-coordinate {y} is out of range. It should be between 0 and {screen_height}.")
 
-            pyautogui.click(x=x, y=y, button=mouse_button, clicks=num_clicks)
+            pyautogui.click(x=x, y=y, button=button, clicks=num_clicks)
         else:
-            pyautogui.click(button=mouse_button, clicks=num_clicks)
+            pyautogui.click(button=button, clicks=num_clicks)
 
     label_id = str(label_id)
     x, y = 0.5, 0.5
-    click_at_position(x, y, mouse_button)
+    click_at_position(x, y, button)
 
 @register_skill("double_click_on_label")
-def double_click_on_label(label_id, mouse_button):
+def double_click_on_label(label_id, button):
     """
     Moves the mouse to the position of the specified box id inside the application window and clicks.
 
     Parameters:
     - label_id: The numerical label id of the bounding box to click at.
-    - mouse_button: The mouse button to be clicked. It should be one of the following values: "left", "right", "middle".
+    - button: The mouse button to be clicked. It should be one of the following values: "left", "right", "middle".
     """
 
     def double_click_at_position(x=None, y=None):
