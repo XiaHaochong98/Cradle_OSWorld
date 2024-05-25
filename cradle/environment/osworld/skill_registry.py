@@ -46,7 +46,8 @@ BASIC_SKILLS = [
     "click_on_label",
     "double_click_on_label",
     "hover_over_label",
-    "mouse_drag_to_label"
+    "mouse_drag_to_label",
+    "task_is_not_able_to_be_completed"
 ]
 DENY_LIST_TERMS = []
 ALLOW_LIST_TERMS = []

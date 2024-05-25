@@ -67,6 +67,7 @@ Actions: The best action, or short sequence of actions without gaps, to execute 
     9. If you find the window is not maximized, you should maximize the window first before executing other actions, click on the window to activate it, and then hotkey "F11" to maximize the window.
     10. If the window is not in focus, you should click on the window to activate it before executing other actions.
     11. You can try to open the terminal to help you execute some commands or scripts.
+    12. If you feel the current task is not able to be completed, you choose action "task_is_not_able_to_be_completed()".
 
 Key_reason_of_last_action: Summarize the key reasons why you output this action.
 
