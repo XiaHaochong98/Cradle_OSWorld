@@ -233,6 +233,10 @@ class PipelineRunner():
                 os.makedirs(example_result_dir, exist_ok=True)
                 # example start running
                 try:
+                    # update log path
+                    config.log_dir = os.path.join(config.work_dir,example_result_dir,'./logs')
+                    # new logger
+                    logger = Logger()
                     self.run_single_example_cradle(None, env, example, max_steps, instruction, osworld_args,
                                                       example_result_dir,
                                                       scores)
