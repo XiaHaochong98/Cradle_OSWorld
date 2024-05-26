@@ -198,7 +198,7 @@ class PipelineRunner():
 
         # Start the osworld environment
         env = DesktopEnv(
-            path_to_vm=None,
+            path_to_vm=osworld_args.path_to_vm,
             action_space="pyautogui",
             screen_size=(osworld_args.screen_width, osworld_args.screen_height),
             headless=True,
@@ -251,6 +251,49 @@ class PipelineRunner():
         # osworld init
         logger.write(f"Running single example with instruction: {instruction}")
         self.reset()
+        example={
+    "id": "2e6f678f-472d-4c55-99cc-8e7c5c402a71",
+    "snapshot": "gimp",
+    "instruction": "Please batch process the images on the desktop by lifting the brightness to 50.",
+    "source": "",
+    "config": [
+        {
+            "type": "download",
+            "parameters": {
+                "files": [
+                    {
+                        "url": "https://drive.google.com/uc?export=download&id=1uOZWtT9E8YW_IOu51meW5a0jAgwS1DoX",
+                        "path": "/home/user/Desktop/squirrel.jpeg"
+                    },
+                    {
+                        "url": "https://drive.google.com/uc?export=download&id=1KCyoqh3bTsbY42r9YSqIvcGuUr6i95GU",
+                        "path": "/home/user/Desktop/panda.jpeg"
+                    },
+                    {
+                        "url": "https://drive.google.com/uc?export=download&id=1xftsr0mRUvqKGPCHOnzUMm7tMnuqdhAA",
+                        "path": "/home/user/Desktop/heron.jpeg"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "launch",
+            "parameters": {
+                "command": [
+                    "gimp"
+                ]
+            }
+        }
+    ],
+    "trajectory": "trajectories/",
+    "related_apps": [
+        "gimp"
+    ],
+    "evaluator": {
+        "func": "infeasible"
+    }
+}
+        logger.write(f"example:{example}")
         obs = env.reset(task_config=example)
         step_idx = 0
         env.controller.start_recording()
