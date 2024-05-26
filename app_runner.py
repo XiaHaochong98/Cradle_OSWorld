@@ -130,7 +130,7 @@ class PipelineRunner():
         self.processed_skill_library = pre_process_skill_library(self.skill_library)
 
         # Init video recorder
-        self.videocapture = VideoRecorder(os.path.join(config.work_dir, 'video.mp4'))
+        # self.videocapture = VideoRecorder(os.path.join(config.work_dir, 'video.mp4'))
 
     def get_unfinished(self, action_space, use_model, observation_type, result_dir, total_file_json):
         target_dir = os.path.join(result_dir, action_space, observation_type, use_model)
@@ -198,7 +198,8 @@ class PipelineRunner():
 
         # Start the osworld environment
         env = DesktopEnv(
-            path_to_vm=osworld_args.path_to_vm,
+            # path_to_vm=osworld_args.path_to_vm,
+            path_to_vm=None,
             action_space="pyautogui",
             screen_size=(osworld_args.screen_width, osworld_args.screen_height),
             headless=True,
@@ -251,48 +252,6 @@ class PipelineRunner():
         # osworld init
         logger.write(f"Running single example with instruction: {instruction}")
         self.reset()
-        example={
-    "id": "2e6f678f-472d-4c55-99cc-8e7c5c402a71",
-    "snapshot": "gimp",
-    "instruction": "Please batch process the images on the desktop by lifting the brightness to 50.",
-    "source": "",
-    "config": [
-        {
-            "type": "download",
-            "parameters": {
-                "files": [
-                    {
-                        "url": "https://drive.google.com/uc?export=download&id=1uOZWtT9E8YW_IOu51meW5a0jAgwS1DoX",
-                        "path": "/home/user/Desktop/squirrel.jpeg"
-                    },
-                    {
-                        "url": "https://drive.google.com/uc?export=download&id=1KCyoqh3bTsbY42r9YSqIvcGuUr6i95GU",
-                        "path": "/home/user/Desktop/panda.jpeg"
-                    },
-                    {
-                        "url": "https://drive.google.com/uc?export=download&id=1xftsr0mRUvqKGPCHOnzUMm7tMnuqdhAA",
-                        "path": "/home/user/Desktop/heron.jpeg"
-                    }
-                ]
-            }
-        },
-        {
-            "type": "launch",
-            "parameters": {
-                "command": [
-                    "gimp"
-                ]
-            }
-        }
-    ],
-    "trajectory": "trajectories/",
-    "related_apps": [
-        "gimp"
-    ],
-    "evaluator": {
-        "func": "infeasible"
-    }
-}
         logger.write(f"example:{example}")
         obs = env.reset(task_config=example)
         step_idx = 0
@@ -319,10 +278,10 @@ class PipelineRunner():
         # switch_to_game()
 
         # Prepare
-        self.videocapture.start_capture()
-        start_frame_id = self.videocapture.get_current_frame_id()
+        # self.videocapture.start_capture()
+        start_frame_id = None
         time.sleep(2)
-        end_frame_id = self.videocapture.get_current_frame_id()
+        end_frame_id = None
 
         # First sense
         # cur_screenshot_path, _ = self.gm.capture_screen() # @Pengjie: This is the first sense, we need to capture the screen here
@@ -515,7 +474,7 @@ class PipelineRunner():
         if self.use_self_reflection and start_frame_id > -1:
             input = self.planner.self_reflection_.input_map
             action_frames = []
-            video_frames = self.videocapture.get_frames(start_frame_id, end_frame_id)
+            # video_frames = self.videocapture.get_frames(start_frame_id, end_frame_id)
 
             # if len(video_frames) <= config.max_images_in_self_reflection * config.duplicate_frames + 1:
             #     action_frames = [frame[1] for frame in video_frames[1::config.duplicate_frames]]
@@ -611,7 +570,7 @@ class PipelineRunner():
 
     def pipeline_shutdown(self):
         self.gm.cleanup_io()
-        self.videocapture.finish_capture()
+        # self.videocapture.finish_capture()
         logger.write('>>> Bye.')
 
 
