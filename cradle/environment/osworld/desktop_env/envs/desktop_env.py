@@ -267,10 +267,10 @@ class DesktopEnv(gym.Env):
         elif self.action_space == "pyautogui":
             if action in ['WAIT', 'FAIL', 'DONE']:
                 execute_info=self.controller.execute_action(action)
-                info["execution_info"]=execute_info
             else:
                 # the set of all possible python commands insides `pyautogui`
-                self.controller.execute_python_command(action)
+                execute_info=self.controller.execute_python_command(action)
+            info["execution_info"] = execute_info
 
         observation = self._get_obs()
 
