@@ -323,8 +323,7 @@ class PipelineRunner():
             "end_frame_id": end_frame_id,
             "cur_screenshot_path": cur_screenshot_path,
             "mouse_position" : None,
-            "exec_info": {
-            },
+            "exec_info": {'error':""},
             "pre_action": "",
             "pre_decision_making_reasoning": "",
             "pre_self_reflection_reasoning": "",
