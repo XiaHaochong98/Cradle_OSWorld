@@ -206,16 +206,16 @@ class PipelineRunner():
             # path_to_vm=None,
             action_space="pyautogui",
             screen_size=(osworld_args.screen_width, osworld_args.screen_height),
-            headless=True,
+            headless=False,
             require_a11y_tree=osworld_args.observation_type in ["a11y_tree", "screenshot_a11y_tree", "som"],
         )
 
         max_steps = osworld_args.max_steps
         scores = []
 
-        test_file_list= {"chrome":["06fe7178-4491-4589-810f-2e2bc95021227:19"],
-                         "os":["4d117223-a354-47fb-8b45-62ab1390a95f7:20",
-                               "6f56bf42-85b8-4fbb-8e06-6c44960184ba7:21",
+        test_file_list= {"chrome":["06fe7178-4491-4589-810f-2e2bc9502122"],
+                         "os":["4d117223-a354-47fb-8b45-62ab1390a95f",
+                               "6f56bf42-85b8-4fbb-8e06-6c44960184ba",
                                "e0df059f-28a6-4169-924f-b9623e7184cc"]
                          }
 
@@ -396,7 +396,7 @@ class PipelineRunner():
         parser.add_argument("--path_to_vm", type=str,
                             default=r"E:\OSWorld\vm_data\Ubuntu0\Ubuntu0\Ubuntu0.vmx")
         parser.add_argument(
-            "--headless", action="store_true", help="Run in headless machine"
+            "--headless", action="store_false", help="Run in headless machine"
         )
         parser.add_argument("--action_space", type=str, default="pyautogui", help="Action type")
         parser.add_argument(

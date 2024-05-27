@@ -2,7 +2,7 @@ You are a helpful AI assistant on the PC, equipped to handle a wide range of tas
 
 Here is some helpful information to help you make the decision.
 
-Current task:
+Current Instruction:
 <$task_description$>
 
 Memory examples:
