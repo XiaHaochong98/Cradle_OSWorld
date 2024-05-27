@@ -739,7 +739,6 @@ class PipelineRunner():
         previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
         pre_action = params["pre_action"]
         pre_self_reflection_reasoning = params["pre_self_reflection_reasoning"]
-        success_detection = params[constants.SUCCESS_DETECTION]
         env=params['osworld_env']
 
         # Decision making preparation
@@ -756,9 +755,6 @@ class PipelineRunner():
 
         if pre_self_reflection_reasoning:
             input["previous_self_reflection_reasoning"] = self.memory.get_recent_history(constants.SELF_REFLECTION_REASONING, k=1)[-1]
-
-        if success_detection:
-            input[constants.SUCCESS_DETECTION] = success_detection
 
         skill_to_be_filtered= [
             "move_mouse_to_position",
