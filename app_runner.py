@@ -893,9 +893,14 @@ class PipelineRunner():
         # exec_info = self.gm.execute_actions(skill_steps)
         # info="No skill have been executed because of wrong skill output. All the info are kept as the same with last round."
         screenshot_path=input["image_introduction"][-1]["path"]
+        info={
+            "execution_info":""
+        }
         executed_skills=[]
         for skill in skill_steps:
             try:
+                if skill=="":
+                    continue
                 # logger.write("Step %d: %s", step_idx + 1, action)
                 action_timestamp = datetime.datetime.now().strftime("%Y%m%d@%H%M%S")
                 # assamble the skill to a script for osworld
@@ -938,7 +943,11 @@ class PipelineRunner():
 
         # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
         # pre_action = exec_info[constants.EXECUTED_SKILLS]
-        pre_action=executed_skills
+        # if  executed_skills is [], change it to an empty string
+        if executed_skills == []:
+            executed_skills = ""
+        # concate each string in executed_skills to a single string with , as separator
+        pre_action== ",".join(executed_skills)
         exec_info = info["execution_info"]
         logger.write(f"exec_info:{exec_info}")
         self.memory.add_recent_history("action", pre_action)
