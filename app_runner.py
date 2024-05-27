@@ -490,7 +490,9 @@ class PipelineRunner():
         self_reflection_reasoning = ""
         success_detection = False
 
-        if self.use_self_reflection:
+        step_index=params["step_idx"]
+
+        if self.use_self_reflection and step_index>0:
             input = self.planner.self_reflection_.input_map
             action_frames = []
             # video_frames = self.videocapture.get_frames(start_frame_id, end_frame_id)
