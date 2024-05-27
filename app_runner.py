@@ -72,7 +72,7 @@ class PipelineRunner():
         self.count_turns = 0
         # Count the consecutive times the action is empty
         self.count_empty_action = 0
-        self.count_empty_action_threshold = 2
+        self.count_empty_action_threshold = 1
 
         # Init internal params
         self.set_internal_params()
@@ -895,12 +895,13 @@ class PipelineRunner():
             self.stop_flag = True
             logger.write(f'Empty action count reached {self.count_empty_action_threshold} times. Task is considered successful.')
             return None
+        logger.write(f"count_empty_action {self.count_empty_action}, stop_flag {self.stop_flag}")
         # osworld execute actions
         # exec_info = self.gm.execute_actions(skill_steps)
         # info="No skill have been executed because of wrong skill output. All the info are kept as the same with last round."
         screenshot_path=input["image_introduction"][-1]["path"]
         info={
-            "execution_info":""
+            "execution_info":{'error': '', 'output': '', 'returncode': 0, 'status': 'success'}
         }
         executed_skills=[]
         for skill in skill_steps:
