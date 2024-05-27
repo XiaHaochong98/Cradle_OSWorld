@@ -32,6 +32,7 @@ from tqdm import tqdm
 from cradle.environment.osworld.desktop_env.envs.desktop_env import DesktopEnv
 
 config = Config()
+global logger
 logger = Logger()
 io_env = IOEnvironment()
 
@@ -120,6 +121,7 @@ class PipelineRunner():
                                use_information_summary=self.use_information_summary)
 
         # Init skill library
+        global logger
         logger.write(f"Skill Library: {self.skill_library}")
         if config.skill_retrieval:
             self.gm.register_available_skills(self.skill_library)
@@ -187,6 +189,8 @@ class PipelineRunner():
         left_info = ""
         for domain in test_file_list:
             left_info += f"{domain}: {len(test_file_list[domain])}\n"
+
+        global logger
         logger.write(f"Left tasks:\n{left_info}")
 
         self.get_result(osworld_args.action_space,
@@ -198,8 +202,8 @@ class PipelineRunner():
 
         # Start the osworld environment
         env = DesktopEnv(
-            # path_to_vm=osworld_args.path_to_vm,
-            path_to_vm=None,
+            path_to_vm=osworld_args.path_to_vm,
+            # path_to_vm=None,
             action_space="pyautogui",
             screen_size=(osworld_args.screen_width, osworld_args.screen_height),
             headless=True,
@@ -208,6 +212,12 @@ class PipelineRunner():
 
         max_steps = osworld_args.max_steps
         scores = []
+
+        test_file_list= {"chrome":["06fe7178-4491-4589-810f-2e2bc95021227:19"],
+                         "os":["4d117223-a354-47fb-8b45-62ab1390a95f7:20",
+                               "6f56bf42-85b8-4fbb-8e06-6c44960184ba7:21",
+                               "e0df059f-28a6-4169-924f-b9623e7184cc"]
+                         }
 
         for domain in tqdm(test_file_list, desc="Domain"):
             for example_id in tqdm(test_file_list[domain], desc="Example", leave=False):
@@ -254,6 +264,7 @@ class PipelineRunner():
 
     def run_single_example_cradle(self,agent, env, example, max_steps, instruction, args, example_result_dir, scores):
         # osworld init
+        global logger
         logger.write(f"Running single example with instruction: {instruction}")
         self.reset()
         logger.write(f"example:{example}")
