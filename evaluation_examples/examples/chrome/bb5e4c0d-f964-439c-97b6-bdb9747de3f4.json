@@ -22,6 +22,16 @@
           "tcp:localhost:1337"
         ]
       }
+    },
+    {
+      "type": "execute",
+      "parameters": {
+        "command": [
+          "python",
+          "-c",
+          "import pyautogui; import time; pyautogui.hotkey('alt', 'f10'); time.sleep(0.5);"
+        ]
+      }
     }
   ],
   "trajectory": "trajectories/",
