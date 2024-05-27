@@ -479,7 +479,7 @@ class PipelineRunner():
         exec_info = params["exec_info"]
         step_idx=params["step_idx"]
         self_reflection_reasoning = ""
-        if self.use_self_reflection and  step_idx> 0:
+        if self.use_self_reflection and step_idx> 0:
             input = self.planner.self_reflection_.input_map
             action_frames = []
             # video_frames = self.videocapture.get_frames(start_frame_id, end_frame_id)
@@ -528,9 +528,8 @@ class PipelineRunner():
                 input["previous_action"] = ""
                 input["previous_action_call"] = ""
                 input['action_code'] = ""
-
-            if exec_info["errors"]:
-                input['executing_action_error'] = exec_info["errors_info"]
+            if exec_info["error"]:
+                input['executing_action_error'] = exec_info["error"]
             else:
                 input['executing_action_error'] = ""
 
