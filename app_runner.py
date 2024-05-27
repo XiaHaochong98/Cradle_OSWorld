@@ -226,6 +226,14 @@ class PipelineRunner():
                 with open(config_file, "r", encoding="utf-8") as f:
                     example = json.load(f)
 
+                # update log path
+                logd_dir = os.path.join(config.work_dir, example_result_dir, './logs')
+                Path(logd_dir).mkdir(parents=True, exist_ok=True)
+                # shutdown old logger
+                logger.shutdown_logger()
+                # new logger
+                logger = Logger(log_dir=logd_dir)
+
                 logger.write(f"[Domain]: {domain}")
                 logger.write(f"[Example ID]: {example_id}")
 
@@ -244,13 +252,6 @@ class PipelineRunner():
                 os.makedirs(example_result_dir, exist_ok=True)
                 # example start running
                 try:
-                    # update log path
-                    logd_dir = os.path.join(config.work_dir,example_result_dir,'./logs')
-                    Path(logd_dir).mkdir(parents=True, exist_ok=True)
-                    #shutdown old logger
-                    logger.shutdown_logger()
-                    # new logger
-                    logger = Logger(log_dir=logd_dir)
                     self.run_single_example_cradle(None, env, example, max_steps, instruction, osworld_args,
                                                       example_result_dir,
                                                       scores)

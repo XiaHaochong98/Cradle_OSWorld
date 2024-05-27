@@ -66,8 +66,8 @@ class Logger(metaclass=Singleton):
 
         if log_dir is None:
             log_dir = config.log_dir
-        file_handler = logging.FileHandler(filename=os.path.join(log_dir, self.log_file), mode='w', encoding='utf-8')
         print("logger at ", os.path.join(log_dir, self.log_file))
+        file_handler = logging.FileHandler(filename=os.path.join(log_dir, self.log_file), mode='w', encoding='utf-8')
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(formatter)
 
