@@ -4,7 +4,6 @@
   "instruction": "I am more familiar with Korean as I am from Korea. I want to use chrome with my mother tongue. Could you help me change the Chrome interface language to Korean? ",
   "source": "https://superuser.com/questions/984668/change-interface-language-of-chrome-to-english",
   "config": [
-,
     {
       "type": "execute",
       "parameters": {
