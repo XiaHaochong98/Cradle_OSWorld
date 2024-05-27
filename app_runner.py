@@ -28,6 +28,7 @@ from cradle.utils.file_utils import copy_file
 import json
 import datetime
 from tqdm import tqdm
+from pathlib import Path
 # osworld
 from cradle.environment.osworld.desktop_env.envs.desktop_env import DesktopEnv
 
@@ -244,9 +245,10 @@ class PipelineRunner():
                 # example start running
                 try:
                     # update log path
-                    config.log_dir = os.path.join(config.work_dir,example_result_dir,'./logs')
+                    logd_dir = os.path.join(config.work_dir,example_result_dir,'./logs')
+                    Path(logd_dir).mkdir(parents=True, exist_ok=True)
                     # new logger
-                    logger = Logger()
+                    logger = Logger(log_dir=logd_dir)
                     self.run_single_example_cradle(None, env, example, max_steps, instruction, osworld_args,
                                                       example_result_dir,
                                                       scores)

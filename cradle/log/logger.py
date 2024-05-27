@@ -44,12 +44,12 @@ class Logger(metaclass=Singleton):
     DOWNSTREAM_MASK = "\n>> Downstream - A:\n"
     UPSTREAM_MASK = "\n>> Upstream - R:\n"
 
-    def __init__(self):
+    def __init__(self,log_dir=None):
         self.to_file = False
-        self._configure_root_logger()
+        self._configure_root_logger(log_dir)
 
 
-    def _configure_root_logger(self):
+    def _configure_root_logger(self,log_dir=None):
 
         format = f'%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
@@ -64,7 +64,9 @@ class Logger(metaclass=Singleton):
         stderr_handler.setLevel(logging.ERROR)
         stderr_handler.setFormatter(c_formatter)
 
-        file_handler = logging.FileHandler(filename=os.path.join(config.log_dir, self.log_file), mode='w', encoding='utf-8')
+        if log_dir is None:
+            log_dir = config.log_dir
+        file_handler = logging.FileHandler(filename=os.path.join(log_dir, self.log_file), mode='w', encoding='utf-8')
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(formatter)
 
