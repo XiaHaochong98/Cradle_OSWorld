@@ -473,6 +473,7 @@ class PipelineRunner():
 
         task_description = params["task_description"]
         pre_action = params["pre_action"]
+        logger.write(f"pre_action: [{pre_action}]")
 
         previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
         current_augmentation = params[constants.CURRENT_AUGMENTATION_INFO]
@@ -692,7 +693,7 @@ class PipelineRunner():
                 current_augmentation[constants.AUG_SOM_IMAGE_PATH] = som_img_path
                 current_augmentation[constants.AUG_SOM_MAP] = som_map.copy()
                 current_augmentation[constants.LENGTH_OF_SOM_MAP] = len(som_map.keys())
-            logger.write(f"som_map: {current_augmentation[constants.AUG_SOM_MAP]}")
+            # logger.write(f"som_map: {current_augmentation[constants.AUG_SOM_MAP]}")
             input["image_introduction"][0]["path"] = current_augmentation[constants.AUG_SOM_IMAGE_PATH]
             input[constants.LENGTH_OF_SOM_MAP] = current_augmentation[constants.LENGTH_OF_SOM_MAP]
 

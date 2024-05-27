@@ -47,6 +47,7 @@ You need to answer the following questions, step by step, to describe your reaso
 - If it is an interaction action, the most probable cause was that the action was unavailable or not activated in the current state.
 - If an unrelated change happened in the UI, the most probable cause was that the action triggered an incorrect UI element.
 - If there is an error report, analyze the cause based on the report.
+4. Unless given, you should not assume actions have already been executed in the task.
 
 Success_Detection:
 Based on the last action and the current screenshots, determine whether the entire task was successful. This assessment should consider the entire task's success, not just individual actions.
