@@ -553,7 +553,7 @@ class PipelineRunner():
                 input['action_code'] = ""
 
             if exec_info["errors"]:
-                input['executing_action_error'] = exec_info["errors_info"]
+                input['executing_action_error'] = exec_info["errors"]
             else:
                 input['executing_action_error'] = ""
 
@@ -912,10 +912,10 @@ class PipelineRunner():
                     else:
                         skill_script = f"{import_source}\n{skill_source_code}\n{skill_execution}"
                     logger.write(f"Skill script: {skill_script}")
-                    obs, reward, self.stop_flag, info = env.step(skill_script, 0.0)
+                    obs, reward, done, info = env.step(skill_script, 0.0)
 
-                    logger.write(f"Reward: {reward}")
-                    logger.write(f"Done: {self.stop_flag}")
+                    # logger.write(f"Reward: {reward}")
+                    # logger.write(f"Done: {self.stop_flag}")
                     # Save screenshot and trajectory information'
                     screenshot_path=os.path.join(config.work_dir,example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
                     with open(screenshot_path,"wb") as _f:
@@ -938,7 +938,7 @@ class PipelineRunner():
         # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
         # pre_action = exec_info[constants.EXECUTED_SKILLS]
             pre_action=skill_steps
-            exec_info = info
+            exec_info = info["execution_info"]
             self.memory.add_recent_history("action", pre_action)
             self.memory.add_recent_history("decision_making_reasoning", pre_decision_making_reasoning)
             self.memory.add_recent_history(constants.KEY_REASON_OF_LAST_ACTION, key_reason_of_last_action)
