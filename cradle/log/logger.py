@@ -49,8 +49,7 @@ class Logger(metaclass=Singleton):
         self._configure_root_logger(log_dir)
 
 
-    def _configure_root_logger(self,log_dir=None):
-
+    def _configure_root_logger(self, log_dir=None):
         format = f'%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
         formatter = logging.Formatter(format)
@@ -66,10 +65,14 @@ class Logger(metaclass=Singleton):
 
         if log_dir is None:
             log_dir = config.log_dir
-        print("logger at ", os.path.join(log_dir, self.log_file))
         file_handler = logging.FileHandler(filename=os.path.join(log_dir, self.log_file), mode='w', encoding='utf-8')
+        print("logger at ", os.path.join(log_dir, self.log_file))  # Debug print
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(formatter)
+
+        # Remove existing handlers, if any
+        for handler in logging.root.handlers[:]:
+            logging.root.removeHandler(handler)
 
         logging.basicConfig(level=logging.DEBUG, handlers=[stdout_handler, stderr_handler, file_handler])
         self.logger = logging.getLogger("UAC Logger")
@@ -145,11 +148,13 @@ class Logger(metaclass=Singleton):
         for handler in self.logger.handlers[:]:
             self.logger.removeHandler(handler)
             handler.close()
+        print("Logger shut down.")  # Debug print
 
     def reconfigure_logger(self, new_log_dir):
         """Shut down the current logger and reconfigure it with a new log directory."""
         self.shutdown_logger()
         self._configure_root_logger(new_log_dir)
+        print(f"Logger reconfigured with new log directory: {new_log_dir}")  # Debug print
 
 
 #
