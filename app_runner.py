@@ -203,8 +203,8 @@ class PipelineRunner():
 
         # Start the osworld environment
         env = DesktopEnv(
-            path_to_vm=osworld_args.path_to_vm,
-            # path_to_vm=None,
+            # path_to_vm=osworld_args.path_to_vm,
+            path_to_vm=None,
             action_space="pyautogui",
             screen_size=(osworld_args.screen_width, osworld_args.screen_height),
             headless=False,
@@ -214,11 +214,11 @@ class PipelineRunner():
         max_steps = osworld_args.max_steps
         scores = []
 
-        test_file_list= {"chrome":["06fe7178-4491-4589-810f-2e2bc9502122"],
-                         "os":["4d117223-a354-47fb-8b45-62ab1390a95f",
-                               "6f56bf42-85b8-4fbb-8e06-6c44960184ba",
-                               "e0df059f-28a6-4169-924f-b9623e7184cc"]
-                         }
+        # test_file_list= {"chrome":["06fe7178-4491-4589-810f-2e2bc9502122"],
+        #                  "os":["4d117223-a354-47fb-8b45-62ab1390a95f",
+        #                        "6f56bf42-85b8-4fbb-8e06-6c44960184ba",
+        #                        "e0df059f-28a6-4169-924f-b9623e7184cc"]
+        #                  }
 
         for domain in tqdm(test_file_list, desc="Domain"):
             for example_id in tqdm(test_file_list[domain], desc="Example", leave=False):
