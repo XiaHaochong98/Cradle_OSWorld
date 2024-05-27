@@ -893,7 +893,7 @@ class PipelineRunner():
         # exec_info = self.gm.execute_actions(skill_steps)
         # info="No skill have been executed because of wrong skill output. All the info are kept as the same with last round."
         screenshot_path=input["image_introduction"][-1]["path"]
-        excecuted_skills=[]
+        executed_skills=[]
         for skill in skill_steps:
             try:
                 # logger.write("Step %d: %s", step_idx + 1, action)
@@ -914,7 +914,7 @@ class PipelineRunner():
                     skill_script = f"{import_source}\n{skill_source_code}\n{skill_execution}"
                 logger.write(f"Skill script: {skill_script}")
                 obs, reward, done, info = env.step(skill_script, 0.0)
-                excecuted_skills.append(skill)
+                executed_skills.append(skill)
                 # logger.write(f"Reward: {reward}")
                 # logger.write(f"Done: {self.stop_flag}")
                 # Save screenshot and trajectory information'
@@ -938,7 +938,7 @@ class PipelineRunner():
 
         # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
         # pre_action = exec_info[constants.EXECUTED_SKILLS]
-        pre_action=excecuted_skills
+        pre_action=executed_skills
         exec_info = info["execution_info"]
         logger.write(f"exec_info:{exec_info}")
         self.memory.add_recent_history("action", pre_action)
