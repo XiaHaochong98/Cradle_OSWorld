@@ -891,40 +891,40 @@ class PipelineRunner():
 
         # osworld execute actions
         # exec_info = self.gm.execute_actions(skill_steps)
-        info="No skill have been executed because of wrong skill output. All the info are kept as the same with last round."
-        cur_screenshot_path=input["image_introduction"][-1]["path"]
-        if skill_steps != ['']:
-            for skill in skill_steps:
-                try:
-                    # logger.write("Step %d: %s", step_idx + 1, action)
-                    action_timestamp = datetime.datetime.now().strftime("%Y%m%d@%H%M%S")
-                    # assamble the skill to a script for osworld
-                    import_source="import pyautogui"
-                    # logger.write(f"Skill: {skill}")
-                    skill_name = skill.split('def ')[-1].split('(')[0]
-                    skill_source_code = self.gm.get_skill_source_code(skill_name)
-                    # filter out the first line of skill_source_code which is the register
-                    skill_source_code = skill_source_code.split('\n', 1)[1]
-                    # logger.write(f"Skill source code: {skill_source_code}")
-                    skill_execution= skill
-                    # if the skill is "task_is_not_able_to_be_completed", the skill script should be "FAIL"
-                    if skill_name == "task_is_not_able_to_be_completed":
-                        skill_script='FAIL'
-                    else:
-                        skill_script = f"{import_source}\n{skill_source_code}\n{skill_execution}"
-                    logger.write(f"Skill script: {skill_script}")
-                    obs, reward, done, info = env.step(skill_script, 0.0)
-
-                    # logger.write(f"Reward: {reward}")
-                    # logger.write(f"Done: {self.stop_flag}")
-                    # Save screenshot and trajectory information'
-                    screenshot_path=os.path.join(config.work_dir,example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
-                    with open(screenshot_path,"wb") as _f:
-                        _f.write(obs['screenshot'])
-                except:
-                    logger.error(f"Error executing action: {skill}")
-                    continue
-            cur_screenshot_path = screenshot_path
+        # info="No skill have been executed because of wrong skill output. All the info are kept as the same with last round."
+        screenshot_path=input["image_introduction"][-1]["path"]
+        excecuted_skills=[]
+        for skill in skill_steps:
+            try:
+                # logger.write("Step %d: %s", step_idx + 1, action)
+                action_timestamp = datetime.datetime.now().strftime("%Y%m%d@%H%M%S")
+                # assamble the skill to a script for osworld
+                import_source="import pyautogui"
+                # logger.write(f"Skill: {skill}")
+                skill_name = skill.split('def ')[-1].split('(')[0]
+                skill_source_code = self.gm.get_skill_source_code(skill_name)
+                # filter out the first line of skill_source_code which is the register
+                skill_source_code = skill_source_code.split('\n', 1)[1]
+                # logger.write(f"Skill source code: {skill_source_code}")
+                skill_execution= skill
+                # if the skill is "task_is_not_able_to_be_completed", the skill script should be "FAIL"
+                if skill_name == "task_is_not_able_to_be_completed":
+                    skill_script='FAIL'
+                else:
+                    skill_script = f"{import_source}\n{skill_source_code}\n{skill_execution}"
+                logger.write(f"Skill script: {skill_script}")
+                obs, reward, done, info = env.step(skill_script, 0.0)
+                excecuted_skills.append(skill)
+                # logger.write(f"Reward: {reward}")
+                # logger.write(f"Done: {self.stop_flag}")
+                # Save screenshot and trajectory information'
+                screenshot_path=os.path.join(config.work_dir,example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
+                with open(screenshot_path,"wb") as _f:
+                    _f.write(obs['screenshot'])
+            except:
+                logger.error(f"Error executing action: {skill}")
+                continue
+        cur_screenshot_path = screenshot_path
         # Sense here to avoid changes in state after action execution completes
 
         # First, check if interaction left the target environment
@@ -938,18 +938,13 @@ class PipelineRunner():
 
         # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
         # pre_action = exec_info[constants.EXECUTED_SKILLS]
-            pre_action=skill_steps
-            exec_info = info["execution_info"]
-            logger.write(f"exec_info:{exec_info}")
-            self.memory.add_recent_history("action", pre_action)
-            self.memory.add_recent_history("decision_making_reasoning", pre_decision_making_reasoning)
-            self.memory.add_recent_history(constants.KEY_REASON_OF_LAST_ACTION, key_reason_of_last_action)
-            previous_augmentation = current_augmentation.copy()
-        else:
-            # If no skill was executed, keep the previous augmentation
-            pre_action=skill_steps
-            exec_info = info
-            previous_augmentation = current_augmentation.copy()
+        pre_action=excecuted_skills
+        exec_info = info["execution_info"]
+        logger.write(f"exec_info:{exec_info}")
+        self.memory.add_recent_history("action", pre_action)
+        self.memory.add_recent_history("decision_making_reasoning", pre_decision_making_reasoning)
+        self.memory.add_recent_history(constants.KEY_REASON_OF_LAST_ACTION, key_reason_of_last_action)
+        previous_augmentation = current_augmentation.copy()
 
         res_params = {
             "pre_action": pre_action,
