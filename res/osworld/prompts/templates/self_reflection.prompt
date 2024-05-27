@@ -1,6 +1,6 @@
 Assume you are a helpful AI assistant on the PC, equipped to handle a wide range of tasks in the application. Your advanced capabilities enable you to process and interpret application screenshots and other relevant information. Your task is to examine these inputs, interpret the in-application and OS context, and determine whether the executed action has taken the correct effect.
 
-Current task:
+Current Instruction:
 <$task_description$>
 
 Last executed action:

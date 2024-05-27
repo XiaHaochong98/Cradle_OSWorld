@@ -2,7 +2,7 @@ Assume you are a helpful AI assistant on the PC, equipped to handle a wide range
 
 Here are some useful information to help you detect success.
 
-Current task:
+Current Instruction:
 <$task_description$>
 
 Memory examples:
