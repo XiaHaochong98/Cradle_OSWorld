@@ -256,7 +256,7 @@ def process_log_messages(work_dir):
     with open(log_path, "r", encoding="utf-8") as fd:
         log = fd.read()
 
-    filter_list = ['|>..<|', 'httpcore.http11 - DEBUG', 'httpcore.connection - DEBUG', 'asyncio - DEBUG', 'httpx - DEBUG', 'matplotlib.pyplot - DEBUG', 'openai._base_client - DEBUG - Request options:']
+    filter_list = ['|>..<|', 'httpcore.http11 - DEBUG', 'httpcore.connection - DEBUG', 'asyncio - DEBUG', 'httpx - DEBUG', 'matplotlib.pyplot - DEBUG',"openai._base_client", 'openai._base_client - DEBUG - Request options:']
 
     log_lines = []
     for line in log.split('\n'):

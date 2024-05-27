@@ -532,7 +532,7 @@ class PipelineRunner():
             input[constants.IMAGE_SAME_FLAG] = str(image_same_flag)
             input[constants.MOUSE_POSITION_SAME_FLAG] = str(mouse_position_same_flag)
 
-            if pre_action:
+            if pre_action and pre_action!="":
 
                 pre_action_name = []
                 pre_action_code = []
