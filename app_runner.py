@@ -514,12 +514,19 @@ class PipelineRunner():
                 pre_action_name = []
                 pre_action_code = []
 
-                skill = self.gm.skill_registry.convert_expression_to_skill(pre_action)
 
-                name, params = skill
-                action_code, action_info = self.gm.get_skill_library_in_code(name)
-                pre_action_name.append(name)
-                pre_action_code.append(action_code if action_code is not None else action_info)
+                skill_name = pre_action.split('def ')[-1].split('(')[0]
+                skill_source_code = self.gm.get_skill_source_code(skill_name)
+                # filter out the first line of skill_source_code which is the register
+                skill_source_code = skill_source_code.split('\n', 1)[1]
+                # logger.write(f"Skill source code: {skill_source_code}")
+
+                # skill = self.gm.skill_registry.convert_expression_to_skill(pre_action)
+                #
+                # name, params = skill
+                # action_code, action_info = self.gm.get_skill_library_in_code(name)
+                pre_action_name.append(skill_name)
+                pre_action_code.append(skill_source_code if skill_source_code is not None else None)
 
                 input["previous_action"] = ",".join(pre_action_name)
                 input["previous_action_call"] = pre_action
