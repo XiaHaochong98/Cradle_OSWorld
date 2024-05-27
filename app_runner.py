@@ -59,7 +59,7 @@ class PipelineRunner():
         self.count_turns = 0
         # Count the consecutive times the action is empty
         self.count_empty_action = 0
-        self.count_empty_action_threshold = 2
+        self.count_empty_action_threshold = 1
 
         # Init internal params
         self.set_internal_params()
@@ -203,8 +203,8 @@ class PipelineRunner():
 
         # Start the osworld environment
         env = DesktopEnv(
-            # path_to_vm=osworld_args.path_to_vm,
-            path_to_vm=None,
+            path_to_vm=osworld_args.path_to_vm,
+            # path_to_vm=None,
             action_space="pyautogui",
             screen_size=(osworld_args.screen_width, osworld_args.screen_height),
             headless=False,
@@ -214,11 +214,11 @@ class PipelineRunner():
         max_steps = osworld_args.max_steps
         scores = []
 
-        # test_file_list= {"chrome":["06fe7178-4491-4589-810f-2e2bc9502122"],
-        #                  "os":["4d117223-a354-47fb-8b45-62ab1390a95f",
-        #                        "6f56bf42-85b8-4fbb-8e06-6c44960184ba",
-        #                        "e0df059f-28a6-4169-924f-b9623e7184cc"]
-        #                  }
+        test_file_list= {"chrome":["06fe7178-4491-4589-810f-2e2bc9502122"],
+                         "os":["4d117223-a354-47fb-8b45-62ab1390a95f",
+                               "6f56bf42-85b8-4fbb-8e06-6c44960184ba",
+                               "e0df059f-28a6-4169-924f-b9623e7184cc"]
+                         }
 
         for domain in tqdm(test_file_list, desc="Domain"):
             for example_id in tqdm(test_file_list[domain], desc="Example", leave=False):
@@ -359,18 +359,19 @@ class PipelineRunner():
                 # Decision making
                 logger.write('Decision making')
                 decision_making_params = self.decision_making(params)
-                params.update(decision_making_params)
+                if not self.stop_flag:
+                    params.update(decision_making_params)
 
-                # Information summary
-                logger.write('Information summary')
-                information_summary_params = self.information_summary(params)
-                params.update(information_summary_params)
+                    # Information summary
+                    logger.write('Information summary')
+                    information_summary_params = self.information_summary(params)
+                    params.update(information_summary_params)
 
-                # # Success detection
-                # success_detection_params = self.success_detection(params)
-                # params.update(success_detection_params)
+                    # # Success detection
+                    # success_detection_params = self.success_detection(params)
+                    # params.update(success_detection_params)
 
-                # success = success_detection_params["success"]
+                    # success = success_detection_params["success"]
 
                 self.gm.store_skills()
                 self.memory.save()
@@ -888,7 +889,7 @@ class PipelineRunner():
         if self.count_empty_action >= self.count_empty_action_threshold:
             self.stop_flag = True
             logger.write(f'Empty action count reached {self.count_empty_action_threshold} times. Task is considered successful.')
-
+            return None
         # osworld execute actions
         # exec_info = self.gm.execute_actions(skill_steps)
         # info="No skill have been executed because of wrong skill output. All the info are kept as the same with last round."
