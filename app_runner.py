@@ -467,31 +467,19 @@ class PipelineRunner():
             print("Current Success Rate:", sum(all_result) / len(all_result) * 100, "%")
             return all_result
 
-
     def self_reflection(self, params: Dict[str, Any]):
 
-        start_frame_id = params["start_frame_id"]
-        end_frame_id = params["end_frame_id"]
+        # start_frame_id = params["start_frame_id"]
+        # end_frame_id = params["end_frame_id"]
 
+        # task_description = params["task_description"]
         task_description = params["task_description"]
         pre_action = params["pre_action"]
-        logger.write(f"pre_action: [{pre_action}]")
-
-        previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
-        current_augmentation = params[constants.CURRENT_AUGMENTATION_INFO]
-
         pre_decision_making_reasoning = params["pre_decision_making_reasoning"]
         exec_info = params["exec_info"]
-
-        image_same_flag = params[constants.IMAGE_SAME_FLAG]
-        mouse_position_same_flag = params[constants.MOUSE_POSITION_SAME_FLAG]
-
-        image_memory = self.memory.get_recent_history("image", k=config.self_reflection_image_num)
-
+        step_idx=params["step_idx"]
         self_reflection_reasoning = ""
-        success_detection = False
-
-        if self.use_self_reflection:
+        if self.use_self_reflection and  step_idx> 0:
             input = self.planner.self_reflection_.input_map
             action_frames = []
             # video_frames = self.videocapture.get_frames(start_frame_id, end_frame_id)
@@ -505,14 +493,8 @@ class PipelineRunner():
 
             # only use the first and last frame for self-reflection
             # add grid and color band to the frames
-            # action_frames.append(self.gm.interface.augment_image(video_frames[0][1], x = response[constants.MOUSE_X_POSITION], y = response[constants.MOUSE_Y_POSITION], encoding = cv2.COLOR_BGRA2RGB))
-            # action_frames.append(self.gm.interface.augment_image(video_frames[-1][1], x = response[constants.MOUSE_X_POSITION], y = response[constants.MOUSE_Y_POSITION], encoding = cv2.COLOR_BGRA2RGB))
-            if config.show_mouse_in_screenshot:
-                action_frames.append(previous_augmentation[constants.AUG_MOUSE_IMG_PATH])
-                action_frames.append(current_augmentation[constants.AUG_MOUSE_IMG_PATH])
-            else:
-                action_frames.append(previous_augmentation[constants.AUG_BASE_IMAGE_PATH])
-                action_frames.append(current_augmentation[constants.AUG_BASE_IMAGE_PATH])
+            # action_frames.append(self.gm.interface.augment_image(video_frames[0][1]))
+            # action_frames.append(self.gm.interface.augment_image(video_frames[-1][1]))
 
             image_introduction = [
                 {
@@ -524,38 +506,31 @@ class PipelineRunner():
 
             input["image_introduction"] = image_introduction
             input["task_description"] = task_description
-            input['skill_library'] = self.processed_skill_library
+            input['skill_library'] = self.skill_library
             input["previous_reasoning"] = pre_decision_making_reasoning
-            input["history_summary"] = params["summarization"]
-            input["subtask_description"] = params["subtask_description"]
 
-            input[constants.IMAGE_SAME_FLAG] = str(image_same_flag)
-            input[constants.MOUSE_POSITION_SAME_FLAG] = str(mouse_position_same_flag)
-
-            if pre_action and pre_action!="":
+            if pre_action:
 
                 pre_action_name = []
                 pre_action_code = []
 
-                for action in pre_action:
-                    skill = self.gm.skill_registry.convert_expression_to_skill(action)
-                    name, params = skill
-                    action_code, action_info = self.gm.get_skill_library_in_code(name)
-                    pre_action_name.append(name)
-                    pre_action_code.append(action_code if action_code is not None else action_info)
+                skill = self.gm.skill_registry.convert_expression_to_skill(pre_action)
 
-                    input["previous_action"] = ",".join(pre_action_name)
-                    input["previous_action_call"] = pre_action
-                    input['action_code'] = "\n".join(list(set(pre_action_code)))
-                    input[constants.KEY_REASON_OF_LAST_ACTION] = self.memory.get_recent_history(constants.KEY_REASON_OF_LAST_ACTION, k=1)[-1]
-                    input[constants.SUCCESS_DETECTION] = self.memory.get_recent_history(constants.SUCCESS_DETECTION, k=1)[-1]
+                name, params = skill
+                action_code, action_info = self.gm.get_skill_library_in_code(name)
+                pre_action_name.append(name)
+                pre_action_code.append(action_code if action_code is not None else action_info)
+
+                input["previous_action"] = ",".join(pre_action_name)
+                input["previous_action_call"] = pre_action
+                input['action_code'] = "\n".join(list(set(pre_action_code)))
             else:
                 input["previous_action"] = ""
                 input["previous_action_call"] = ""
                 input['action_code'] = ""
 
-            if exec_info["error"]:
-                input['executing_action_error'] = exec_info["error"]
+            if exec_info["errors"]:
+                input['executing_action_error'] = exec_info["errors_info"]
             else:
                 input['executing_action_error'] = ""
 
@@ -563,30 +538,19 @@ class PipelineRunner():
             logger.write(f'>> Calling SELF REFLECTION')
             reflection_data = self.planner.self_reflection(input=input)
 
-            if constants.SELF_REFLECTION_REASONING in reflection_data['res_dict'].keys():
-                self_reflection_reasoning = reflection_data['res_dict'][constants.SELF_REFLECTION_REASONING]
+            if 'reasoning' in reflection_data['res_dict'].keys():
+                self_reflection_reasoning = reflection_data['res_dict']['reasoning']
             else:
                 self_reflection_reasoning = ""
 
-            if constants.SUCCESS_DETECTION in reflection_data['res_dict'].keys():
-                success_detection = reflection_data['res_dict'][constants.SUCCESS_DETECTION]
-            else:
-                success_detection = False
-
-            self.memory.add_recent_history(constants.SELF_REFLECTION_REASONING, self_reflection_reasoning)
-            self.memory.add_recent_history(constants.SUCCESS_DETECTION, success_detection)
+            self.memory.add_recent_history("self_reflection_reasoning", self_reflection_reasoning)
             logger.write(f'Self-reflection reason: {self_reflection_reasoning}')
-            logger.write(f'Success detection: {success_detection}')
 
         res_params = {
-            "pre_self_reflection_reasoning": self_reflection_reasoning,
-            f"{constants.SUCCESS_DETECTION}": success_detection,
-            f"{constants.CURRENT_AUGMENTATION_INFO}": current_augmentation,
-            f"{constants.PREVIOUS_AUGMENTATION_INFO}": previous_augmentation
+            "pre_self_reflection_reasoning": self_reflection_reasoning
         }
 
         return res_params
-
 
     def pipeline_shutdown(self):
         self.gm.cleanup_io()
@@ -946,9 +910,9 @@ class PipelineRunner():
         # pre_action = exec_info[constants.EXECUTED_SKILLS]
         # if  executed_skills is [], change it to an empty string
         if executed_skills == []:
-            executed_skills = ""
+            executed_skills = [""]
         # concate each string in executed_skills to a single string with , as separator
-        pre_action== ",".join(executed_skills)
+        pre_action=executed_skills[-1]
         exec_info = info["execution_info"]
         logger.write(f"exec_info:{exec_info}")
         self.memory.add_recent_history("action", pre_action)
