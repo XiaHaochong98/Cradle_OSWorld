@@ -324,8 +324,6 @@ class PipelineRunner():
             "cur_screenshot_path": cur_screenshot_path,
             "mouse_position" : None,
             "exec_info": {
-                "errors": False,
-                "errors_info": ""
             },
             "pre_action": "",
             "pre_decision_making_reasoning": "",
@@ -554,8 +552,8 @@ class PipelineRunner():
                 input["previous_action_call"] = ""
                 input['action_code'] = ""
 
-            if exec_info["errors"]:
-                input['executing_action_error'] = exec_info["errors"]
+            if exec_info["error"]:
+                input['executing_action_error'] = exec_info["error"]
             else:
                 input['executing_action_error'] = ""
 
@@ -941,6 +939,7 @@ class PipelineRunner():
         # pre_action = exec_info[constants.EXECUTED_SKILLS]
             pre_action=skill_steps
             exec_info = info["execution_info"]
+            logger.write(f"exec_info:{exec_info}")
             self.memory.add_recent_history("action", pre_action)
             self.memory.add_recent_history("decision_making_reasoning", pre_decision_making_reasoning)
             self.memory.add_recent_history(constants.KEY_REASON_OF_LAST_ACTION, key_reason_of_last_action)
