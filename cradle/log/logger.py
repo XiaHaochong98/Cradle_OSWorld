@@ -139,6 +139,18 @@ class Logger(metaclass=Singleton):
             self.error("{}: {}".format(traceback.tb_frame.f_code.co_filename, traceback.tb_lineno))
             traceback = traceback.tb_next
 
+    def shutdown_logger(self):
+        """Shut down the current logger and remove all handlers."""
+        logging.shutdown()
+        for handler in self.logger.handlers[:]:
+            self.logger.removeHandler(handler)
+            handler.close()
+
+    def reconfigure_logger(self, new_log_dir):
+        """Shut down the current logger and reconfigure it with a new log directory."""
+        self.shutdown_logger()
+        self._configure_root_logger(new_log_dir)
+
 
 #
 # Functions below this line are just auxiliary to code to process a log file to facilitate debug. Code is very brittle.

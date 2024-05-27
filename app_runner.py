@@ -247,6 +247,8 @@ class PipelineRunner():
                     # update log path
                     logd_dir = os.path.join(config.work_dir,example_result_dir,'./logs')
                     Path(logd_dir).mkdir(parents=True, exist_ok=True)
+                    #shutdown old logger
+                    logger.shutdown_logger()
                     # new logger
                     logger = Logger(log_dir=logd_dir)
                     self.run_single_example_cradle(None, env, example, max_steps, instruction, osworld_args,
