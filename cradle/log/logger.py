@@ -44,13 +44,12 @@ class Logger(metaclass=Singleton):
     DOWNSTREAM_MASK = "\n>> Downstream - A:\n"
     UPSTREAM_MASK = "\n>> Upstream - R:\n"
 
-    def __init__(self):
+    def __init__(self,log_dir=None):
         self.to_file = False
-        self._configure_root_logger()
+        self._configure_root_logger(log_dir)
 
 
-    def _configure_root_logger(self):
-
+    def _configure_root_logger(self, log_dir=None):
         format = f'%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
         formatter = logging.Formatter(format)
@@ -64,9 +63,15 @@ class Logger(metaclass=Singleton):
         stderr_handler.setLevel(logging.ERROR)
         stderr_handler.setFormatter(c_formatter)
 
-        file_handler = logging.FileHandler(filename=os.path.join(config.log_dir, self.log_file), mode='w', encoding='utf-8')
+        if log_dir is None:
+            log_dir = config.log_dir
+        file_handler = logging.FileHandler(filename=os.path.join(log_dir, self.log_file), mode='w', encoding='utf-8')
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(formatter)
+
+        # Remove existing handlers, if any
+        for handler in logging.root.handlers[:]:
+            logging.root.removeHandler(handler)
 
         logging.basicConfig(level=logging.DEBUG, handlers=[stdout_handler, stderr_handler, file_handler])
         self.logger = logging.getLogger("UAC Logger")
@@ -135,6 +140,18 @@ class Logger(metaclass=Singleton):
         while traceback:
             self.error("{}: {}".format(traceback.tb_frame.f_code.co_filename, traceback.tb_lineno))
             traceback = traceback.tb_next
+
+    def shutdown_logger(self):
+        """Shut down the current logger and remove all handlers."""
+        logging.shutdown()
+        for handler in self.logger.handlers[:]:
+            self.logger.removeHandler(handler)
+            handler.close()
+
+    def reconfigure_logger(self, new_log_dir):
+        """Shut down the current logger and reconfigure it with a new log directory."""
+        self.shutdown_logger()
+        self._configure_root_logger(new_log_dir)
 
 
 #
@@ -239,7 +256,7 @@ def process_log_messages(work_dir):
     with open(log_path, "r", encoding="utf-8") as fd:
         log = fd.read()
 
-    filter_list = ['|>..<|', 'httpcore.http11 - DEBUG', 'httpcore.connection - DEBUG', 'asyncio - DEBUG', 'httpx - DEBUG', 'matplotlib.pyplot - DEBUG', 'openai._base_client - DEBUG - Request options:']
+    filter_list = ['|>..<|', 'httpcore.http11 - DEBUG', 'httpcore.connection - DEBUG', 'asyncio - DEBUG', 'httpx - DEBUG', 'matplotlib.pyplot - DEBUG',"openai._base_client", 'openai._base_client - DEBUG - Request options:']
 
     log_lines = []
     for line in log.split('\n'):

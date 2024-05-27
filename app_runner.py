@@ -28,10 +28,12 @@ from cradle.utils.file_utils import copy_file
 import json
 import datetime
 from tqdm import tqdm
+from pathlib import Path
 # osworld
 from cradle.environment.osworld.desktop_env.envs.desktop_env import DesktopEnv
 
 config = Config()
+global logger
 logger = Logger()
 io_env = IOEnvironment()
 
@@ -57,7 +59,7 @@ class PipelineRunner():
         self.count_turns = 0
         # Count the consecutive times the action is empty
         self.count_empty_action = 0
-        self.count_empty_action_threshold = 2
+        self.count_empty_action_threshold = 1
 
         # Init internal params
         self.set_internal_params()
@@ -70,7 +72,7 @@ class PipelineRunner():
         self.count_turns = 0
         # Count the consecutive times the action is empty
         self.count_empty_action = 0
-        self.count_empty_action_threshold = 2
+        self.count_empty_action_threshold = 1
 
         # Init internal params
         self.set_internal_params()
@@ -120,6 +122,7 @@ class PipelineRunner():
                                use_information_summary=self.use_information_summary)
 
         # Init skill library
+        global logger
         logger.write(f"Skill Library: {self.skill_library}")
         if config.skill_retrieval:
             self.gm.register_available_skills(self.skill_library)
@@ -130,7 +133,7 @@ class PipelineRunner():
         self.processed_skill_library = pre_process_skill_library(self.skill_library)
 
         # Init video recorder
-        self.videocapture = VideoRecorder(os.path.join(config.work_dir, 'video.mp4'))
+        # self.videocapture = VideoRecorder(os.path.join(config.work_dir, 'video.mp4'))
 
     def get_unfinished(self, action_space, use_model, observation_type, result_dir, total_file_json):
         target_dir = os.path.join(result_dir, action_space, observation_type, use_model)
@@ -187,6 +190,8 @@ class PipelineRunner():
         left_info = ""
         for domain in test_file_list:
             left_info += f"{domain}: {len(test_file_list[domain])}\n"
+
+        global logger
         logger.write(f"Left tasks:\n{left_info}")
 
         self.get_result(osworld_args.action_space,
@@ -198,28 +203,28 @@ class PipelineRunner():
 
         # Start the osworld environment
         env = DesktopEnv(
-            path_to_vm=osworld_args.path_to_vm,
+            # path_to_vm=osworld_args.path_to_vm,
+            path_to_vm=None,
             action_space="pyautogui",
             screen_size=(osworld_args.screen_width, osworld_args.screen_height),
-            headless=True,
+            headless=False,
             require_a11y_tree=osworld_args.observation_type in ["a11y_tree", "screenshot_a11y_tree", "som"],
         )
 
         max_steps = osworld_args.max_steps
         scores = []
 
+        # test_file_list= {"chrome":["06fe7178-4491-4589-810f-2e2bc9502122"],
+        #                  "os":["4d117223-a354-47fb-8b45-62ab1390a95f",
+        #                        "6f56bf42-85b8-4fbb-8e06-6c44960184ba",
+        #                        "e0df059f-28a6-4169-924f-b9623e7184cc"]
+        #                  }
+
         for domain in tqdm(test_file_list, desc="Domain"):
             for example_id in tqdm(test_file_list[domain], desc="Example", leave=False):
                 config_file = os.path.join(osworld_args.test_config_base_dir, f"examples/{domain}/{example_id}.json")
                 with open(config_file, "r", encoding="utf-8") as f:
                     example = json.load(f)
-
-                logger.write(f"[Domain]: {domain}")
-                logger.write(f"[Example ID]: {example_id}")
-
-                instruction = example["instruction"]
-
-                logger.write(f"[Instruction]: {instruction}")
 
                 example_result_dir = os.path.join(
                     osworld_args.result_dir,
@@ -230,6 +235,22 @@ class PipelineRunner():
                     example_id
                 )
                 os.makedirs(example_result_dir, exist_ok=True)
+
+                # update log path
+                log_dir = os.path.join(config.work_dir, example_result_dir, './logs')
+                Path(log_dir).mkdir(parents=True, exist_ok=True)
+                # new logger
+                logger.reconfigure_logger(log_dir)
+                # # new logger
+                # logger = Logger(log_dir=log_dir)
+
+                logger.write(f"[Domain]: {domain}")
+                logger.write(f"[Example ID]: {example_id}")
+
+                instruction = example["instruction"]
+
+                logger.write(f"[Instruction]: {instruction}")
+
                 # example start running
                 try:
                     self.run_single_example_cradle(None, env, example, max_steps, instruction, osworld_args,
@@ -249,50 +270,9 @@ class PipelineRunner():
 
     def run_single_example_cradle(self,agent, env, example, max_steps, instruction, args, example_result_dir, scores):
         # osworld init
+        global logger
         logger.write(f"Running single example with instruction: {instruction}")
         self.reset()
-        example={
-    "id": "2e6f678f-472d-4c55-99cc-8e7c5c402a71",
-    "snapshot": "gimp",
-    "instruction": "Please batch process the images on the desktop by lifting the brightness to 50.",
-    "source": "",
-    "config": [
-        {
-            "type": "download",
-            "parameters": {
-                "files": [
-                    {
-                        "url": "https://drive.google.com/uc?export=download&id=1uOZWtT9E8YW_IOu51meW5a0jAgwS1DoX",
-                        "path": "/home/user/Desktop/squirrel.jpeg"
-                    },
-                    {
-                        "url": "https://drive.google.com/uc?export=download&id=1KCyoqh3bTsbY42r9YSqIvcGuUr6i95GU",
-                        "path": "/home/user/Desktop/panda.jpeg"
-                    },
-                    {
-                        "url": "https://drive.google.com/uc?export=download&id=1xftsr0mRUvqKGPCHOnzUMm7tMnuqdhAA",
-                        "path": "/home/user/Desktop/heron.jpeg"
-                    }
-                ]
-            }
-        },
-        {
-            "type": "launch",
-            "parameters": {
-                "command": [
-                    "gimp"
-                ]
-            }
-        }
-    ],
-    "trajectory": "trajectories/",
-    "related_apps": [
-        "gimp"
-    ],
-    "evaluator": {
-        "func": "infeasible"
-    }
-}
         logger.write(f"example:{example}")
         obs = env.reset(task_config=example)
         step_idx = 0
@@ -319,10 +299,10 @@ class PipelineRunner():
         # switch_to_game()
 
         # Prepare
-        self.videocapture.start_capture()
-        start_frame_id = self.videocapture.get_current_frame_id()
+        # self.videocapture.start_capture()
+        start_frame_id = None
         time.sleep(2)
-        end_frame_id = self.videocapture.get_current_frame_id()
+        end_frame_id = None
 
         # First sense
         # cur_screenshot_path, _ = self.gm.capture_screen() # @Pengjie: This is the first sense, we need to capture the screen here
@@ -345,10 +325,7 @@ class PipelineRunner():
             "end_frame_id": end_frame_id,
             "cur_screenshot_path": cur_screenshot_path,
             "mouse_position" : None,
-            "exec_info": {
-                "errors": False,
-                "errors_info": ""
-            },
+            "exec_info": {'error':""},
             "pre_action": "",
             "pre_decision_making_reasoning": "",
             "pre_self_reflection_reasoning": "",
@@ -382,18 +359,19 @@ class PipelineRunner():
                 # Decision making
                 logger.write('Decision making')
                 decision_making_params = self.decision_making(params)
-                params.update(decision_making_params)
+                if not self.stop_flag:
+                    params.update(decision_making_params)
 
-                # Information summary
-                logger.write('Information summary')
-                information_summary_params = self.information_summary(params)
-                params.update(information_summary_params)
+                    # Information summary
+                    logger.write('Information summary')
+                    information_summary_params = self.information_summary(params)
+                    params.update(information_summary_params)
 
-                # # Success detection
-                # success_detection_params = self.success_detection(params)
-                # params.update(success_detection_params)
+                    # # Success detection
+                    # success_detection_params = self.success_detection(params)
+                    # params.update(success_detection_params)
 
-                # success = success_detection_params["success"]
+                    # success = success_detection_params["success"]
 
                 self.gm.store_skills()
                 self.memory.save()
@@ -422,7 +400,7 @@ class PipelineRunner():
         parser.add_argument("--path_to_vm", type=str,
                             default=r"E:\OSWorld\vm_data\Ubuntu0\Ubuntu0\Ubuntu0.vmx")
         parser.add_argument(
-            "--headless", action="store_true", help="Run in headless machine"
+            "--headless", action="store_false", help="Run in headless machine"
         )
         parser.add_argument("--action_space", type=str, default="pyautogui", help="Action type")
         parser.add_argument(
@@ -489,7 +467,6 @@ class PipelineRunner():
             print("Current Success Rate:", sum(all_result) / len(all_result) * 100, "%")
             return all_result
 
-
     def self_reflection(self, params: Dict[str, Any]):
 
         start_frame_id = params["start_frame_id"]
@@ -497,6 +474,7 @@ class PipelineRunner():
 
         task_description = params["task_description"]
         pre_action = params["pre_action"]
+        logger.write(f"pre_action: [{pre_action}]")
 
         previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
         current_augmentation = params[constants.CURRENT_AUGMENTATION_INFO]
@@ -512,10 +490,12 @@ class PipelineRunner():
         self_reflection_reasoning = ""
         success_detection = False
 
-        if self.use_self_reflection and start_frame_id > -1:
+        step_index=params["step_idx"]
+
+        if self.use_self_reflection and step_index>0:
             input = self.planner.self_reflection_.input_map
             action_frames = []
-            video_frames = self.videocapture.get_frames(start_frame_id, end_frame_id)
+            # video_frames = self.videocapture.get_frames(start_frame_id, end_frame_id)
 
             # if len(video_frames) <= config.max_images_in_self_reflection * config.duplicate_frames + 1:
             #     action_frames = [frame[1] for frame in video_frames[1::config.duplicate_frames]]
@@ -558,25 +538,34 @@ class PipelineRunner():
                 pre_action_name = []
                 pre_action_code = []
 
-                for action in pre_action:
-                    skill = self.gm.skill_registry.convert_expression_to_skill(action)
-                    name, params = skill
-                    action_code, action_info = self.gm.get_skill_library_in_code(name)
-                    pre_action_name.append(name)
-                    pre_action_code.append(action_code if action_code is not None else action_info)
+                skill_name = pre_action.split('def ')[-1].split('(')[0]
+                skill_source_code = self.gm.get_skill_source_code(skill_name)
+                # filter out the first line of skill_source_code which is the register
+                skill_source_code = skill_source_code.split('\n', 1)[1]
+                # logger.write(f"Skill source code: {skill_source_code}")
 
-                    input["previous_action"] = ",".join(pre_action_name)
-                    input["previous_action_call"] = pre_action
-                    input['action_code'] = "\n".join(list(set(pre_action_code)))
-                    input[constants.KEY_REASON_OF_LAST_ACTION] = self.memory.get_recent_history(constants.KEY_REASON_OF_LAST_ACTION, k=1)[-1]
-                    input[constants.SUCCESS_DETECTION] = self.memory.get_recent_history(constants.SUCCESS_DETECTION, k=1)[-1]
+                # skill = self.gm.skill_registry.convert_expression_to_skill(pre_action)
+                #
+                # name, params = skill
+                # action_code, action_info = self.gm.get_skill_library_in_code(name)
+                pre_action_name.append(skill_name)
+                pre_action_code.append(skill_source_code if skill_source_code is not None else None)
+
+                input["previous_action"] = ",".join(pre_action_name)
+                input["previous_action_call"] = pre_action
+                input['action_code'] = "\n".join(list(set(pre_action_code)))
+                input[constants.KEY_REASON_OF_LAST_ACTION] = \
+                self.memory.get_recent_history(constants.KEY_REASON_OF_LAST_ACTION, k=1)[-1]
+                input[constants.SUCCESS_DETECTION] = self.memory.get_recent_history(constants.SUCCESS_DETECTION, k=1)[
+                    -1]
+
             else:
                 input["previous_action"] = ""
                 input["previous_action_call"] = ""
                 input['action_code'] = ""
 
-            if exec_info["errors"]:
-                input['executing_action_error'] = exec_info["errors_info"]
+            if exec_info["error"]:
+                input['executing_action_error'] = exec_info["error"]
             else:
                 input['executing_action_error'] = ""
 
@@ -608,10 +597,9 @@ class PipelineRunner():
 
         return res_params
 
-
     def pipeline_shutdown(self):
         self.gm.cleanup_io()
-        self.videocapture.finish_capture()
+        # self.videocapture.finish_capture()
         logger.write('>>> Bye.')
 
 
@@ -716,7 +704,7 @@ class PipelineRunner():
                 current_augmentation[constants.AUG_SOM_IMAGE_PATH] = som_img_path
                 current_augmentation[constants.AUG_SOM_MAP] = som_map.copy()
                 current_augmentation[constants.LENGTH_OF_SOM_MAP] = len(som_map.keys())
-            logger.write(f"som_map: {current_augmentation[constants.AUG_SOM_MAP]}")
+            # logger.write(f"som_map: {current_augmentation[constants.AUG_SOM_MAP]}")
             input["image_introduction"][0]["path"] = current_augmentation[constants.AUG_SOM_IMAGE_PATH]
             input[constants.LENGTH_OF_SOM_MAP] = current_augmentation[constants.LENGTH_OF_SOM_MAP]
 
@@ -796,7 +784,6 @@ class PipelineRunner():
         previous_augmentation = params[constants.PREVIOUS_AUGMENTATION_INFO]
         pre_action = params["pre_action"]
         pre_self_reflection_reasoning = params["pre_self_reflection_reasoning"]
-        success_detection = params[constants.SUCCESS_DETECTION]
         env=params['osworld_env']
 
         # Decision making preparation
@@ -813,9 +800,6 @@ class PipelineRunner():
 
         if pre_self_reflection_reasoning:
             input["previous_self_reflection_reasoning"] = self.memory.get_recent_history(constants.SELF_REFLECTION_REASONING, k=1)[-1]
-
-        if success_detection:
-            input[constants.SUCCESS_DETECTION] = success_detection
 
         skill_to_be_filtered= [
             "move_mouse_to_position",
@@ -910,43 +894,49 @@ class PipelineRunner():
         if self.count_empty_action >= self.count_empty_action_threshold:
             self.stop_flag = True
             logger.write(f'Empty action count reached {self.count_empty_action_threshold} times. Task is considered successful.')
-
+            return None
+        logger.write(f"count_empty_action {self.count_empty_action}, stop_flag {self.stop_flag}")
         # osworld execute actions
         # exec_info = self.gm.execute_actions(skill_steps)
-        info="No skill have been executed because of wrong skill output. All the info are kept as the same with last round."
-        cur_screenshot_path=input["image_introduction"][-1]["path"]
-        if skill_steps != ['']:
-            for skill in skill_steps:
-                try:
-                    # logger.write("Step %d: %s", step_idx + 1, action)
-                    action_timestamp = datetime.datetime.now().strftime("%Y%m%d@%H%M%S")
-                    # assamble the skill to a script for osworld
-                    import_source="import pyautogui"
-                    # logger.write(f"Skill: {skill}")
-                    skill_name = skill.split('def ')[-1].split('(')[0]
-                    skill_source_code = self.gm.get_skill_source_code(skill_name)
-                    # filter out the first line of skill_source_code which is the register
-                    skill_source_code = skill_source_code.split('\n', 1)[1]
-                    # logger.write(f"Skill source code: {skill_source_code}")
-                    skill_execution= skill
-                    # if the skill is "task_is_not_able_to_be_completed", the skill script should be "FAIL"
-                    if skill_name == "task_is_not_able_to_be_completed":
-                        skill_script='FAIL'
-                    else:
-                        skill_script = f"{import_source}\n{skill_source_code}\n{skill_execution}"
-                    logger.write(f"Skill script: {skill_script}")
-                    obs, reward, self.stop_flag, info = env.step(skill_script, 0.0)
-
-                    logger.write(f"Reward: {reward}")
-                    logger.write(f"Done: {self.stop_flag}")
-                    # Save screenshot and trajectory information'
-                    screenshot_path=os.path.join(config.work_dir,example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
-                    with open(screenshot_path,"wb") as _f:
-                        _f.write(obs['screenshot'])
-                except:
-                    logger.error(f"Error executing action: {skill}")
+        # info="No skill have been executed because of wrong skill output. All the info are kept as the same with last round."
+        screenshot_path=input["image_introduction"][-1]["path"]
+        info={
+            "execution_info":{'error': '', 'output': '', 'returncode': 0, 'status': 'success'}
+        }
+        executed_skills=[]
+        for skill in skill_steps:
+            try:
+                if skill=="":
                     continue
-            cur_screenshot_path = screenshot_path
+                # logger.write("Step %d: %s", step_idx + 1, action)
+                action_timestamp = datetime.datetime.now().strftime("%Y%m%d@%H%M%S")
+                # assamble the skill to a script for osworld
+                import_source="import pyautogui"
+                # logger.write(f"Skill: {skill}")
+                skill_name = skill.split('def ')[-1].split('(')[0]
+                skill_source_code = self.gm.get_skill_source_code(skill_name)
+                # filter out the first line of skill_source_code which is the register
+                skill_source_code = skill_source_code.split('\n', 1)[1]
+                # logger.write(f"Skill source code: {skill_source_code}")
+                skill_execution= skill
+                # if the skill is "task_is_not_able_to_be_completed", the skill script should be "FAIL"
+                if skill_name == "task_is_not_able_to_be_completed":
+                    skill_script='FAIL'
+                else:
+                    skill_script = f"{import_source}\n{skill_source_code}\n{skill_execution}"
+                logger.write(f"Skill script: {skill_script}")
+                obs, reward, done, info = env.step(skill_script, 0.0)
+                executed_skills.append(skill)
+                # logger.write(f"Reward: {reward}")
+                # logger.write(f"Done: {self.stop_flag}")
+                # Save screenshot and trajectory information'
+                screenshot_path=os.path.join(config.work_dir,example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
+                with open(screenshot_path,"wb") as _f:
+                    _f.write(obs['screenshot'])
+            except:
+                logger.error(f"Error executing action: {skill}")
+                continue
+        cur_screenshot_path = screenshot_path
         # Sense here to avoid changes in state after action execution completes
 
         # First, check if interaction left the target environment
@@ -960,17 +950,17 @@ class PipelineRunner():
 
         # exec_info also has the list of successfully executed skills. skill_steps is the full list, which may differ if there were execution errors.
         # pre_action = exec_info[constants.EXECUTED_SKILLS]
-            pre_action=skill_steps
-            exec_info = info
-            self.memory.add_recent_history("action", pre_action)
-            self.memory.add_recent_history("decision_making_reasoning", pre_decision_making_reasoning)
-            self.memory.add_recent_history(constants.KEY_REASON_OF_LAST_ACTION, key_reason_of_last_action)
-            previous_augmentation = current_augmentation.copy()
-        else:
-            # If no skill was executed, keep the previous augmentation
-            pre_action=skill_steps
-            exec_info = info
-            previous_augmentation = current_augmentation.copy()
+        # if  executed_skills is [], change it to an empty string
+        if executed_skills == []:
+            executed_skills = [""]
+        # concate each string in executed_skills to a single string with , as separator
+        pre_action=executed_skills[-1]
+        exec_info = info["execution_info"]
+        logger.write(f"exec_info:{exec_info}")
+        self.memory.add_recent_history("action", pre_action)
+        self.memory.add_recent_history("decision_making_reasoning", pre_decision_making_reasoning)
+        self.memory.add_recent_history(constants.KEY_REASON_OF_LAST_ACTION, key_reason_of_last_action)
+        previous_augmentation = current_augmentation.copy()
 
         res_params = {
             "pre_action": pre_action,
