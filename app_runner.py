@@ -237,12 +237,12 @@ class PipelineRunner():
                 os.makedirs(example_result_dir, exist_ok=True)
 
                 # update log path
-                logd_dir = os.path.join(config.work_dir, example_result_dir, './logs')
-                Path(logd_dir).mkdir(parents=True, exist_ok=True)
-                # shutdown old logger
-                logger.shutdown_logger()
+                log_dir = os.path.join(config.work_dir, example_result_dir, './logs')
+                Path(log_dir).mkdir(parents=True, exist_ok=True)
                 # new logger
-                logger = Logger(log_dir=logd_dir)
+                logger.reconfigure_logger(log_dir)
+                # # new logger
+                # logger = Logger(log_dir=log_dir)
 
                 logger.write(f"[Domain]: {domain}")
                 logger.write(f"[Example ID]: {example_id}")
