@@ -214,10 +214,12 @@ class PipelineRunner():
         max_steps = osworld_args.max_steps
         scores = []
 
-        # test_file_list= {"chrome":["06fe7178-4491-4589-810f-2e2bc9502122"],
-        #                  "os":["4d117223-a354-47fb-8b45-62ab1390a95f",
-        #                        "6f56bf42-85b8-4fbb-8e06-6c44960184ba",
-        #                        "e0df059f-28a6-4169-924f-b9623e7184cc"]
+        # test_file_list= {
+        #     # "chrome":["b070486d-e161-459b-aa2b-ef442d973b92","0d8b7de3-e8de-4d86-b9fd-dd2dce58a217"],
+        #                  # "os":["4d117223-a354-47fb-8b45-62ab1390a95f",
+        #                  #       "6f56bf42-85b8-4fbb-8e06-6c44960184ba",
+        #                  #       "e0df059f-28a6-4169-924f-b9623e7184cc"]
+        #                  "libreoffice_calc":["30e3e107-1cfb-46ee-a755-2cd080d7ba6a"]
         #                  }
 
         for domain in tqdm(test_file_list, desc="Domain"):
@@ -1137,7 +1139,7 @@ def pre_process_skill_steps(skill_steps: List[str], som_map: Dict) -> List[str]:
                         processed_skill_steps[i] = f'click_at_position({args_suffix_str} # Click on {label_key.strip("=")}: {label_id}'
                     elif func_str.startswith('double_'):
                         processed_skill_steps[i] = f'double_click_at_position({args_suffix_str} # Double click on {label_key.strip("=")}: {label_id}'
-                    elif func_str.startswith('mouse_drag_to_label'):
+                    elif func_str.startswith('mouse_drag'):
                         processed_skill_steps[i] = f'mouse_drag({args_suffix_str} # Drag things to {label_key.strip("=")}: {label_id}'
                     else:
                         processed_skill_steps[i] = f'move_mouse_to_position({args_suffix_str} # Move to {label_key.strip("=")}: {label_id}'
@@ -1155,7 +1157,7 @@ def pre_process_skill_steps(skill_steps: List[str], som_map: Dict) -> List[str]:
                         processed_skill_steps[i] = f'click_at_position({args_suffix_str}'
                     elif func_str.startswith('double_'):
                         processed_skill_steps[i] = f'double_click_at_position({args_suffix_str}'
-                    elif func_str.startswith('mouse_drag_to_label'):
+                    elif func_str.startswith('mouse_drag'):
                         processed_skill_steps[i] = f'mouse_drag({args_suffix_str}'
                     else:
                         processed_skill_steps[i] = f'move_mouse_to_position({args_suffix_str}'
@@ -1163,27 +1165,27 @@ def pre_process_skill_steps(skill_steps: List[str], som_map: Dict) -> List[str]:
                     logger.debug("Invalid coordinate format.")
                     processed_skill_steps[i] = processed_skill_steps[i] + f"# {constants.INVALID_BBOX} for coordinates: {coords_str}"
 
-        elif 'mouse_drag_with_label(' in step:
-            skill = step
-            tokens = skill.split('(')
-            args_suffix_str = tokens[1]
-            func_str = tokens[0]
-
-            label_ids = args_suffix_str.split('label_id=')[1:]
-            source_label_id = str(label_ids[0].split(',')[0]).replace("'", "").replace('"', "").replace(" ", "")
-            target_label_id = str(label_ids[1].split(',')[0]).replace("'", "").replace('"', "").replace(" ", "")
-
-            if source_label_id in som_map and target_label_id in som_map:
-                source_x, source_y = normalize_coordinates(som_map[source_label_id])
-                target_x, target_y = normalize_coordinates(som_map[target_label_id])
-                args_suffix_str = args_suffix_str.replace(f'source_label_id={source_label_id}', f'source_x={source_x}, source_y={source_y}')
-                args_suffix_str = args_suffix_str.replace(f'target_label_id={target_label_id}', f'target_x={target_x}, target_y={target_y}').replace(",)", ")")
-
-                processed_skill_steps[i] = (f'mouse_drag({args_suffix_str} # Drag things from  source_label_id={source_label_id} to target_label_id={target_label_id}')
-            else:
-                missing_ids = [label_id for label_id in [source_label_id, target_label_id] if label_id not in som_map]
-                logger.debug(f"Label IDs {missing_ids} not found in SOM map.")
-                processed_skill_steps[i] = (step + f"# {constants.INVALID_BBOX} for label_ids: {', '.join(missing_ids)}")
+        # elif 'mouse_drag_with_label(' in step:
+        #     skill = step
+        #     tokens = skill.split('(')
+        #     args_suffix_str = tokens[1]
+        #     func_str = tokens[0]
+        #
+        #     label_ids = args_suffix_str.split('label_id=')[1:]
+        #     source_label_id = str(label_ids[0].split(',')[0]).replace("'", "").replace('"', "").replace(" ", "")
+        #     target_label_id = str(label_ids[1].split(',')[0]).replace("'", "").replace('"', "").replace(" ", "")
+        #
+        #     if source_label_id in som_map and target_label_id in som_map:
+        #         source_x, source_y = normalize_coordinates(som_map[source_label_id])
+        #         target_x, target_y = normalize_coordinates(som_map[target_label_id])
+        #         args_suffix_str = args_suffix_str.replace(f'source_label_id={source_label_id}', f'source_x={source_x}, source_y={source_y}')
+        #         args_suffix_str = args_suffix_str.replace(f'target_label_id={target_label_id}', f'target_x={target_x}, target_y={target_y}').replace(",)", ")")
+        #
+        #         processed_skill_steps[i] = (f'mouse_drag({args_suffix_str} # Drag things from  source_label_id={source_label_id} to target_label_id={target_label_id}')
+        #     else:
+        #         missing_ids = [label_id for label_id in [source_label_id, target_label_id] if label_id not in som_map]
+        #         logger.debug(f"Label IDs {missing_ids} not found in SOM map.")
+        #         processed_skill_steps[i] = (step + f"# {constants.INVALID_BBOX} for label_ids: {', '.join(missing_ids)}")
 
         # Change keyboard and mouse combination
         elif '+' in step and 'key' in step:
