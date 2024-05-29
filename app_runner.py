@@ -219,7 +219,7 @@ class PipelineRunner():
         #                  # "os":["4d117223-a354-47fb-8b45-62ab1390a95f",
         #                  #       "6f56bf42-85b8-4fbb-8e06-6c44960184ba",
         #                  #       "e0df059f-28a6-4169-924f-b9623e7184cc"]
-        #                  "libreoffice_calc":["30e3e107-1cfb-46ee-a755-2cd080d7ba6a"]
+        #                  "libreoffice_calc":["4172ea6e-6b77-4edb-a9cc-c0014bd1603b"]
         #                  }
 
         for domain in tqdm(test_file_list, desc="Domain"):
@@ -248,6 +248,7 @@ class PipelineRunner():
 
                 logger.write(f"[Domain]: {domain}")
                 logger.write(f"[Example ID]: {example_id}")
+
 
                 instruction = example["instruction"]
 
@@ -806,7 +807,8 @@ class PipelineRunner():
         skill_to_be_filtered= [
             "move_mouse_to_position",
             "click_at_position",
-            "double_click_at_position"
+            "double_click_at_position",
+            "mouse_drag"
         ]
         # filter the skill library with the skill_to_be_filtered
         # filtered_out_skill= [skill for skill in self.skill_library if skill['function_expression'].split("(")[0] in skill_to_be_filtered]
