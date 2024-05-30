@@ -316,7 +316,7 @@ class PipelineRunner():
         screenshot_folder=os.path.join(config.work_dir,example_result_dir)
         if not os.path.exists(screenshot_folder):
             os.makedirs(screenshot_folder)
-        screenshot_path=os.path.join(config.work_dir,example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
+        screenshot_path=os.path.join(config.work_dir,example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.jpg")
         with open(screenshot_path,"wb") as _f:
             _f.write(obs['screenshot'])
         cur_screenshot_path = screenshot_path
@@ -934,7 +934,7 @@ class PipelineRunner():
                 # logger.write(f"Reward: {reward}")
                 # logger.write(f"Done: {self.stop_flag}")
                 # Save screenshot and trajectory information'
-                screenshot_path=os.path.join(config.work_dir,example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.png")
+                screenshot_path=os.path.join(config.work_dir,example_result_dir, f"step_{step_idx + 1}_{action_timestamp}.jpg")
                 with open(screenshot_path,"wb") as _f:
                     _f.write(obs['screenshot'])
             except:
